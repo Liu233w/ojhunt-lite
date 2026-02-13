@@ -1,0 +1,234 @@
+"""
+CLI output and validation functions for OJHunt Lite.
+"""
+
+import sys
+from collections import Counter
+from typing import Dict, List, Set, Any, Tuple
+
+from cli.models import Query
+from crawlers import discover_crawlers
+
+
+def check_duplicate_queries(queries: List[Query]) -> None:
+    """Check for duplicate queries and print warning to stderr."""
+    counter = Counter((q.crawler, q.username) for q in queries)
+    for (crawler, username), count in counter.items():
+        if count > 1:
+            print(
+                f"Warning: duplicate query '{username}@{crawler}' (will run {count} times)",
+                file=sys.stderr,
+            )
+
+
+def validate_crawlers(
+    queries: List[Query], crawlers: Dict[str, Dict[str, Any]]
+) -> bool:
+    """Validate that all queried crawlers exist."""
+    unknown = set(q.crawler for q in queries if q.crawler not in crawlers)
+    if unknown:
+        print(
+            f"Error: unknown crawler(s): {', '.join(sorted(unknown))}",
+            file=sys.stderr,
+        )
+        print("Run 'ojhunt --list' to see available crawlers.", file=sys.stderr)
+        return False
+    return True
+
+
+def validate_credentials(
+    queries: List[Query],
+    crawlers: Dict[str, Dict[str, Any]],
+    crawler_logins: Dict[str, Tuple[str, str]],
+) -> bool:
+    """
+    Validate that credential requirements are met for each query.
+
+    For requires_login crawlers (e.g., VJudge):
+        - If query has password: login as that user, query that user
+        - If query has no password but -l flag provided: use flag credentials
+        - If neither: error
+
+    For requires_password crawlers:
+        - Password must be provided in query
+
+    Args:
+        queries: List of Query objects
+        crawlers: Dictionary of crawler metadata
+        crawler_logins: Login credentials from -l flag, keyed by crawler name
+
+    Returns:
+        True if all validations pass, False otherwise
+    """
+    for q in queries:
+        meta = crawlers[q.crawler]["meta"]
+        requires_login = meta.get("requires_login", False)
+        requires_password = meta.get("requires_password", False)
+
+        if requires_login:
+            has_query_creds = q.password is not None
+            has_flag_creds = q.crawler in crawler_logins
+
+            if has_query_creds and has_flag_creds:
+                print(
+                    f"Error: duplicate credentials for '{q.crawler}'. "
+                    f"Use either user:pass@{q.crawler} or -l user:pass@{q.crawler}, not both.",
+                    file=sys.stderr,
+                )
+                return False
+
+            if not has_query_creds and not has_flag_creds:
+                print(
+                    f"Error: crawler '{q.crawler}' requires login credentials. "
+                    f"Use user:pass@{q.crawler} or -l user:pass@{q.crawler}",
+                    file=sys.stderr,
+                )
+                return False
+
+        elif requires_password:
+            if q.password is None:
+                print(
+                    f"Error: crawler '{q.crawler}' requires a password. "
+                    f"Use username:password@{q.crawler}",
+                    file=sys.stderr,
+                )
+                return False
+
+        else:
+            if q.password is not None:
+                print(
+                    f"Error: crawler '{q.crawler}' does not require credentials",
+                    file=sys.stderr,
+                )
+                return False
+
+    return True
+
+
+def collect_solved_problems(
+    results: List[Dict[str, Any]], crawlers: Dict[str, Dict[str, Any]]
+) -> Set[str]:
+    """
+    Collect all solved problems with deduplication.
+
+    For normal crawlers: prefix with crawler name (e.g., 'hdu-1000')
+    For virtual judges: use labels as-is (already prefixed like 'codeforces-123A')
+    """
+    all_solved: Set[str] = set()
+    for result in results:
+        if not result["success"]:
+            continue
+        meta = crawlers[result["crawler"]]["meta"]
+        is_virtual = meta.get("is_virtual_judge", False)
+        solved_list = result.get("solved_list") or []
+        for problem in solved_list:
+            if is_virtual:
+                all_solved.add(problem)
+            else:
+                all_solved.add(f"{result['crawler']}-{problem}")
+    return all_solved
+
+
+def print_report(
+    results: List[Dict[str, Any]],
+    crawlers: Dict[str, Dict[str, Any]],
+    show_problems: bool,
+    total_duration: float,
+) -> int:
+    """Print the final report and return exit code."""
+    successful = [r for r in results if r["success"]]
+    failed = [r for r in results if not r["success"]]
+
+    all_solved = collect_solved_problems(results, crawlers)
+    total_submissions = sum(r.get("submissions", 0) for r in successful)
+
+    print()
+    print(f"Total: {len(all_solved)} solved / {total_submissions} submissions")
+    print()
+
+    print("=" * 80)
+    print(
+        f"{'Crawler':<20} {'Username':<20} {'Solved':<10} {'Submissions':<12} {'Status'}"
+    )
+    print("=" * 80)
+
+    for result in results:
+        title = result["title"]
+        username = result["username"]
+        if result["success"]:
+            solved = result["solved"]
+            submissions = result["submissions"]
+            duration = result["duration"]
+            status = f"OK ({duration:.2f}s)"
+            print(f"{title:<20} {username:<20} {solved:<10} {submissions:<12} {status}")
+        else:
+            error = result["error"]
+            status = f"ERROR: {error}"
+            print(f"{title:<20} {username:<20} {'N/A':<10} {'N/A':<12} {status}")
+
+    print("=" * 80)
+    print(
+        f"Completed: {len(successful)} OK, {len(failed)} failed ({total_duration:.2f}s total)"
+    )
+    print()
+
+    if show_problems and successful:
+        print("--- Detailed Report ---")
+        for result in successful:
+            title = result["title"]
+            username = result["username"]
+            solved_list = result["solved_list"]
+            if solved_list:
+                problems_str = ", ".join(sorted(solved_list))
+                print(f"{title} ({username}): {problems_str}")
+        print()
+
+    return 0 if not failed else 1
+
+
+def print_crawler_list() -> None:
+    """Print list of available crawlers in a table format."""
+    crawlers = discover_crawlers()
+
+    if not crawlers:
+        print("\nNo crawlers found. Make sure aiohttp is installed.\n")
+        return
+
+    print(f"\nAvailable crawlers ({len(crawlers)}):\n")
+
+    headers = ["Name", "Description", "URL", "Login"]
+    rows = []
+
+    for name in sorted(crawlers.keys()):
+        meta = crawlers[name]["meta"]
+        description = meta.get("description", "")
+        url = meta.get("url", "")
+        if meta.get("requires_login", False):
+            auth_status = "Yes"
+        elif meta.get("requires_password", False):
+            auth_status = "Password"
+        else:
+            auth_status = "No"
+        rows.append([name, description, url, auth_status])
+
+    col_widths = [len(headers[0]), len(headers[1]), len(headers[2]), len(headers[3])]
+    for row in rows:
+        for i, cell in enumerate(row):
+            col_widths[i] = max(col_widths[i], len(cell))
+
+    separator = "  ".join("-" * w for w in col_widths)
+
+    header_line = "  ".join(h.ljust(w) for h, w in zip(headers, col_widths))
+    print(f"  {header_line}")
+    print(f"  {separator}")
+
+    for row in rows:
+        line = "  ".join(cell.ljust(w) for cell, w in zip(row, col_widths))
+        print(f"  {line}")
+
+    print()
+
+
+def print_progress(title: str, completed: int, total: int) -> None:
+    """Print progress update for a completed crawler."""
+    print(f"{title} done ({completed}/{total})")
