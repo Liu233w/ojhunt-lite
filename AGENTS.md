@@ -1,0 +1,97 @@
+# AGENTS.md - Guidelines for AI Agents
+
+## Project Overview
+
+OJHunt Lite is an async Python tool for querying Online Judge statistics across 28 competitive programming platforms.
+
+**Read these files first:**
+- `README.md` - Usage examples, crawler templates, development setup
+- `GOAL.md` - Design philosophy and technical decisions
+
+## Parallel Execution
+
+When editing multiple crawlers or performing independent tasks, spawn sub-agents to work in parallel. This is strongly recommended for:
+- Editing multiple crawler files simultaneously
+- Running tests across multiple crawlers
+- Analyzing multiple files independently
+
+## Build & Test Commands
+
+```bash
+uv sync                                    # Install dependencies
+uv add <package>                           # Add a new dependency
+pytest                                     # Run all tests
+pytest crawlers/codeforces_test.py         # Run single test file
+pytest crawlers/codeforces_test.py::test_valid_user  # Run single test
+uv run ojhunt.py --crawler codeforces --username tourist  # Run CLI
+```
+
+## Code Style
+
+### Imports
+Standard library -> Third-party -> Typing:
+```python
+import re
+import aiohttp
+from selectolax.lexbor import LexborHTMLParser
+from typing import Dict, List, Union
+```
+
+### Naming
+- Files: `snake_case.py` (crawlers), `*_test.py` (tests)
+- Functions/variables: `snake_case`
+- Constants: `UPPER_SNAKE_CASE`
+
+### Typing
+Use `Dict`, `List`, `Union` from `typing` module (not `dict[str, ...]` syntax).
+
+### HTML Parsing
+Use `selectolax.lexbor.LexborHTMLParser`, NOT BeautifulSoup.
+
+### License Header
+BSD-2 Clause license header (copy from existing crawler, use current year for new files).
+
+## Error Handling
+
+- `ValueError`: User input errors (empty username, user not found)
+- `RuntimeError`: Network failures, parsing errors, unexpected issues
+
+## Test Structure
+
+- Test file: `crawlers/<name>_test.py`
+- Use `pytest_asyncio.fixture` for aiohttp session
+- Standard test cases: `test_user_not_exist`, `test_username_with_space`, `test_valid_user`
+- Use real test usernames from existing tests (e.g., `leoloveacm`, `vjudge5`)
+
+### Test Assertions
+
+Each test must assert all three fields: `solved`, `submissions`, `solved_list`:
+
+1. **When all fields are available:**
+   - `solved > 0`
+   - `submissions >= solved`
+   - `len(solved_list) == solved`
+
+2. **When a field is not available from the API/site:**
+   - Use `None` for `solved_list` (not empty list `[]`)
+   - Use `0` for `submissions`
+   - Add a comment in the test explaining why the field is unavailable
+
+## Key Reference Files
+
+| Purpose | File |
+|---------|------|
+| API-based crawler | `crawlers/codeforces.py` |
+| HTML-scraping crawler | `crawlers/hdu.py` |
+| Test example | `crawlers/codeforces_test.py` |
+| CLI entry point | `ojhunt.py` |
+| Archived crawlers | `archived_crawlers/` |
+
+## Archived Crawlers
+
+Crawlers for dead sites or sites with unfixable issues are moved to `archived_crawlers/`. Do not list individual archived crawlers in documentation - point users to the folder instead.
+
+**Important:**
+- `archived_crawlers/` does NOT have an `__init__.py` - it's for archival only, not a package
+- Tests in `archived_crawlers/` are NOT run by pytest
+- Do not create stub crawlers that just raise exceptions - add them to `archived_crawlers/README.md` instead
