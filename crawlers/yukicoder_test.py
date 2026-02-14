@@ -7,6 +7,8 @@ import pytest_asyncio
 import aiohttp
 from crawlers.yukicoder import query
 
+pytestmark = pytest.mark.network
+
 TEST_USERNAME = "kmjp"
 NOT_EXIST_USERNAME = "nonexistentuser12345abc"
 

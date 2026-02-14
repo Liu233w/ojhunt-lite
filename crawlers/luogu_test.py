@@ -7,6 +7,8 @@ import pytest_asyncio
 import aiohttp
 from crawlers.luogu import query
 
+pytestmark = pytest.mark.network
+
 # Test username from crawlers.test.js
 TEST_USERNAME_ID = "811437"  # user_id
 TEST_USERNAME_HEAVY = "NaCly_Fish"  # user with >1000 submissions

@@ -172,6 +172,12 @@ pytest crawlers/codeforces_test.py
 
 # Run with verbose output
 pytest -v
+
+# Exclude network-dependent tests (for CI environments)
+pytest -m "not network"
+
+# Run only network tests
+pytest -m network
 ```
 
 #### Testing Login-Required Crawlers

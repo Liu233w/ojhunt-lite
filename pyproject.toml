@@ -14,6 +14,9 @@ dependencies = [
 [tool.pytest.ini_options]
 python_files = "*_test.py"
 testpaths = ["crawlers", "cli"]
+markers = [
+    "network: tests that make real HTTP requests",
+]
 
 [dependency-groups]
 dev = [

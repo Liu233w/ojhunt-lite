@@ -7,6 +7,8 @@ import pytest_asyncio
 import aiohttp
 from crawlers.tlx import query
 
+pytestmark = pytest.mark.network
+
 TEST_USERNAME = "tourist"
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 

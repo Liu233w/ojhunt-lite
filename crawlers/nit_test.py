@@ -8,6 +8,8 @@ import aiohttp
 from selectolax.lexbor import LexborHTMLParser
 from crawlers.nit import query, _extract_number_from_cell
 
+pytestmark = pytest.mark.network
+
 # Test username from crawlers.test.js
 TEST_USERNAME = "teito"
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"

@@ -7,6 +7,8 @@ import pytest_asyncio
 import aiohttp
 from crawlers.nbut import query
 
+pytestmark = pytest.mark.network
+
 # Test username from crawlers.test.js
 TEST_USERNAME = "vjudge5"
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"

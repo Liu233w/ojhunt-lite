@@ -7,6 +7,8 @@ import pytest_asyncio
 import aiohttp
 from crawlers.kilonova import query
 
+pytestmark = pytest.mark.network
+
 TEST_USERNAME = "AlexVasiluta"
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
