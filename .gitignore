@@ -261,3 +261,9 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm+iml
+
+# Problem label cache database
+problem_labels.db
+
+# macOS
+.DS_Store
