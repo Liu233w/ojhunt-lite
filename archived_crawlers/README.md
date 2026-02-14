@@ -36,5 +36,6 @@ These crawlers have been archived due to:
 | uvalive | Site dead |
 | zoj | Migrated to pintia.cn, requires authentication |
 | ztrening | Site offline |
+| hackerrank | API returns 403 Forbidden for all requests |
 
 These crawlers are kept for reference and may be restored if the issues are resolved.
