@@ -7,6 +7,8 @@ import pytest_asyncio
 import aiohttp
 from crawlers.nowcoder import query
 
+pytestmark = pytest.mark.network
+
 # Test username from crawlers.test.js - must be user ID (numeric format)
 TEST_USERNAME = "112946"
 NOT_EXIST_USERNAME = "11"  # This ID doesn't exist

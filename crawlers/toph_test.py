@@ -7,6 +7,8 @@ import pytest_asyncio
 import aiohttp
 from crawlers.toph import query
 
+pytestmark = pytest.mark.network
+
 TEST_USERNAME = "BigBag"
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 

@@ -7,6 +7,8 @@ import pytest_asyncio
 import aiohttp
 from crawlers.codewars import query
 
+pytestmark = pytest.mark.network
+
 # Test username from crawlers.test.js - username is case sensitive
 TEST_USERNAME = "Liu233w"
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"

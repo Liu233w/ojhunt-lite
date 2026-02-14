@@ -26,10 +26,13 @@ VJUDGE_USERNAME = os.getenv("VJUDGE_USERNAME")
 VJUDGE_PASSWORD = os.getenv("VJUDGE_PASSWORD")
 
 
-pytestmark = pytest.mark.skipif(
-    not VJUDGE_USERNAME or not VJUDGE_PASSWORD,
-    reason="VJudge credentials not configured. Set VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables.",
-)
+pytestmark = [
+    pytest.mark.network,
+    pytest.mark.skipif(
+        not VJUDGE_USERNAME or not VJUDGE_PASSWORD,
+        reason="VJudge credentials not configured. Set VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables.",
+    ),
+]
 
 
 @pytest.mark.asyncio

@@ -9,6 +9,8 @@ import pytest_asyncio
 import aiohttp
 from crawlers import _utils
 
+pytestmark = pytest.mark.network
+
 
 @pytest_asyncio.fixture
 async def session():
