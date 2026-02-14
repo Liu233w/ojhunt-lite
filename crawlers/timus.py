@@ -158,5 +158,5 @@ async def query(
 
     except ValueError:
         raise
-    except Exception as e:
+    except Exception:
         raise RuntimeError("Error while parsing")

@@ -2,8 +2,6 @@
 Unit tests for cli/output.py
 """
 
-import pytest
-
 from cli.models import Query
 from cli.output import (
     check_duplicate_queries,

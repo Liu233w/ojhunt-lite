@@ -112,5 +112,5 @@ async def query(
             "submissions": submissions,
             "solved_list": solved_list,
         }
-    except Exception as e:
+    except Exception:
         raise RuntimeError("Error while parsing")

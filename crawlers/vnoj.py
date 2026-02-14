@@ -70,18 +70,15 @@ async def query(
             if response.status == 404:
                 raise ValueError("The user does not exist")
             response.raise_for_status()
-            html = await response.text()
     except aiohttp.ClientError as e:
         raise RuntimeError(f"Request failed: {str(e)}")
 
     try:
-        doc = LexborHTMLParser(html)
-
         solved_list = await _fetch_solved_list(session, username)
         solved = len(solved_list)
     except ValueError:
         raise
-    except Exception as e:
+    except Exception:
         raise RuntimeError("Error while parsing")
 
     return {
