@@ -82,7 +82,6 @@ async def query(
         if len(numbers) < 3:
             raise RuntimeError("Error while parsing")
 
-        contests = int(numbers[0].text(strip=True))
         solutions = int(numbers[1].text(strip=True))
         submissions = int(numbers[2].text(strip=True))
 
@@ -93,5 +92,5 @@ async def query(
         }
     except ValueError:
         raise
-    except Exception as e:
+    except Exception:
         raise RuntimeError("Error while parsing")

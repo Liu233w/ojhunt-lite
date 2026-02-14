@@ -69,7 +69,6 @@ async def query(
             if response.status == 404:
                 raise ValueError("The user does not exist")
             response.raise_for_status()
-            user_data = await response.json()
     except aiohttp.ClientError as e:
         raise RuntimeError(f"Request failed: {str(e)}")
 

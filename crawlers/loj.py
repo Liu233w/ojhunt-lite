@@ -139,5 +139,5 @@ async def query(
         raise RuntimeError(f"Request failed: {str(e)}")
     except ValueError:
         raise
-    except Exception as e:
+    except Exception:
         raise RuntimeError("Error while parsing")

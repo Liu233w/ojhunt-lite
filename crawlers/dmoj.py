@@ -26,11 +26,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import aiohttp
+from contextlib import suppress
+import json
 import re
+
+import aiohttp
 from selectolax.lexbor import LexborHTMLParser
 from typing import Dict, List, Union
-import json
 
 __crawler_meta__ = {
     "title": "DMOJ",
@@ -86,12 +88,10 @@ async def query(
             if script_text and "window.results_json" in script_text:
                 json_match = re.search(r"\{.*\}", script_text)
                 if json_match:
-                    try:
+                    with suppress(Exception):
                         json_data = json.loads(json_match.group(0))
                         submissions = json_data.get("total", 0)
                         break
-                    except:
-                        pass
 
         # Get user API data for solved problems
         async with session.get(
@@ -114,5 +114,5 @@ async def query(
 
     except ValueError:
         raise
-    except Exception as e:
+    except Exception:
         raise RuntimeError("Error while parsing")

@@ -11,6 +11,9 @@ dependencies = [
     "selectolax>=0.4.6",
 ]
 
+[tool.ruff]
+exclude = ["archived_crawlers"]
+
 [tool.pytest.ini_options]
 python_files = "*_test.py"
 testpaths = ["crawlers", "cli"]

@@ -26,7 +26,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import re
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
 from typing import Dict, List, Union
@@ -99,5 +98,5 @@ async def query(
         }
     except ValueError:
         raise
-    except Exception as e:
+    except Exception:
         raise RuntimeError("Error while parsing")

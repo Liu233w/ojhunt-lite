@@ -60,7 +60,6 @@ async def query(
 
     username = username.strip()
 
-    user_info = await _fetch_user_info(session, username)
     statistics = await _fetch_user_statistics(session, username)
 
     solved_map = statistics.get("solved_map", {})

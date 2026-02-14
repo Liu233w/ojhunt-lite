@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-import re
 from selectolax.lexbor import LexborHTMLParser
 from typing import Dict, List, Union
 
@@ -129,7 +128,7 @@ async def query(
         raise RuntimeError(f"Request failed: {str(e)}")
     except ValueError:
         raise
-    except Exception as e:
+    except Exception:
         raise RuntimeError("Error while parsing")
 
     return {
