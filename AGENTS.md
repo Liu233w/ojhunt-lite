@@ -19,13 +19,31 @@ When editing multiple crawlers or performing independent tasks, spawn sub-agents
 
 ```bash
 uv sync                                    # Install dependencies
-uv add <package>                           # Add a new dependency
+uv add <package>                           # Add a new dependency (don't specify version, let uv resolve)
 pytest                                     # Run all tests
 pytest crawlers/codeforces_test.py         # Run single test file
 pytest crawlers/codeforces_test.py::test_valid_user  # Run single test
 uv run ojhunt.py --crawler codeforces --username tourist  # Run CLI
 uv run ruff check .                        # Run linter (required after edits)
 ```
+
+To test web services, ask user to run the following code on their terminal to spin up the service:
+```bash
+VJUDGE_USERNAME= VJUDGE_PASSWORD= uv run python -m web.run 2>&1 > logs/web.log
+```
+
+The user needs to fill the VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables with their credentials before running the service.
+
+For you to test the frontend, use playwright skills instructed in https://github.com/microsoft/playwright-cli
+
+## Dependency Management
+
+- **Never specify version numbers** when adding dependencies. Use `uv add <package>` and let uv resolve the version.
+- This applies to all dependencies including FastAPI, uvicorn, etc.
+
+## Updating AGENTS.md
+
+When the user provides guidance about practices or conventions during a conversation (e.g., "use uv add without version numbers"), add those rules to this file automatically.
 
 ## Code Style
 
@@ -51,6 +69,8 @@ Use `selectolax.lexbor.LexborHTMLParser`, NOT BeautifulSoup.
 
 ### License Header
 BSD-2 Clause license header (copy from existing crawler, use current year for new files).
+- **Only add license headers to files in `crawlers/` folder** - users can copy individual crawler files.
+- **Do NOT add license headers** to CLI, web, or other internal code.
 
 ## Error Handling
 

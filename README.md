@@ -139,6 +139,22 @@ async def main():
 asyncio.run(main())
 ```
 
+### Web Interface
+
+Start the web server:
+
+```bash
+uv run python -m web.run
+```
+
+The web interface will be available at http://127.0.0.1:8080
+
+For VJudge support, set environment variables:
+
+```bash
+VJUDGE_USERNAME=user VJUDGE_PASSWORD=pass uv run python -m web.run
+```
+
 ## Supported Platforms
 
 See [crawlers module](./crawlers)
