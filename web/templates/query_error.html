@@ -1,0 +1,12 @@
+<tr id="{{ row_id }}" class="result-row error">
+    <td>{{ title }}</td>
+    <td>{{ username }}</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td class="status error">ERROR: {{ error }}</td>
+    <td>
+        <button class="retry-btn" onclick="retryQuery('{{ crawler_name }}', '{{ username }}', '{{ row_id }}')">
+            Retry
+        </button>
+    </td>
+</tr>
