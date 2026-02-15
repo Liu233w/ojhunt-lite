@@ -60,7 +60,30 @@ async def query(
 
     username = username.strip()
 
-    statistics = await _fetch_user_statistics(session, username)
+    try:
+        async with session.get(
+            f"{API_BASE_URL}/users/{username}",
+            timeout=aiohttp.ClientTimeout(total=30),
+        ) as response:
+            if response.status != 200:
+                text = await response.text()
+                if "invalid user name" in text.lower():
+                    raise ValueError("The user does not exist")
+                raise RuntimeError(f"API error: {response.status} {text}")
+    except aiohttp.ClientError as e:
+        raise RuntimeError(f"Request failed: {str(e)}")
+
+    try:
+        async with session.get(
+            f"{API_BASE_URL}/users/{username}/statistics",
+            timeout=aiohttp.ClientTimeout(total=30),
+        ) as response:
+            if response.status != 200:
+                text = await response.text()
+                raise RuntimeError(f"API error: {response.status} {text}")
+            statistics = await response.json()
+    except aiohttp.ClientError as e:
+        raise RuntimeError(f"Request failed: {str(e)}")
 
     solved_map = statistics.get("solved_map", {})
     solved_list = [
@@ -72,71 +95,3 @@ async def query(
         "submissions": 0,
         "solved_list": sorted(solved_list),
     }
-
-
-async def _fetch_user_info(session: aiohttp.ClientSession, username: str) -> Dict:
-    """
-    Fetch user info from Yosupo Judge API.
-
-    Args:
-        session: aiohttp ClientSession
-        username: Yosupo Judge username
-
-    Returns:
-        User info dictionary
-
-    Raises:
-        ValueError: If user doesn't exist
-        RuntimeError: If network request fails
-    """
-    url = f"{API_BASE_URL}/users/{username}"
-
-    try:
-        async with session.get(
-            url, timeout=aiohttp.ClientTimeout(total=30)
-        ) as response:
-            text = await response.text()
-
-            if response.status == 200:
-                import json
-
-                return json.loads(text)
-            elif "invalid user name" in text.lower():
-                raise ValueError("The user does not exist")
-            else:
-                raise RuntimeError(f"API error: {response.status} {text}")
-
-    except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
-
-
-async def _fetch_user_statistics(session: aiohttp.ClientSession, username: str) -> Dict:
-    """
-    Fetch user statistics from Yosupo Judge API.
-
-    Args:
-        session: aiohttp ClientSession
-        username: Yosupo Judge username
-
-    Returns:
-        Statistics dictionary with solved_map
-
-    Raises:
-        RuntimeError: If network request fails
-    """
-    url = f"{API_BASE_URL}/users/{username}/statistics"
-
-    try:
-        async with session.get(
-            url, timeout=aiohttp.ClientTimeout(total=30)
-        ) as response:
-            if response.status != 200:
-                text = await response.text()
-                raise RuntimeError(f"API error: {response.status} {text}")
-
-            import json
-
-            return json.loads(await response.text())
-
-    except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
