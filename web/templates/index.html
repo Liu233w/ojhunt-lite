@@ -133,6 +133,40 @@
         let crawlers = {};
         let queryIdCounter = 0;
         let pendingResults = {};
+        const STORAGE_KEY = 'ojhunt-queries';
+
+        function saveQueries() {
+            const username = document.getElementById('username-input').value.trim();
+            const data = {
+                username: username,
+                queries: queries.map(q => ({ crawler: q.crawler, username: q.username }))
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+        
+        function loadSavedQueries() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+            
+            try {
+                const data = JSON.parse(saved);
+                if (data.username) {
+                    document.getElementById('username-input').value = data.username;
+                }
+                if (data.queries && Array.isArray(data.queries)) {
+                    data.queries.forEach(q => {
+                        if (q.crawler && q.username && crawlers[q.crawler]) {
+                            queries.push({
+                                id: queryIdCounter++,
+                                crawler: q.crawler,
+                                username: q.username
+                            });
+                        }
+                    });
+                    renderQueryList();
+                }
+            } catch (e) {}
+        }
         
         async function loadCrawlers() {
             const response = await fetch('/api/crawlers/');
@@ -147,6 +181,8 @@
                 option.textContent = meta.title + (meta.description ? ` - ${meta.description}` : '');
                 select.appendChild(option);
             }
+            
+            loadSavedQueries();
         }
         
         function addQuery() {
@@ -245,6 +281,8 @@
                 alert('Please add at least one query');
                 return;
             }
+            
+            saveQueries();
             
             const tbody = document.getElementById('results-body');
             tbody.innerHTML = '';
