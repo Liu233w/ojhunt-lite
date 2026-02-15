@@ -5,11 +5,15 @@
     <td>-</td>
     <td class="status pending">Pending</td>
     <td>
-        <button class="query-btn" onclick="startQuery('{{ row_id }}', '{{ crawler_name }}', '{{ username }}')">
-            Query
-        </button>
-        <button class="remove-btn" onclick="removeRow('{{ row_id }}')">
-            Remove
-        </button>
+        <span class="pending-controls">
+            <button class="query-btn" hx-get="/api/query/{{ crawler_name }}/{{ username }}"
+                    hx-target="closest tr" hx-swap="outerHTML">
+                Query
+            </button>
+            <button class="remove-btn" onclick="removeRow('{{ row_id }}')">
+                Remove
+            </button>
+        </span>
+        {% include "query_loading_controls.html" %}
     </td>
 </tr>

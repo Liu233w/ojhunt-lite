@@ -6,7 +6,7 @@
     <td class="status">OK ({{ duration | round(2) }}s)</td>
     <td>
         <button class="retry-btn" hx-get="/api/query/{{ crawler_name }}/{{ username }}"
-                hx-target="#{{ row_id }}" hx-swap="outerHTML">
+                hx-target="closest tr" hx-swap="outerHTML">
             Retry
         </button>
     </td>

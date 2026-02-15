@@ -72,6 +72,12 @@
 
         .htmx-request .query-btn { opacity: 0.5; }
         .htmx-request .retry-btn { opacity: 0.5; }
+        
+        .loading-controls { display: none; }
+        tr:has(.htmx-request) .pending-controls { display: none; }
+        tr:has(.htmx-request) .loading-controls { display: inline; }
+        tr:has(.htmx-request) { background: #fffde7; }
+        tr:has(.htmx-request) td:nth-child(5) .status.pending { display: none; }
     </style>
 </head>
 <body>
@@ -164,32 +170,28 @@
             }
         }
 
-        function startQuery(rowId, crawlerName, username) {
-            const row = document.getElementById(rowId);
-            if (!row) return;
-            
-            const titleCell = row.querySelector('td:first-child');
-            const title = titleCell ? titleCell.textContent : crawlerName;
-            
-            row.className = 'result-row loading';
-            row.innerHTML = `
-                <td>${title}</td>
-                <td>${username}</td>
-                <td>-</td>
-                <td>-</td>
-                <td class="status loading">Loading...</td>
-                <td>
-                    <button class="cancel-btn" onclick="cancelQuery('${rowId}')">
-                        Cancel
-                    </button>
-                </td>
-            `;
-            
-            htmx.ajax('GET', `/api/query/${crawlerName}/${username}`, {
-                target: `#${rowId}`,
-                swap: 'outerHTML',
-                source: row
-            });
+        function cancelQuery(btn) {
+            const row = btn.closest('tr');
+            if (row) {
+                htmx.trigger(row.querySelector('.query-btn'), 'htmx:abort');
+                const titleCell = row.querySelector('td:first-child');
+                const title = titleCell ? titleCell.textContent : row.dataset.crawler;
+                row.className = 'result-row error';
+                row.innerHTML = `
+                    <td>${title}</td>
+                    <td>${row.dataset.username}</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td class="status error">Canceled</td>
+                    <td>
+                        <button class="retry-btn" hx-get="/api/query/${row.dataset.crawler}/${row.dataset.username}"
+                                hx-target="closest tr" hx-swap="outerHTML">
+                            Retry
+                        </button>
+                    </td>
+                `;
+                htmx.process(row);
+            }
         }
 
         function checkEmptyResults() {
@@ -202,28 +204,6 @@
                     </tr>`;
             } else if (rows.length > 0 && emptyRow) {
                 emptyRow.remove();
-            }
-        }
-
-        function cancelQuery(rowId) {
-            const row = document.getElementById(rowId);
-            if (row) {
-                htmx.trigger(row, 'htmx:abort');
-                const titleCell = row.querySelector('td:first-child');
-                const title = titleCell ? titleCell.textContent : row.dataset.crawler;
-                row.className = 'result-row error';
-                row.innerHTML = `
-                    <td>${title}</td>
-                    <td>${row.dataset.username}</td>
-                    <td>N/A</td>
-                    <td>N/A</td>
-                    <td class="status error">Canceled</td>
-                    <td>
-                        <button class="retry-btn" onclick="startQuery('${rowId}', '${row.dataset.crawler}', '${row.dataset.username}')">
-                            Retry
-                        </button>
-                    </td>
-                `;
             }
         }
 
