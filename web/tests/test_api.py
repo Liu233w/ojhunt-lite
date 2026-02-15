@@ -1,12 +1,12 @@
 import pytest
-from playwright.sync_api import APIRequestContext
+from playwright.sync_api import BrowserContext
 
 BASE_URL = "http://localhost:8080"
 
 
 @pytest.mark.playwright
-def test_api_query_returns_json(api_request_context: APIRequestContext):
-    response = api_request_context.get("/api/query/codeforces/tourist")
+def test_api_query_returns_json(context: BrowserContext):
+    response = context.request.get(f"{BASE_URL}/api/query/codeforces/tourist")
     assert response.status == 200
     data = response.json()
     assert "error" in data
@@ -17,8 +17,10 @@ def test_api_query_returns_json(api_request_context: APIRequestContext):
 
 
 @pytest.mark.playwright
-def test_api_query_user_not_found(api_request_context: APIRequestContext):
-    response = api_request_context.get("/api/query/codeforces/nonexistentuser12345xyz")
+def test_api_query_user_not_found(context: BrowserContext):
+    response = context.request.get(
+        f"{BASE_URL}/api/query/codeforces/nonexistentuser12345xyz"
+    )
     assert response.status == 400
     data = response.json()
     assert data["error"] is True
@@ -26,8 +28,8 @@ def test_api_query_user_not_found(api_request_context: APIRequestContext):
 
 
 @pytest.mark.playwright
-def test_api_query_unknown_crawler(api_request_context: APIRequestContext):
-    response = api_request_context.get("/api/query/unknown_crawler/tourist")
+def test_api_query_unknown_crawler(context: BrowserContext):
+    response = context.request.get(f"{BASE_URL}/api/query/unknown_crawler/tourist")
     assert response.status == 400
     data = response.json()
     assert data["error"] is True
@@ -35,9 +37,9 @@ def test_api_query_unknown_crawler(api_request_context: APIRequestContext):
 
 
 @pytest.mark.playwright
-def test_api_query_with_htmx_returns_html(api_request_context: APIRequestContext):
-    response = api_request_context.get(
-        "/api/query/codeforces/tourist", headers={"HX-Request": "true"}
+def test_api_query_with_htmx_returns_html(context: BrowserContext):
+    response = context.request.get(
+        f"{BASE_URL}/api/query/codeforces/tourist", headers={"HX-Request": "true"}
     )
     assert response.status == 200
     html = response.text()
@@ -46,8 +48,8 @@ def test_api_query_with_htmx_returns_html(api_request_context: APIRequestContext
 
 
 @pytest.mark.playwright
-def test_api_row_endpoint(api_request_context: APIRequestContext):
-    response = api_request_context.get("/api/row?q=tourist@codeforces")
+def test_api_row_endpoint(context: BrowserContext):
+    response = context.request.get(f"{BASE_URL}/api/row?q=tourist@codeforces")
     assert response.status == 200
     html = response.text()
     assert "<tr" in html
@@ -56,16 +58,16 @@ def test_api_row_endpoint(api_request_context: APIRequestContext):
 
 
 @pytest.mark.playwright
-def test_api_row_all_crawlers(api_request_context: APIRequestContext):
-    response = api_request_context.get("/api/row?q=tourist@*")
+def test_api_row_all_crawlers(context: BrowserContext):
+    response = context.request.get(f"{BASE_URL}/api/row?q=tourist@*")
     assert response.status == 200
     html = response.text()
     assert 'data-username="tourist"' in html
 
 
 @pytest.mark.playwright
-def test_api_crawlers_list(api_request_context: APIRequestContext):
-    response = api_request_context.get("/api/crawlers/")
+def test_api_crawlers_list(context: BrowserContext):
+    response = context.request.get(f"{BASE_URL}/api/crawlers/")
     assert response.status == 200
     data = response.json()
     assert data["error"] is False

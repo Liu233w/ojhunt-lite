@@ -19,9 +19,13 @@ def test_crawlers_persist_on_reload(page: Page):
 
 
 @pytest.mark.playwright
-def test_username_persists_on_reload(page: Page):
+def test_username_persists_when_crawler_added(page: Page):
     page.goto(BASE_URL)
     page.fill("#username-input", "testuser")
+    page.select_option("#crawler-select", "codeforces")
+    page.click('button:has-text("Add")')
+    row = page.locator('tr[data-crawler="codeforces"][data-username="testuser"]')
+    expect(row).to_be_visible(timeout=5000)
     page.reload()
     expect(page.locator("#username-input")).to_have_value("testuser")
 

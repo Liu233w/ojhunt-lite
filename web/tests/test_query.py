@@ -13,9 +13,7 @@ def test_query_success(page: Page):
     row = page.locator('tr[data-crawler="codeforces"][data-username="tourist"]')
     expect(row).to_be_visible(timeout=5000)
     row.locator(".query-btn").click()
-    expect(row.locator(".status.success, .status:has-text('Solved')")).to_be_visible(
-        timeout=30000
-    )
+    expect(row).to_have_class("result-row success", timeout=30000)
     expect(row.locator("td:nth-child(3)")).not_to_have_text("N/A", timeout=30000)
 
 
@@ -30,7 +28,7 @@ def test_query_user_not_found(page: Page):
     )
     expect(row).to_be_visible(timeout=5000)
     row.locator(".query-btn").click()
-    expect(row.locator(".status.error")).to_be_visible(timeout=30000)
+    expect(row).to_have_class("result-row error", timeout=30000)
 
 
 @pytest.mark.playwright
@@ -39,14 +37,16 @@ def test_query_multiple(page: Page):
     page.select_option("#crawler-select", "codeforces")
     page.fill("#username-input", "tourist")
     page.click('button:has-text("Add")')
+    row1 = page.locator('tr[data-crawler="codeforces"][data-username="tourist"]')
+    expect(row1).to_be_visible(timeout=5000)
     page.select_option("#crawler-select", "atcoder")
     page.fill("#username-input", "tourist")
     page.click('button:has-text("Add")')
-    page.click('button:has-text("Query All")')
-    row1 = page.locator('tr[data-crawler="codeforces"][data-username="tourist"]')
     row2 = page.locator('tr[data-crawler="atcoder"][data-username="tourist"]')
-    expect(row1.locator(".status.success, .status.error")).to_be_visible(timeout=30000)
-    expect(row2.locator(".status.success, .status.error")).to_be_visible(timeout=30000)
+    expect(row2).to_be_visible(timeout=5000)
+    page.click('button:has-text("Query All")')
+    expect(row1).to_have_class("result-row success", timeout=30000)
+    expect(row2).to_have_class("result-row success", timeout=30000)
 
 
 @pytest.mark.playwright
@@ -60,7 +60,7 @@ def test_retry_after_error(page: Page):
     )
     expect(row).to_be_visible(timeout=5000)
     row.locator(".query-btn").click()
-    expect(row.locator(".status.error")).to_be_visible(timeout=30000)
+    expect(row).to_have_class("result-row error", timeout=30000)
     expect(row.locator(".retry-btn")).to_be_visible()
     row.locator(".retry-btn").click()
-    expect(row.locator(".status.error, .status.success")).to_be_visible(timeout=30000)
+    expect(row).to_have_class("result-row error", timeout=30000)

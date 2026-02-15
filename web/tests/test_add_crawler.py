@@ -29,12 +29,12 @@ def test_add_multiple_crawlers(page: Page):
     page.select_option("#crawler-select", "codeforces")
     page.fill("#username-input", "tourist")
     page.click('button:has-text("Add")')
+    row1 = page.locator('tr[data-crawler="codeforces"][data-username="tourist"]')
+    expect(row1).to_be_visible(timeout=5000)
     page.select_option("#crawler-select", "atcoder")
     page.fill("#username-input", "tourist")
     page.click('button:has-text("Add")')
-    row1 = page.locator('tr[data-crawler="codeforces"][data-username="tourist"]')
     row2 = page.locator('tr[data-crawler="atcoder"][data-username="tourist"]')
-    expect(row1).to_be_visible(timeout=5000)
     expect(row2).to_be_visible(timeout=5000)
 
 
@@ -56,14 +56,13 @@ def test_add_duplicate_crawler(page: Page):
     page.select_option("#crawler-select", "codeforces")
     page.fill("#username-input", "tourist")
     page.click('button:has-text("Add")')
+    row = page.locator('tr[data-crawler="codeforces"][data-username="tourist"]')
+    expect(row).to_be_visible(timeout=5000)
     page.select_option("#crawler-select", "codeforces")
     page.fill("#username-input", "tourist")
     page.click('button:has-text("Add")')
     rows = page.locator('tr[data-crawler="codeforces"][data-username="tourist"]')
-    count = rows.count()
-    assert count == 2, (
-        "Should allow adding duplicate entries (users can remove manually)"
-    )
+    expect(rows).to_have_count(2, timeout=5000)
 
 
 @pytest.mark.playwright
