@@ -14,6 +14,7 @@ from crawlers.vjudge import query
 
 TEST_USERNAME = "leoloveacm"
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
+USERNAME_WITHOUT_SUBMISSIONS = "nwpuacm"
 
 
 @pytest_asyncio.fixture
@@ -43,8 +44,8 @@ async def test_user_not_exist(session):
         await query(
             session,
             NOT_EXIST_USERNAME,
-            password=VJUDGE_PASSWORD,
             login_user=VJUDGE_USERNAME,
+            login_password=VJUDGE_PASSWORD,
         )
 
 
@@ -56,8 +57,8 @@ async def test_username_with_space(session):
         await query(
             session,
             " " + NOT_EXIST_USERNAME,
-            password=VJUDGE_PASSWORD,
             login_user=VJUDGE_USERNAME,
+            login_password=VJUDGE_PASSWORD,
         )
 
 
@@ -119,3 +120,19 @@ async def test_missing_credentials(session):
     """Test that missing credentials raises ValueError"""
     with pytest.raises(ValueError, match="requires login credentials"):
         await query(session, TEST_USERNAME)
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(50)
+async def test_user_with_no_submissions(session):
+    """Test user with no submissions returns zero stats"""
+    result = await query(
+        session,
+        USERNAME_WITHOUT_SUBMISSIONS,
+        login_user=VJUDGE_USERNAME,
+        login_password=VJUDGE_PASSWORD,
+    )
+
+    assert result["solved"] == 0
+    assert result["submissions"] == 0
+    assert result["solved_list"] == []
