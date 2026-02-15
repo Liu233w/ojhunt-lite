@@ -86,6 +86,25 @@ BSD-2 Clause license header (copy from existing crawler, use current year for ne
 - Standard test cases: `test_user_not_exist`, `test_username_with_space`, `test_valid_user`
 - Use real test usernames from existing tests (e.g., `leoloveacm`, `vjudge5`)
 
+### Playwright Tests
+
+Playwright tests are located in `web/tests/` and test the web frontend:
+
+```bash
+# Install Playwright browsers (one-time setup)
+uv run playwright install chromium
+
+# Run Playwright tests (requires running web server)
+uv run pytest -m playwright web/tests/
+
+# Run all tests except Playwright
+uv run pytest -m "not playwright"
+```
+
+**Prerequisites:**
+- Start the web server before running Playwright tests: `uv run fastapi dev web/app.py --port 8080`
+- Tests use `tourist` as the test user for Codeforces queries
+
 ### Test Assertions
 
 Each test must assert all three fields: `solved`, `submissions`, `solved_list`:
