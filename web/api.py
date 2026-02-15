@@ -7,13 +7,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import aiohttp
 from fastapi import APIRouter, Path as PathParam, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import BaseModel, Field
 
 from crawlers import discover_crawlers
+from web.http_client import HttpClientDep
 
 VJUDGE_USERNAME = os.environ.get("VJUDGE_USERNAME")
 VJUDGE_PASSWORD = os.environ.get("VJUDGE_PASSWORD")
@@ -118,9 +118,10 @@ async def list_crawlers() -> Dict[str, Any]:
     description="Query a specific crawler for a user's solved problems and submission count.",
 )
 async def query_crawler(
+    request: Request,
+    client: HttpClientDep,
     crawler_name: str = PathParam(..., description="Name of the crawler to use"),
     username: str = PathParam(..., description="Username to query"),
-    request: Request = None,  # type: ignore[assignment]
     row_id: Optional[str] = Query(None, description="Row ID for HTMX responses"),
 ) -> Response:
     crawlers = get_crawlers()
@@ -140,8 +141,6 @@ async def query_crawler(
     query_func = crawler_info["query"]
     meta = crawler_info["meta"]
     title = meta.get("title", crawler_name)
-
-    session: aiohttp.ClientSession = request.app.state.web.session
 
     try:
         start_time = datetime.now()
@@ -164,7 +163,7 @@ async def query_crawler(
                     content={"error": True, "message": error_msg}, status_code=400
                 )
 
-        result = await query_func(session, username, **kwargs)
+        result = await query_func(client, username, **kwargs)
 
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
