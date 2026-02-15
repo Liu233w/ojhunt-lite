@@ -116,3 +116,14 @@ Crawlers for dead sites or sites with unfixable issues are moved to `archived_cr
 - `archived_crawlers/` does NOT have an `__init__.py` - it's for archival only, not a package
 - Tests in `archived_crawlers/` are NOT run by pytest
 - Do not create stub crawlers that just raise exceptions - add them to `archived_crawlers/README.md` instead
+
+## Environment Variables
+
+The web application accepts the following environment variables:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VJUDGE_USERNAME` | For VJudge | Username for VJudge authentication |
+| `VJUDGE_PASSWORD` | For VJudge | Password for VJudge authentication |
+| `BUILD_TIME` | No | Build timestamp (Unix epoch or ISO format), shown on About page |
+| `GIT_COMMIT_SHA` | No | Git commit hash, used to generate source code link on About page |
