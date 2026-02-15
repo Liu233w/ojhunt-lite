@@ -155,6 +155,23 @@ For VJudge support, set environment variables:
 VJUDGE_USERNAME=user VJUDGE_PASSWORD=pass uv run python -m web.run
 ```
 
+### API Documentation
+
+Interactive API documentation is available when the web server is running:
+
+- **Swagger UI**: http://127.0.0.1:8080/docs
+- **ReDoc**: http://127.0.0.1:8080/redoc
+
+**Example API requests:**
+
+```bash
+# List all available crawlers
+curl http://127.0.0.1:8080/api/crawlers/
+
+# Query a user on a specific platform
+curl http://127.0.0.1:8080/api/crawlers/codeforces/tourist
+```
+
 ## Supported Platforms
 
 See [crawlers module](./crawlers)

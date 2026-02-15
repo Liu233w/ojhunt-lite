@@ -11,8 +11,37 @@ import aiohttp
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from pydantic import BaseModel
 
 from crawlers import discover_crawlers
+
+
+class CrawlerInfo(BaseModel):
+    title: str
+    description: str
+    url: str
+
+
+class CrawlersResponse(BaseModel):
+    error: bool
+    data: Dict[str, CrawlerInfo]
+
+
+class QueryData(BaseModel):
+    solved: int
+    submissions: int
+    solvedList: Optional[List[str]] = None
+
+
+class QueryResponse(BaseModel):
+    error: bool
+    data: QueryData
+
+
+class ErrorResponse(BaseModel):
+    error: bool
+    message: str
+
 
 VJUDGE_USERNAME = os.environ.get("VJUDGE_USERNAME")
 VJUDGE_PASSWORD = os.environ.get("VJUDGE_PASSWORD")
@@ -41,23 +70,42 @@ async def index() -> str:
     return template.render()
 
 
-@router.get("/api/crawlers/")
-async def list_crawlers() -> Dict[str, Any]:
+@router.get(
+    "/api/crawlers/",
+    response_model=CrawlersResponse,
+    summary="List all available crawlers",
+    description="Returns a list of all supported Online Judge platforms with their metadata.",
+)
+async def list_crawlers() -> CrawlersResponse:
     crawlers = get_crawlers()
     data = {}
     for name, info in crawlers.items():
         meta = info["meta"]
-        data[name] = {
-            "title": meta.get("title", name),
-            "description": meta.get("description", ""),
-            "url": meta.get("url", ""),
-        }
-    return {"error": False, "data": data}
+        data[name] = CrawlerInfo(
+            title=meta.get("title", name),
+            description=meta.get("description", ""),
+            url=meta.get("url", ""),
+        )
+    return CrawlersResponse(error=False, data=data)
 
 
-@router.get("/api/crawlers/{crawler_name}/{username}")
+@router.get(
+    "/api/crawlers/{crawler_name}/{username}",
+    response_model=QueryResponse,
+    responses={
+        400: {
+            "model": ErrorResponse,
+            "description": "Crawler not found or query error",
+        },
+    },
+    summary="Query user statistics from a crawler",
+    description="Returns solved problems count, total submissions, and solved problem list for a user on the specified platform.",
+)
 async def query_crawler(
-    crawler_name: str, username: str, request: Request, row_id: Optional[str] = None
+    crawler_name: str,
+    username: str,
+    request: Request,
+    row_id: Optional[str] = None,
 ) -> Response:
     crawlers = get_crawlers()
 
@@ -68,7 +116,8 @@ async def query_crawler(
                 content=_render_error_row(crawler_name, username, error_msg, row_id)
             )
         return JSONResponse(
-            content={"error": True, "message": error_msg}, status_code=400
+            content=ErrorResponse(error=True, message=error_msg).model_dump(),
+            status_code=400,
         )
 
     crawler_info = crawlers[crawler_name]
@@ -112,14 +161,14 @@ async def query_crawler(
             )
 
         return JSONResponse(
-            content={
-                "error": False,
-                "data": {
-                    "solved": result["solved"],
-                    "submissions": result["submissions"],
-                    "solvedList": result.get("solved_list"),
-                },
-            }
+            content=QueryResponse(
+                error=False,
+                data=QueryData(
+                    solved=result["solved"],
+                    submissions=result["submissions"],
+                    solvedList=result.get("solved_list"),
+                ),
+            ).model_dump()
         )
 
     except ValueError as e:
@@ -129,7 +178,8 @@ async def query_crawler(
                 content=_render_error_row(crawler_name, username, error_msg, row_id)
             )
         return JSONResponse(
-            content={"error": True, "message": error_msg}, status_code=400
+            content=ErrorResponse(error=True, message=error_msg).model_dump(),
+            status_code=400,
         )
 
     except Exception as e:
@@ -139,7 +189,8 @@ async def query_crawler(
                 content=_render_error_row(crawler_name, username, error_msg, row_id)
             )
         return JSONResponse(
-            content={"error": True, "message": error_msg}, status_code=400
+            content=ErrorResponse(error=True, message=error_msg).model_dump(),
+            status_code=400,
         )
 
 
