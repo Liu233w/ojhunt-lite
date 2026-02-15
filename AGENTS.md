@@ -24,12 +24,14 @@ pytest                                     # Run all tests
 pytest crawlers/codeforces_test.py         # Run single test file
 pytest crawlers/codeforces_test.py::test_valid_user  # Run single test
 uv run ojhunt.py --crawler codeforces --username tourist  # Run CLI
+uv run fastapi dev web/app.py --port 8080 # Run web dev server
+uv run fastapi run web/app.py --port 8080 # Run web prod server
 uv run ruff check .                        # Run linter (required after edits)
 ```
 
 To test web services, ask user to run the following code on their terminal to spin up the service:
 ```bash
-VJUDGE_USERNAME= VJUDGE_PASSWORD= uv run python -m web.run 2>&1 > logs/web.log
+VJUDGE_USERNAME= VJUDGE_PASSWORD= uv run fastapi dev web/app.py 2>&1 > logs/web.log
 ```
 
 The user needs to fill the VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables with their credentials before running the service.
