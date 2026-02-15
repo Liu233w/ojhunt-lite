@@ -423,6 +423,9 @@
         }
         
         document.addEventListener('DOMContentLoaded', loadCrawlers);
+        document.getElementById('username-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addQuery();
+        });
     </script>
     
     <footer class="footer">
