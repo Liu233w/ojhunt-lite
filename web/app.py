@@ -8,24 +8,18 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
 
-import aiohttp
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from web.http_client import close_http_client, init_http_client
 from web.api import router
-
-
-class AppState:
-    session: aiohttp.ClientSession
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    state = AppState()
-    state.session = aiohttp.ClientSession()
-    app.state.web = state
+    init_http_client()
     yield
-    await state.session.close()
+    await close_http_client()
 
 
 app = FastAPI(
