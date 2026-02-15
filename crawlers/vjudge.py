@@ -112,7 +112,7 @@ async def _try_login(
             },
             headers={
                 "Content-Type": "application/x-www-form-urlencoded",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
             },
             timeout=aiohttp.ClientTimeout(total=30),
         ) as response:
@@ -204,7 +204,7 @@ async def query(
                 if data.get("error") and "does not exist" in data.get("error", ""):
                     raise ValueError("The user does not exist")
 
-                if not data.get("data"):
+                if "data" not in data:
                     raise RuntimeError(f"Cannot process vjudge data, body: {data}")
 
                 problem_array = data.get("data", [])
