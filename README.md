@@ -347,6 +347,9 @@ BSD 2-Clause License - See individual crawler files for full license text.
 
 ## Credits
 
-This is a simplified Python rewrite of [acm-statistics](https://github.com/liu233w/acm-statistics).
+This is a lightweight Python rewrite of [OJHunt (acm-statistics)](https://github.com/Liu233w/acm-statistics), 
+originally inspired by [西北工业大学ACM查询系统 (npuacm.info)](https://kidozh.com/en/) by Jiduo Zhang.
+
+OJHunt Lite provides both CLI and web interfaces for querying Online Judge statistics.
 
 Special thanks to test account providers: @leoloveacm, @2013300262

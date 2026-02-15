@@ -15,6 +15,12 @@ from pydantic import BaseModel
 
 from crawlers import discover_crawlers
 
+VJUDGE_USERNAME = os.environ.get("VJUDGE_USERNAME")
+VJUDGE_PASSWORD = os.environ.get("VJUDGE_PASSWORD")
+
+BUILD_TIME = os.environ.get("BUILD_TIME")
+GIT_COMMIT_SHA = os.environ.get("GIT_COMMIT_SHA")
+
 
 class CrawlerInfo(BaseModel):
     title: str
@@ -43,9 +49,6 @@ class ErrorResponse(BaseModel):
     message: str
 
 
-VJUDGE_USERNAME = os.environ.get("VJUDGE_USERNAME")
-VJUDGE_PASSWORD = os.environ.get("VJUDGE_PASSWORD")
-
 router = APIRouter()
 
 CRAWLERS_CACHE: Dict[str, Dict[str, Any]] = {}
@@ -68,6 +71,22 @@ def get_crawlers() -> Dict[str, Dict[str, Any]]:
 async def index() -> str:
     template = jinja_env.get_template("index.html")
     return template.render()
+
+
+@router.get("/about", response_class=HTMLResponse)
+async def about() -> str:
+    template = jinja_env.get_template("about.html")
+    build_time_str = None
+    if BUILD_TIME:
+        try:
+            ts = int(BUILD_TIME)
+            build_time_str = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            build_time_str = BUILD_TIME
+    return template.render(
+        build_time=build_time_str,
+        git_commit_sha=GIT_COMMIT_SHA,
+    )
 
 
 @router.get(
