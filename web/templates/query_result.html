@@ -1,11 +1,12 @@
-<tr id="{{ row_id }}" class="result-row success" data-solved="{{ solved }}" data-submissions="{{ submissions }}" data-crawler="{{ crawler_name }}">
+<tr id="{{ row_id }}" class="result-row success" data-solved="{{ solved }}" data-submissions="{{ submissions }}" data-crawler="{{ crawler_name }}" data-username="{{ username }}">
     <td>{{ title }}</td>
     <td>{{ username }}</td>
     <td class="solved-count"><a href="#" onclick="document.getElementById('dialog-{{ row_id }}').showModal(); return false;">{{ solved }}</a></td>
     <td>{{ submissions }}</td>
     <td class="status">OK ({{ duration | round(2) }}s)</td>
     <td>
-        <button class="retry-btn" onclick="retryQuery('{{ crawler_name }}', '{{ username }}', '{{ row_id }}')">
+        <button class="retry-btn" hx-get="/api/query/{{ crawler_name }}/{{ username }}"
+                hx-target="#{{ row_id }}" hx-swap="outerHTML">
             Retry
         </button>
     </td>

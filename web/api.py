@@ -3,6 +3,7 @@ API routes for OJHunt Lite web application.
 """
 
 import os
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -71,8 +72,10 @@ def get_crawlers() -> Dict[str, Dict[str, Any]]:
 
 @router.get("/", response_class=HTMLResponse)
 async def index() -> str:
+    crawlers = get_crawlers()
+    sorted_crawlers = sorted(crawlers.items(), key=lambda x: x[0])
     template = jinja_env.get_template("index.html")
-    return template.render()
+    return template.render(crawlers=sorted_crawlers)
 
 
 @router.get("/about", response_class=HTMLResponse)
@@ -111,8 +114,45 @@ async def list_crawlers() -> Dict[str, Any]:
 
 
 @router.get(
-    "/api/crawlers/{crawler_name}/{username}",
-    response_model=QueryResponse,
+    "/api/row",
+    response_class=HTMLResponse,
+    summary="Get pending result row(s)",
+    description="Returns pending result row(s) for the specified crawler/username combinations.",
+)
+async def get_row(
+    q: List[str] = Query(default=[]),
+    username: Optional[str] = Query(None),
+    crawler: Optional[str] = Query(None),
+) -> str:
+    crawlers = get_crawlers()
+    rows = []
+
+    if q:
+        for item in q:
+            parts = item.split("@")
+            if len(parts) != 2:
+                continue
+            uname, cname = parts
+            if cname == "*":
+                for c_name, c_info in crawlers.items():
+                    rows.append(_render_pending_row(c_name, uname, c_info["meta"]))
+            elif cname in crawlers:
+                rows.append(_render_pending_row(cname, uname, crawlers[cname]["meta"]))
+    elif username and crawler:
+        if crawler == "*":
+            for c_name, c_info in crawlers.items():
+                rows.append(_render_pending_row(c_name, username, c_info["meta"]))
+        elif crawler in crawlers:
+            rows.append(
+                _render_pending_row(crawler, username, crawlers[crawler]["meta"])
+            )
+
+    return "".join(rows)
+
+
+@router.get(
+    "/api/query/{crawler_name}/{username}",
+    response_class=HTMLResponse,
     responses={400: {"model": ErrorResponse}},
     summary="Query a crawler for user statistics",
     description="Query a specific crawler for a user's solved problems and submission count.",
@@ -122,7 +162,6 @@ async def query_crawler(
     client: HttpClientDep,
     crawler_name: str = PathParam(..., description="Name of the crawler to use"),
     username: str = PathParam(..., description="Username to query"),
-    row_id: Optional[str] = Query(None, description="Row ID for HTMX responses"),
 ) -> Response:
     crawlers = get_crawlers()
 
@@ -130,7 +169,7 @@ async def query_crawler(
         error_msg = f"Unknown crawler '{crawler_name}'"
         if _is_htmx_request(request):
             return HTMLResponse(
-                content=_render_error_row(crawler_name, username, error_msg, row_id)
+                content=_render_error_row(crawler_name, username, error_msg)
             )
         return JSONResponse(
             content=ErrorResponse(error=True, message=error_msg).model_dump(),
@@ -155,9 +194,7 @@ async def query_crawler(
                 error_msg = "VJudge credentials not configured. Set VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables."
                 if _is_htmx_request(request):
                     return HTMLResponse(
-                        content=_render_error_row(
-                            crawler_name, username, error_msg, row_id
-                        )
+                        content=_render_error_row(crawler_name, username, error_msg)
                     )
                 return JSONResponse(
                     content={"error": True, "message": error_msg}, status_code=400
@@ -171,7 +208,7 @@ async def query_crawler(
         if _is_htmx_request(request):
             return HTMLResponse(
                 content=_render_success_row(
-                    crawler_name, title, username, result, duration, row_id
+                    crawler_name, title, username, result, duration
                 )
             )
 
@@ -190,7 +227,7 @@ async def query_crawler(
         error_msg = str(e)
         if _is_htmx_request(request):
             return HTMLResponse(
-                content=_render_error_row(crawler_name, username, error_msg, row_id)
+                content=_render_error_row(crawler_name, username, error_msg)
             )
         return JSONResponse(
             content=ErrorResponse(error=True, message=error_msg).model_dump(),
@@ -201,7 +238,7 @@ async def query_crawler(
         error_msg = f"{type(e).__name__}: {str(e)}"
         if _is_htmx_request(request):
             return HTMLResponse(
-                content=_render_error_row(crawler_name, username, error_msg, row_id)
+                content=_render_error_row(crawler_name, username, error_msg)
             )
         return JSONResponse(
             content=ErrorResponse(error=True, message=error_msg).model_dump(),
@@ -243,6 +280,22 @@ def _is_htmx_request(request: Request) -> bool:
     return request.headers.get("HX-Request") == "true"
 
 
+def _generate_row_id(crawler_name: str, username: str) -> str:
+    return f"query-{crawler_name}-{username}-{uuid.uuid4().hex[:8]}"
+
+
+def _render_pending_row(crawler_name: str, username: str, meta: Dict[str, Any]) -> str:
+    title = meta.get("title", crawler_name)
+    row_id = _generate_row_id(crawler_name, username)
+    template = jinja_env.get_template("query_pending.html")
+    return template.render(
+        row_id=row_id,
+        crawler_name=crawler_name,
+        title=title,
+        username=username,
+    )
+
+
 def _render_success_row(
     crawler_name: str,
     title: str,
@@ -252,7 +305,7 @@ def _render_success_row(
     row_id: Optional[str] = None,
 ) -> str:
     if row_id is None:
-        row_id = f"query-{crawler_name}-{username}"
+        row_id = _generate_row_id(crawler_name, username)
     template = jinja_env.get_template("query_result.html")
     solved_list = result.get("solved_list") or []
     return template.render(
@@ -273,7 +326,7 @@ def _render_error_row(
     crawlers = get_crawlers()
     title = crawlers.get(crawler_name, {}).get("meta", {}).get("title", crawler_name)
     if row_id is None:
-        row_id = f"query-{crawler_name}-{username}"
+        row_id = _generate_row_id(crawler_name, username)
     template = jinja_env.get_template("query_error.html")
     return template.render(
         row_id=row_id,

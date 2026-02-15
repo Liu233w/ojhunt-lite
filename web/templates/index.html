@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OJHunt Lite</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <style>
         * { box-sizing: border-box; }
         body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; min-height: calc(100vh - 40px); display: flex; flex-direction: column; }
@@ -14,9 +15,6 @@
         .header h1 { margin: 0; font-size: 1.75rem; }
         .header .org-title { color: #666; margin: 0.25rem 0 0.5rem 0; }
         .header .subtitle { color: #888; margin: 0; font-size: 0.95rem; }
-        
-        h1 { margin-bottom: 0.5rem; }
-        .subtitle { color: #666; margin-bottom: 1.5rem; }
         
         .query-builder { background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }
         .query-builder-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
@@ -30,15 +28,12 @@
         button.secondary { background: #e0e0e0; border: none; border-radius: 4px; }
         button.secondary:hover { background: #d0d0d0; }
         button.danger { background: #cc4444; color: white; border: none; border-radius: 4px; }
+        button.query-btn { background: #0066cc; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        button.cancel-btn { background: #cc4444; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
         button.retry-btn { background: #ff9800; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        button.remove-btn { background: #e0e0e0; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
         
         .actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-        
-        .query-list { margin-bottom: 1.5rem; }
-        .query-list h3 { margin-bottom: 0.5rem; }
-        .query-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; }
-        .query-item span { flex: 1; }
-        .query-item button { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
         
         .results-section { margin-top: 1.5rem; flex: 1; }
         .results-section h3 { margin-bottom: 0.5rem; }
@@ -48,17 +43,18 @@
         th { background: #f5f5f5; font-weight: 600; }
         .status { color: #22863a; }
         .status.error { color: #cb2431; }
+        .status.pending { color: #666; }
+        .status.loading { color: #f5a623; }
         .result-row.success { background: #f0fff4; }
         .result-row.error { background: #ffeef0; }
         .result-row.loading { background: #fffde7; }
+        .result-row.pending { background: #fafafa; }
         
         .solved-count { cursor: pointer; text-decoration: underline; color: #0066cc; }
         .solved-count:hover { color: #0055aa; }
         
         .report { background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
         .report strong { font-size: 1.1rem; }
-        
-        .loading-spinner { color: #666; }
         
         dialog { padding: 1.5rem; border-radius: 8px; border: 1px solid #ccc; max-width: 600px; max-height: 80vh; }
         dialog::backdrop { background: rgba(0,0,0,0.3); }
@@ -73,6 +69,9 @@
         .footer a:hover { text-decoration: underline; }
         .footer .footer-links { margin-top: 0.75rem; }
         .footer .footer-links a { margin: 0 0.75rem; }
+
+        .htmx-request .query-btn { opacity: 0.5; }
+        .htmx-request .retry-btn { opacity: 0.5; }
     </style>
 </head>
 <body>
@@ -84,24 +83,22 @@
     </div>
     
     <div class="query-builder">
-        <div class="query-builder-row">
-            <select id="crawler-select">
-                <option value="">Select crawler...</option>
-            </select>
-            <input type="text" id="username-input" placeholder="Username" />
-            <button class="primary" onclick="addQuery()" title="Enter">Add</button>
-            <button class="secondary" onclick="addAllCrawlers()">Add All</button>
-        </div>
+        <form id="add-form" hx-get="/api/row" hx-target="#results-body" hx-swap="beforeend">
+            <div class="query-builder-row">
+                <select id="crawler-select" name="crawler">
+                    <option value="">Select crawler...</option>
+                    {% for name, info in crawlers %}
+                    <option value="{{ name }}">{{ info.meta.title }}{% if info.meta.description %} - {{ info.meta.description }}{% endif %}</option>
+                    {% endfor %}
+                    <option value="*">All Crawlers</option>
+                </select>
+                <input type="text" id="username-input" name="username" placeholder="Username" />
+                <button type="submit" class="primary">Add</button>
+            </div>
+        </form>
         <div class="actions">
-            <button class="primary" onclick="queryAll()" title="Ctrl(⌘)+Enter">Query All</button>
+            <button class="primary" onclick="queryAll()">Query All</button>
             <button class="secondary" onclick="clearAll()">Clear All</button>
-        </div>
-    </div>
-    
-    <div class="query-list">
-        <h3>Query List (<span id="query-count">0</span>)</h3>
-        <div id="query-list-container">
-            <p class="empty-state">No queries added yet. Add crawlers above.</p>
         </div>
     </div>
     
@@ -120,7 +117,7 @@
             </thead>
             <tbody id="results-body">
                 <tr id="empty-results">
-                    <td colspan="6" class="empty-state">Click "Query All" to start querying.</td>
+                    <td colspan="6" class="empty-state">Add crawlers above to start querying.</td>
                 </tr>
             </tbody>
         </table>
@@ -129,21 +126,19 @@
     <div id="report-container"></div>
     
     <script>
-        let queries = [];
-        let crawlers = {};
-        let queryIdCounter = 0;
-        let pendingResults = {};
         const STORAGE_KEY = 'ojhunt-queries';
 
         function saveQueries() {
             const username = document.getElementById('username-input').value.trim();
-            const data = {
-                username: username,
-                queries: queries.map(q => ({ crawler: q.crawler, username: q.username }))
-            };
+            const rows = document.querySelectorAll('#results-body tr[data-crawler]');
+            const queries = [];
+            rows.forEach(row => {
+                queries.push(`${row.dataset.username}@${row.dataset.crawler}`);
+            });
+            const data = { username: username, queries: queries };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
-        
+
         function loadSavedQueries() {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (!saved) return;
@@ -153,240 +148,125 @@
                 if (data.username) {
                     document.getElementById('username-input').value = data.username;
                 }
-                if (data.queries && Array.isArray(data.queries)) {
-                    data.queries.forEach(q => {
-                        if (q.crawler && q.username && crawlers[q.crawler]) {
-                            queries.push({
-                                id: queryIdCounter++,
-                                crawler: q.crawler,
-                                username: q.username
-                            });
-                        }
-                    });
-                    renderQueryList();
+                if (data.queries && Array.isArray(data.queries) && data.queries.length > 0) {
+                    const params = data.queries.map(q => `q=${encodeURIComponent(q)}`).join('&');
+                    htmx.ajax('GET', `/api/row?${params}`, { target: '#results-body', swap: 'beforeend' });
                 }
             } catch (e) {}
         }
-        
-        async function loadCrawlers() {
-            const response = await fetch('/api/crawlers/');
-            const data = await response.json();
-            crawlers = data.data;
-            
-            const select = document.getElementById('crawler-select');
-            const sortedCrawlers = Object.entries(crawlers).sort((a, b) => a[0].localeCompare(b[0]));
-            for (const [name, meta] of sortedCrawlers) {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = meta.title + (meta.description ? ` - ${meta.description}` : '');
-                select.appendChild(option);
+
+        function removeRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                saveQueries();
+                checkEmptyResults();
             }
-            
-            loadSavedQueries();
         }
-        
-        function addQuery() {
-            const select = document.getElementById('crawler-select');
-            const usernameInput = document.getElementById('username-input');
+
+        function startQuery(rowId, crawlerName, username) {
+            const row = document.getElementById(rowId);
+            if (!row) return;
             
-            const crawlerName = select.value;
-            const username = usernameInput.value.trim();
+            const titleCell = row.querySelector('td:first-child');
+            const title = titleCell ? titleCell.textContent : crawlerName;
             
-            if (!crawlerName) {
-                alert('Please select a crawler');
-                return;
-            }
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
+            row.className = 'result-row loading';
+            row.innerHTML = `
+                <td>${title}</td>
+                <td>${username}</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="status loading">Loading...</td>
+                <td>
+                    <button class="cancel-btn" onclick="cancelQuery('${rowId}')">
+                        Cancel
+                    </button>
+                </td>
+            `;
             
-            const existingQuery = queries.find(q => q.crawler === crawlerName && q.username === username);
-            if (existingQuery) {
-                alert('This query already exists in the list');
-                return;
-            }
-            
-            queries.push({ 
-                id: queryIdCounter++,
-                crawler: crawlerName, 
-                username: username 
+            htmx.ajax('GET', `/api/query/${crawlerName}/${username}`, {
+                target: `#${rowId}`,
+                swap: 'outerHTML',
+                source: row
             });
-            renderQueryList();
         }
-        
-        function addAllCrawlers() {
-            const usernameInput = document.getElementById('username-input');
-            const username = usernameInput.value.trim();
-            
-            if (!username) {
-                alert('Please enter a username first');
-                return;
+
+        function checkEmptyResults() {
+            const rows = document.querySelectorAll('#results-body tr[data-crawler]');
+            const emptyRow = document.getElementById('empty-results');
+            if (rows.length === 0 && !emptyRow) {
+                document.getElementById('results-body').innerHTML = `
+                    <tr id="empty-results">
+                        <td colspan="6" class="empty-state">Add crawlers above to start querying.</td>
+                    </tr>`;
+            } else if (rows.length > 0 && emptyRow) {
+                emptyRow.remove();
             }
-            
-            for (const crawlerName of Object.keys(crawlers)) {
-                const existingQuery = queries.find(q => q.crawler === crawlerName && q.username === username);
-                if (!existingQuery) {
-                    queries.push({ 
-                        id: queryIdCounter++,
-                        crawler: crawlerName, 
-                        username: username 
-                    });
-                }
+        }
+
+        function cancelQuery(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                htmx.trigger(row, 'htmx:abort');
+                const titleCell = row.querySelector('td:first-child');
+                const title = titleCell ? titleCell.textContent : row.dataset.crawler;
+                row.className = 'result-row error';
+                row.innerHTML = `
+                    <td>${title}</td>
+                    <td>${row.dataset.username}</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td class="status error">Canceled</td>
+                    <td>
+                        <button class="retry-btn" onclick="startQuery('${rowId}', '${row.dataset.crawler}', '${row.dataset.username}')">
+                            Retry
+                        </button>
+                    </td>
+                `;
             }
-            renderQueryList();
         }
-        
-        function removeQuery(index) {
-            queries.splice(index, 1);
-            renderQueryList();
+
+        function queryAll() {
+            const queryBtns = document.querySelectorAll('#results-body .query-btn');
+            queryBtns.forEach(btn => btn.click());
         }
-        
+
         function clearAll() {
-            queries = [];
-            renderQueryList();
             document.getElementById('results-body').innerHTML = `
                 <tr id="empty-results">
-                    <td colspan="6" class="empty-state">Click "Query All" to start querying.</td>
+                    <td colspan="6" class="empty-state">Add crawlers above to start querying.</td>
                 </tr>`;
             document.getElementById('report-container').innerHTML = '';
-            pendingResults = {};
+            localStorage.removeItem(STORAGE_KEY);
         }
-        
-        function renderQueryList() {
-            const container = document.getElementById('query-list-container');
-            document.getElementById('query-count').textContent = queries.length;
-            
-            if (queries.length === 0) {
-                container.innerHTML = '<p class="empty-state">No queries added yet. Add crawlers above.</p>';
-                return;
-            }
-            
-            container.innerHTML = queries.map((q, index) => `
-                <div class="query-item">
-                    <span><strong>${escapeHtml(crawlers[q.crawler]?.title || q.crawler)}</strong>: ${escapeHtml(q.username)}</span>
-                    <button class="danger" onclick="removeQuery(${index})">Remove</button>
-                </div>
-            `).join('');
-        }
-        
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        function queryAll() {
-            if (queries.length === 0) {
-                alert('Please add at least one query');
-                return;
-            }
-            
-            saveQueries();
-            
-            const tbody = document.getElementById('results-body');
-            tbody.innerHTML = '';
-            pendingResults = {};
-            
-            queries.forEach((q) => {
-                const rowId = `query-row-${q.id}`;
-                const tr = document.createElement('tr');
-                tr.id = rowId;
-                tr.className = 'result-row loading';
-                tr.innerHTML = `
-                    <td>${escapeHtml(crawlers[q.crawler]?.title || q.crawler)}</td>
-                    <td>${escapeHtml(q.username)}</td>
-                    <td colspan="4" class="loading-spinner">⏳ Loading...</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            
-            document.getElementById('report-container').innerHTML = '';
-            
-            let completedCount = 0;
-            const totalCount = queries.length;
-            
-            queries.forEach((q) => {
-                const rowId = `query-row-${q.id}`;
-                const url = `/api/crawlers/${encodeURIComponent(q.crawler)}/${encodeURIComponent(q.username)}?row_id=${rowId}`;
-                
-                fetch(url, { headers: { 'HX-Request': 'true' } })
-                    .then(response => response.text())
-                    .then(html => {
-                        const tr = document.getElementById(rowId);
-                        if (tr) {
-                            tr.outerHTML = html;
-                        }
-                        
-                        pendingResults[rowId] = {
-                            crawler: q.crawler,
-                            username: q.username,
-                            solved: extractSolvedFromHtml(html),
-                            submissions: extractSubmissionsFromHtml(html),
-                            solved_list: extractSolvedListFromHtml(html, rowId),
-                            success: !html.includes('result-row error'),
-                        };
-                        
-                        completedCount++;
-                        if (completedCount === totalCount) {
-                            fetchReport();
-                        }
-                    })
-                    .catch(error => {
-                        const tr = document.getElementById(rowId);
-                        if (tr) {
-                            tr.className = 'result-row error';
-                            tr.innerHTML = `
-                                <td>${escapeHtml(crawlers[q.crawler]?.title || q.crawler)}</td>
-                                <td>${escapeHtml(q.username)}</td>
-                                <td>N/A</td>
-                                <td>N/A</td>
-                                <td class="status error">ERROR: ${escapeHtml(error.message)}</td>
-                                <td></td>
-                            `;
-                        }
-                        
-                        pendingResults[rowId] = {
-                            crawler: q.crawler,
-                            username: q.username,
-                            solved: 0,
-                            submissions: 0,
-                            solved_list: null,
-                            success: false,
-                        };
-                        
-                        completedCount++;
-                        if (completedCount === totalCount) {
-                            fetchReport();
-                        }
-                    });
-            });
-        }
-        
-        function extractSolvedFromHtml(html) {
-            const match = html.match(/data-solved="(\d+)"/);
-            return match ? parseInt(match[1]) : 0;
-        }
-        
-        function extractSubmissionsFromHtml(html) {
-            const match = html.match(/data-submissions="(\d+)"/);
-            return match ? parseInt(match[1]) : 0;
-        }
-        
-        function extractSolvedListFromHtml(html, rowId) {
-            const match = html.match(new RegExp(`<script id="solved-list-${rowId}" type="application/json">([\\s\\S]*?)<\\/script>`));
-            if (match) {
-                try {
-                    return JSON.parse(match[1]);
-                } catch (e) {
-                    return null;
+
+        function collectResults() {
+            const rows = document.querySelectorAll('#results-body tr[data-solved]');
+            const results = [];
+            rows.forEach(row => {
+                let solvedList = null;
+                const scriptEl = document.querySelector(`script#solved-list-${row.id}`);
+                if (scriptEl) {
+                    try {
+                        solvedList = JSON.parse(scriptEl.textContent);
+                    } catch (e) {}
                 }
-            }
-            return null;
+                results.push({
+                    crawler: row.dataset.crawler,
+                    username: row.dataset.username,
+                    solved: parseInt(row.dataset.solved) || 0,
+                    submissions: parseInt(row.dataset.submissions) || 0,
+                    solved_list: solvedList,
+                    success: row.classList.contains('success'),
+                });
+            });
+            return results;
         }
-        
+
         async function fetchReport() {
-            const results = Object.values(pendingResults);
+            const results = collectResults();
+            if (results.length === 0) return;
             
             const response = await fetch('/api/report', {
                 method: 'POST',
@@ -397,69 +277,32 @@
             const html = await response.text();
             document.getElementById('report-container').innerHTML = html;
         }
-        
-        function retryQuery(crawlerName, username, rowId) {
-            const tr = document.getElementById(rowId);
-            if (tr) {
-                tr.className = 'result-row loading';
-                tr.innerHTML = `
-                    <td>${escapeHtml(crawlers[crawlerName]?.title || crawlerName)}</td>
-                    <td>${escapeHtml(username)}</td>
-                    <td colspan="4" class="loading-spinner">⏳ Loading...</td>
-                `;
+
+        htmx.on('htmx:beforeRequest', function(evt) {
+            if (evt.detail.pathInfo.requestPath.startsWith('/api/row')) {
+                const emptyRow = document.getElementById('empty-results');
+                if (emptyRow) emptyRow.remove();
             }
-            
-            const url = `/api/crawlers/${encodeURIComponent(crawlerName)}/${encodeURIComponent(username)}?row_id=${rowId}`;
-            fetch(url, { headers: { 'HX-Request': 'true' } })
-                .then(response => response.text())
-                .then(html => {
-                    const tr = document.getElementById(rowId);
-                    if (tr) {
-                        tr.outerHTML = html;
-                    }
-                    
-                    pendingResults[rowId] = {
-                        crawler: crawlerName,
-                        username: username,
-                        solved: extractSolvedFromHtml(html),
-                        submissions: extractSubmissionsFromHtml(html),
-                        solved_list: extractSolvedListFromHtml(html, rowId),
-                        success: !html.includes('result-row error'),
-                    };
-                    
-                    fetchReport();
-                })
-                .catch(error => {
-                    const tr = document.getElementById(rowId);
-                    if (tr) {
-                        tr.className = 'result-row error';
-                        tr.innerHTML = `
-                            <td>${escapeHtml(crawlers[crawlerName]?.title || crawlerName)}</td>
-                            <td>${escapeHtml(username)}</td>
-                            <td>N/A</td>
-                            <td>N/A</td>
-                            <td class="status error">ERROR: ${escapeHtml(error.message)}</td>
-                            <td></td>
-                        `;
-                    }
-                    
-                    pendingResults[rowId] = {
-                        crawler: crawlerName,
-                        username: username,
-                        solved: 0,
-                        submissions: 0,
-                        solved_list: null,
-                        success: false,
-                    };
-                    
-                    fetchReport();
-                });
-        }
-        
-        document.addEventListener('DOMContentLoaded', loadCrawlers);
-        document.getElementById('username-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) addQuery();
         });
+
+        htmx.on('htmx:afterRequest', function(evt) {
+            if (evt.detail.pathInfo.requestPath.startsWith('/api/row')) {
+                saveQueries();
+            }
+            if (evt.detail.pathInfo.requestPath.startsWith('/api/query')) {
+                setTimeout(fetchReport, 100);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadSavedQueries);
+        
+        document.getElementById('username-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                document.getElementById('add-form').dispatchEvent(new Event('submit'));
+            }
+        });
+        
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') queryAll();
         });

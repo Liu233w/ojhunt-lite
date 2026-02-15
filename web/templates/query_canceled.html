@@ -3,10 +3,9 @@
     <td>{{ username }}</td>
     <td>N/A</td>
     <td>N/A</td>
-    <td class="status error">ERROR: {{ error }}</td>
+    <td class="status error">Canceled</td>
     <td>
-        <button class="retry-btn" hx-get="/api/query/{{ crawler_name }}/{{ username }}"
-                hx-target="#{{ row_id }}" hx-swap="outerHTML">
+        <button class="retry-btn" onclick="startQuery('{{ row_id }}', '{{ crawler_name }}', '{{ username }}')">
             Retry
         </button>
     </td>

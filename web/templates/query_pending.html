@@ -1,0 +1,15 @@
+<tr id="{{ row_id }}" class="result-row pending" data-crawler="{{ crawler_name }}" data-username="{{ username }}">
+    <td>{{ title }}</td>
+    <td>{{ username }}</td>
+    <td>-</td>
+    <td>-</td>
+    <td class="status pending">Pending</td>
+    <td>
+        <button class="query-btn" onclick="startQuery('{{ row_id }}', '{{ crawler_name }}', '{{ username }}')">
+            Query
+        </button>
+        <button class="remove-btn" onclick="removeRow('{{ row_id }}')">
+            Remove
+        </button>
+    </td>
+</tr>

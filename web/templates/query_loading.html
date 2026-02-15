@@ -1,0 +1,15 @@
+<tr id="{{ row_id }}" class="result-row loading" data-crawler="{{ crawler_name }}" data-username="{{ username }}"
+    hx-get="/api/query/{{ crawler_name }}/{{ username }}"
+    hx-target="#{{ row_id }}" hx-swap="outerHTML"
+    hx-trigger="load">
+    <td>{{ title }}</td>
+    <td>{{ username }}</td>
+    <td>-</td>
+    <td>-</td>
+    <td class="status loading">Loading...</td>
+    <td>
+        <button class="cancel-btn" onclick="cancelQuery('{{ row_id }}')">
+            Cancel
+        </button>
+    </td>
+</tr>
