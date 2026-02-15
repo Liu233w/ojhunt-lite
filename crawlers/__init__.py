@@ -37,6 +37,7 @@ def discover_crawlers() -> Dict[str, Dict[str, Any]]:
             module_name.startswith("test_")
             or module_name.endswith("_test")
             or module_name.startswith("_")
+            or module_name == "conftest"
         ):
             continue
 
