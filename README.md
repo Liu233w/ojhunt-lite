@@ -40,6 +40,33 @@ cd ojhunt-lite
 uv sync
 ```
 
+### Using Container (Podman/Docker)
+
+Pre-built images are available at `ghcr.io/liu233w/ojhunt-lite`.
+
+**CLI mode:**
+```bash
+# Query single platform
+podman run --rm ghcr.io/liu233w/ojhunt-lite tourist@codeforces
+
+# Query multiple platforms
+podman run --rm ghcr.io/liu233w/ojhunt-lite tourist@codeforces tourist@atcoder
+
+# Use default username for multiple queries
+podman run --rm ghcr.io/liu233w/ojhunt-lite -d tourist -- codeforces atcoder
+```
+
+**Web mode:**
+```bash
+# Start web server on port 8080
+podman run -p 8080:8080 ghcr.io/liu233w/ojhunt-lite
+
+# With VJudge credentials
+podman run -p 8080:8080 -e VJUDGE_USERNAME=user -e VJUDGE_PASSWORD=pass ghcr.io/liu233w/ojhunt-lite
+```
+
+> Replace `podman` with `docker` if you prefer Docker. Both commands work identically.
+
 ## Usage
 
 ### Command Line Interface
