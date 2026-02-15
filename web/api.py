@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import aiohttp
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Path as PathParam, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from crawlers import discover_crawlers
 
@@ -23,30 +23,32 @@ GIT_COMMIT_SHA = os.environ.get("GIT_COMMIT_SHA")
 
 
 class CrawlerInfo(BaseModel):
-    title: str
-    description: str
-    url: str
+    title: str = Field(..., description="Display name of the crawler")
+    description: str = Field(..., description="Description of the platform")
+    url: str = Field(..., description="URL of the platform")
 
 
-class CrawlersResponse(BaseModel):
-    error: bool
-    data: Dict[str, CrawlerInfo]
+class CrawlersListResponse(BaseModel):
+    error: bool = Field(False, description="Always false for success")
+    data: Dict[str, CrawlerInfo] = Field(..., description="Map of crawler name to info")
 
 
-class QueryData(BaseModel):
-    solved: int
-    submissions: int
-    solvedList: Optional[List[str]] = None
+class QueryResult(BaseModel):
+    solved: int = Field(..., description="Number of accepted problems")
+    submissions: int = Field(..., description="Total number of submissions")
+    solvedList: Optional[List[str]] = Field(
+        None, description="List of solved problem IDs"
+    )
 
 
 class QueryResponse(BaseModel):
-    error: bool
-    data: QueryData
+    error: bool = Field(False, description="Always false for success")
+    data: QueryResult = Field(..., description="Query result")
 
 
 class ErrorResponse(BaseModel):
-    error: bool
-    message: str
+    error: bool = Field(True, description="Always true for error")
+    message: str = Field(..., description="Error message")
 
 
 router = APIRouter()
@@ -91,11 +93,11 @@ async def about() -> str:
 
 @router.get(
     "/api/crawlers/",
-    response_model=CrawlersResponse,
+    response_model=CrawlersListResponse,
     summary="List all available crawlers",
-    description="Returns a list of all supported Online Judge platforms with their metadata.",
+    description="Returns a list of all available OJ crawlers with their metadata.",
 )
-async def list_crawlers() -> CrawlersResponse:
+async def list_crawlers() -> Dict[str, Any]:
     crawlers = get_crawlers()
     data = {}
     for name, info in crawlers.items():
@@ -105,26 +107,21 @@ async def list_crawlers() -> CrawlersResponse:
             description=meta.get("description", ""),
             url=meta.get("url", ""),
         )
-    return CrawlersResponse(error=False, data=data)
+    return CrawlersListResponse(error=False, data=data).model_dump()
 
 
 @router.get(
     "/api/crawlers/{crawler_name}/{username}",
     response_model=QueryResponse,
-    responses={
-        400: {
-            "model": ErrorResponse,
-            "description": "Crawler not found or query error",
-        },
-    },
-    summary="Query user statistics from a crawler",
-    description="Returns solved problems count, total submissions, and solved problem list for a user on the specified platform.",
+    responses={400: {"model": ErrorResponse}},
+    summary="Query a crawler for user statistics",
+    description="Query a specific crawler for a user's solved problems and submission count.",
 )
 async def query_crawler(
-    crawler_name: str,
-    username: str,
-    request: Request,
-    row_id: Optional[str] = None,
+    crawler_name: str = PathParam(..., description="Name of the crawler to use"),
+    username: str = PathParam(..., description="Username to query"),
+    request: Request = None,  # type: ignore[assignment]
+    row_id: Optional[str] = Query(None, description="Row ID for HTMX responses"),
 ) -> Response:
     crawlers = get_crawlers()
 
@@ -182,7 +179,7 @@ async def query_crawler(
         return JSONResponse(
             content=QueryResponse(
                 error=False,
-                data=QueryData(
+                data=QueryResult(
                     solved=result["solved"],
                     submissions=result["submissions"],
                     solvedList=result.get("solved_list"),

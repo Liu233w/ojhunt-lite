@@ -141,10 +141,14 @@ asyncio.run(main())
 
 ### Web Interface
 
-Start the web server:
-
+**Development server** (with auto-reload):
 ```bash
-uv run python -m web.run
+uv run fastapi dev web/app.py --port 8080
+```
+
+**Production server** (multi-worker):
+```bash
+uv run fastapi run web/app.py --port 8080 --workers 4
 ```
 
 The web interface will be available at http://127.0.0.1:8080
@@ -152,7 +156,7 @@ The web interface will be available at http://127.0.0.1:8080
 For VJudge support, set environment variables:
 
 ```bash
-VJUDGE_USERNAME=user VJUDGE_PASSWORD=pass uv run python -m web.run
+VJUDGE_USERNAME=user VJUDGE_PASSWORD=pass uv run fastapi dev web/app.py --port 8080
 ```
 
 ### API Documentation
