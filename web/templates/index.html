@@ -89,11 +89,11 @@
                 <option value="">Select crawler...</option>
             </select>
             <input type="text" id="username-input" placeholder="Username" />
-            <button class="primary" onclick="addQuery()">Add</button>
+            <button class="primary" onclick="addQuery()" title="Enter">Add</button>
             <button class="secondary" onclick="addAllCrawlers()">Add All</button>
         </div>
         <div class="actions">
-            <button class="primary" onclick="queryAll()">Query All</button>
+            <button class="primary" onclick="queryAll()" title="Ctrl(⌘)+Enter">Query All</button>
             <button class="secondary" onclick="clearAll()">Clear All</button>
         </div>
     </div>
@@ -177,10 +177,6 @@
                 username: username 
             });
             renderQueryList();
-            
-            usernameInput.value = '';
-            select.value = '';
-            select.focus();
         }
         
         function addAllCrawlers() {
@@ -424,7 +420,10 @@
         
         document.addEventListener('DOMContentLoaded', loadCrawlers);
         document.getElementById('username-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addQuery();
+            if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) addQuery();
+        });
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') queryAll();
         });
     </script>
     
