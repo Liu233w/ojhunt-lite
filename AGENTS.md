@@ -86,6 +86,17 @@ BSD-2 Clause license header (copy from existing crawler, use current year for ne
 - Standard test cases: `test_user_not_exist`, `test_username_with_space`, `test_valid_user`
 - Use real test usernames from existing tests (e.g., `leoloveacm`, `vjudge5`)
 
+### Testing New Features
+
+When adding new features, tests are **required**:
+
+- **Crawler changes**: Add/update tests in `crawlers/<name>_test.py`
+- **Web backend changes**: Add API tests in `web/tests/test_api.py` or appropriate test file
+- **Web frontend changes**: Add Playwright E2E tests in `web/tests/test_*.py`
+- **CLI changes**: Add tests in `cli/<name>_test.py`
+
+Run the relevant test suite after implementation to verify correctness.
+
 ### Playwright Tests
 
 Playwright tests are located in `web/tests/` and test the web frontend:
