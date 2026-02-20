@@ -184,10 +184,16 @@
                     <td>N/A</td>
                     <td class="status error">Canceled</td>
                     <td>
-                        <button class="retry-btn" hx-get="/api/query/${row.dataset.crawler}/${row.dataset.username}"
-                                hx-target="closest tr" hx-swap="outerHTML">
-                            Retry
-                        </button>
+                        <span class="pending-controls">
+                            <button class="retry-btn" hx-get="/api/query/${row.dataset.crawler}/${row.dataset.username}"
+                                    hx-target="closest tr" hx-swap="outerHTML">
+                                Retry
+                            </button>
+                        </span>
+                        <span class="loading-controls">
+                            <span class="status loading">Loading...</span>
+                            <button class="cancel-btn" onclick="cancelQuery(this)">Cancel</button>
+                        </span>
                     </td>
                 `;
                 htmx.process(row);
