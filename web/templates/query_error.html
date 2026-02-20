@@ -4,13 +4,5 @@
     <td>N/A</td>
     <td>N/A</td>
     <td class="status error">ERROR: {{ error }}</td>
-    <td>
-        <span class="pending-controls">
-            <button class="retry-btn" hx-get="/api/query/{{ crawler_name }}/{{ username }}"
-                    hx-target="closest tr" hx-swap="outerHTML">
-                Retry
-            </button>
-        </span>
-        {% include "query_loading_controls.html" %}
-    </td>
+    <td>{% include "query_retry_controls.html" %}</td>
 </tr>
