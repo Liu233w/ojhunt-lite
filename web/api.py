@@ -114,12 +114,11 @@ async def list_crawlers() -> Dict[str, Any]:
 
 
 @router.get(
-    "/api/row",
+    "/htmx/row",
     response_class=HTMLResponse,
-    summary="Get pending result row(s)",
-    description="Returns pending result row(s) for the specified crawler/username combinations.",
+    summary="Get pending result row(s) for HTMX",
 )
-async def get_row(
+async def get_row_htmx(
     q: List[str] = Query(default=[]),
     username: Optional[str] = Query(None),
     crawler: Optional[str] = Query(None),
@@ -246,6 +245,78 @@ async def query_crawler(
         )
 
 
+@router.get(
+    "/htmx/query/{crawler_name}/{username}",
+    response_class=HTMLResponse,
+    summary="Query a crawler for HTMX",
+)
+async def query_crawler_htmx(
+    client: HttpClientDep,
+    crawler_name: str = PathParam(..., description="Name of the crawler to use"),
+    username: str = PathParam(..., description="Username to query"),
+) -> Response:
+    crawlers = get_crawlers()
+
+    if crawler_name not in crawlers:
+        error_msg = f"Unknown crawler '{crawler_name}'"
+        return HTMLResponse(
+            content=_render_error_row(crawler_name, username, error_msg)
+        )
+
+    crawler_info = crawlers[crawler_name]
+    query_func = crawler_info["query"]
+    meta = crawler_info["meta"]
+    title = meta.get("title", crawler_name)
+
+    try:
+        start_time = datetime.now()
+
+        kwargs: Dict[str, Any] = {}
+
+        if meta.get("requires_login"):
+            if VJUDGE_USERNAME and VJUDGE_PASSWORD:
+                kwargs["login_user"] = VJUDGE_USERNAME
+                kwargs["login_password"] = VJUDGE_PASSWORD
+            else:
+                error_msg = "VJudge credentials not configured."
+                return HTMLResponse(
+                    content=_render_error_row(crawler_name, username, error_msg)
+                )
+
+        result = await query_func(client, username, **kwargs)
+
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+
+        return HTMLResponse(
+            content=_render_success_row(crawler_name, title, username, result, duration)
+        )
+
+    except ValueError as e:
+        return HTMLResponse(content=_render_error_row(crawler_name, username, str(e)))
+
+    except Exception as e:
+        error_msg = f"{type(e).__name__}: {str(e)}"
+        return HTMLResponse(
+            content=_render_error_row(crawler_name, username, error_msg)
+        )
+
+
+@router.get(
+    "/htmx/canceled/{crawler_name}/{username}",
+    response_class=HTMLResponse,
+    summary="Get canceled row for HTMX",
+)
+async def get_canceled_row(
+    crawler_name: str = PathParam(..., description="Name of the crawler"),
+    username: str = PathParam(..., description="Username"),
+) -> str:
+    crawlers = get_crawlers()
+    meta = crawlers.get(crawler_name, {}).get("meta", {})
+    title = meta.get("title", crawler_name)
+    return _render_canceled_row(crawler_name, title, username)
+
+
 @router.post("/api/report", response_class=HTMLResponse)
 async def calculate_report(request: Request) -> str:
     body = await request.json()
@@ -334,4 +405,15 @@ def _render_error_row(
         title=title,
         username=username,
         error=error,
+    )
+
+
+def _render_canceled_row(crawler_name: str, title: str, username: str) -> str:
+    row_id = _generate_row_id(crawler_name, username)
+    template = jinja_env.get_template("query_canceled.html")
+    return template.render(
+        row_id=row_id,
+        crawler_name=crawler_name,
+        title=title,
+        username=username,
     )

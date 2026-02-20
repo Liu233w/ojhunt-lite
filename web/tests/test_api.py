@@ -37,10 +37,8 @@ def test_api_query_unknown_crawler(context: BrowserContext):
 
 
 @pytest.mark.playwright
-def test_api_query_with_htmx_returns_html(context: BrowserContext):
-    response = context.request.get(
-        f"{BASE_URL}/api/query/codeforces/tourist", headers={"HX-Request": "true"}
-    )
+def test_htmx_query_returns_html(context: BrowserContext):
+    response = context.request.get(f"{BASE_URL}/htmx/query/codeforces/tourist")
     assert response.status == 200
     html = response.text()
     assert "<tr" in html
@@ -48,8 +46,8 @@ def test_api_query_with_htmx_returns_html(context: BrowserContext):
 
 
 @pytest.mark.playwright
-def test_api_row_endpoint(context: BrowserContext):
-    response = context.request.get(f"{BASE_URL}/api/row?q=tourist@codeforces")
+def test_htmx_row_endpoint(context: BrowserContext):
+    response = context.request.get(f"{BASE_URL}/htmx/row?q=tourist@codeforces")
     assert response.status == 200
     html = response.text()
     assert "<tr" in html
@@ -58,11 +56,20 @@ def test_api_row_endpoint(context: BrowserContext):
 
 
 @pytest.mark.playwright
-def test_api_row_all_crawlers(context: BrowserContext):
-    response = context.request.get(f"{BASE_URL}/api/row?q=tourist@*")
+def test_htmx_row_all_crawlers(context: BrowserContext):
+    response = context.request.get(f"{BASE_URL}/htmx/row?q=tourist@*")
     assert response.status == 200
     html = response.text()
     assert 'data-username="tourist"' in html
+
+
+@pytest.mark.playwright
+def test_htmx_canceled_endpoint(context: BrowserContext):
+    response = context.request.get(f"{BASE_URL}/htmx/canceled/codeforces/tourist")
+    assert response.status == 200
+    html = response.text()
+    assert "<tr" in html
+    assert "Canceled" in html
 
 
 @pytest.mark.playwright

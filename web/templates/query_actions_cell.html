@@ -1,0 +1,19 @@
+<span class="pending-controls">
+    <button class="query-btn" hx-get="/htmx/query/{{ crawler_name }}/{{ username }}"
+            hx-target="closest tr" hx-swap="outerHTML">
+        Query
+    </button>
+    <button class="remove-btn" onclick="removeRow('{{ row_id }}')">
+        Remove
+    </button>
+</span>
+<span class="retry-controls">
+    <button class="retry-btn" hx-get="/htmx/query/{{ crawler_name }}/{{ username }}"
+            hx-target="closest tr" hx-swap="outerHTML">
+        Retry
+    </button>
+</span>
+<span class="loading-controls">
+    <span class="status loading">Loading...</span>
+    <button class="cancel-btn" onclick="cancelQuery(this)">Cancel</button>
+</span>

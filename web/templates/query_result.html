@@ -4,7 +4,7 @@
     <td class="solved-count"><a href="#" onclick="document.getElementById('dialog-{{ row_id }}').showModal(); return false;">{{ solved }}</a></td>
     <td>{{ submissions }}</td>
     <td class="status">OK ({{ duration | round(2) }}s)</td>
-    <td>{% include "query_retry_controls.html" %}</td>
+    <td>{% include "query_actions_cell.html" %}</td>
 </tr>
 <dialog id="dialog-{{ row_id }}">
     <h3>{{ title }} ({{ username }}): {{ solved_list | length }} problems</h3>

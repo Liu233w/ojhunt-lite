@@ -4,16 +4,5 @@
     <td>-</td>
     <td>-</td>
     <td class="status pending">Pending</td>
-    <td>
-        <span class="pending-controls">
-            <button class="query-btn" hx-get="/api/query/{{ crawler_name }}/{{ username }}"
-                    hx-target="closest tr" hx-swap="outerHTML">
-                Query
-            </button>
-            <button class="remove-btn" onclick="removeRow('{{ row_id }}')">
-                Remove
-            </button>
-        </span>
-        {% include "query_loading_controls.html" %}
-    </td>
+    <td>{% include "query_actions_cell.html" %}</td>
 </tr>

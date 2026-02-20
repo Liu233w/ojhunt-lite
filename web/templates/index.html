@@ -72,9 +72,13 @@
 
         .htmx-request .query-btn { opacity: 0.5; }
         .htmx-request .retry-btn { opacity: 0.5; }
-        
-        .loading-controls { display: none; }
+
+        .pending-controls, .retry-controls, .loading-controls { display: none; }
+        .result-row.pending .pending-controls { display: inline; }
+        .result-row.error .retry-controls { display: inline; }
+        .result-row.success .retry-controls { display: inline; }
         tr:has(.htmx-request) .pending-controls { display: none; }
+        tr:has(.htmx-request) .retry-controls { display: none; }
         tr:has(.htmx-request) .loading-controls { display: inline; }
         tr:has(.htmx-request) { background: #fffde7; }
         tr:has(.htmx-request) td:nth-child(5) .status.pending { display: none; }
@@ -89,7 +93,7 @@
     </div>
     
     <div class="query-builder">
-        <form id="add-form" hx-get="/api/row" hx-target="#results-body" hx-swap="beforeend">
+        <form id="add-form" hx-get="/htmx/row" hx-target="#results-body" hx-swap="beforeend">
             <div class="query-builder-row">
                 <select id="crawler-select" name="crawler">
                     <option value="">Select crawler...</option>
@@ -156,7 +160,7 @@
                 }
                 if (data.queries && Array.isArray(data.queries) && data.queries.length > 0) {
                     const params = data.queries.map(q => `q=${encodeURIComponent(q)}`).join('&');
-                    htmx.ajax('GET', `/api/row?${params}`, { target: '#results-body', swap: 'beforeend' });
+                    htmx.ajax('GET', `/htmx/row?${params}`, { target: '#results-body', swap: 'beforeend' });
                 }
             } catch (e) {}
         }
@@ -173,30 +177,9 @@
         function cancelQuery(btn) {
             const row = btn.closest('tr');
             if (row) {
-                htmx.trigger(row.querySelector('.query-btn'), 'htmx:abort');
-                const titleCell = row.querySelector('td:first-child');
-                const title = titleCell ? titleCell.textContent : row.dataset.crawler;
-                row.className = 'result-row error';
-                row.innerHTML = `
-                    <td>${title}</td>
-                    <td>${row.dataset.username}</td>
-                    <td>N/A</td>
-                    <td>N/A</td>
-                    <td class="status error">Canceled</td>
-                    <td>
-                        <span class="pending-controls">
-                            <button class="retry-btn" hx-get="/api/query/${row.dataset.crawler}/${row.dataset.username}"
-                                    hx-target="closest tr" hx-swap="outerHTML">
-                                Retry
-                            </button>
-                        </span>
-                        <span class="loading-controls">
-                            <span class="status loading">Loading...</span>
-                            <button class="cancel-btn" onclick="cancelQuery(this)">Cancel</button>
-                        </span>
-                    </td>
-                `;
-                htmx.process(row);
+                htmx.trigger(row.querySelector('.query-btn, .retry-btn'), 'htmx:abort');
+                htmx.ajax('GET', `/htmx/canceled/${row.dataset.crawler}/${row.dataset.username}`, 
+                          { target: row, swap: 'outerHTML' });
             }
         }
 
@@ -265,17 +248,17 @@
         }
 
         htmx.on('htmx:beforeRequest', function(evt) {
-            if (evt.detail.pathInfo.requestPath.startsWith('/api/row')) {
+            if (evt.detail.pathInfo.requestPath.startsWith('/htmx/row')) {
                 const emptyRow = document.getElementById('empty-results');
                 if (emptyRow) emptyRow.remove();
             }
         });
 
         htmx.on('htmx:afterRequest', function(evt) {
-            if (evt.detail.pathInfo.requestPath.startsWith('/api/row')) {
+            if (evt.detail.pathInfo.requestPath.startsWith('/htmx/row')) {
                 saveQueries();
             }
-            if (evt.detail.pathInfo.requestPath.startsWith('/api/query')) {
+            if (evt.detail.pathInfo.requestPath.startsWith('/htmx/query')) {
                 setTimeout(fetchReport, 100);
             }
         });
