@@ -6,7 +6,6 @@ OJHunt Lite is an async Python tool for querying Online Judge statistics across 
 
 **Read these files first:**
 - `README.md` - Usage examples, crawler templates, development setup
-- `GOAL.md` - Design philosophy and technical decisions
 
 ## Parallel Execution
 
@@ -67,7 +66,7 @@ from typing import Dict, List, Union
 Use `Dict`, `List`, `Union` from `typing` module (not `dict[str, ...]` syntax).
 
 ### HTML Parsing
-Use `selectolax.lexbor.LexborHTMLParser`, NOT BeautifulSoup.
+Use `selectolax.lexbor.LexborHTMLParser`.
 
 ### License Header
 BSD-2 Clause license header (copy from existing crawler, use current year for new files).
