@@ -187,10 +187,7 @@
             const rows = document.querySelectorAll('#results-body tr[data-crawler]');
             const emptyRow = document.getElementById('empty-results');
             if (rows.length === 0 && !emptyRow) {
-                document.getElementById('results-body').innerHTML = `
-                    <tr id="empty-results">
-                        <td colspan="6" class="empty-state">Add crawlers above to start querying.</td>
-                    </tr>`;
+                clearAll();
             } else if (rows.length > 0 && emptyRow) {
                 emptyRow.remove();
             }
@@ -207,7 +204,6 @@
                     <td colspan="6" class="empty-state">Add crawlers above to start querying.</td>
                 </tr>`;
             document.getElementById('report-container').innerHTML = '';
-            localStorage.removeItem(STORAGE_KEY);
         }
 
         function collectResults() {
