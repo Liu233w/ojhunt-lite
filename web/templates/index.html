@@ -133,6 +133,7 @@
         </table>
     </div>
     
+    <form id="report-form" hx-post="/htmx/report" hx-target="#report-container" hx-swap="innerHTML"></form>
     <div id="report-container"></div>
     
     <script>
@@ -204,43 +205,14 @@
                     <td colspan="6" class="empty-state">Add crawlers above to start querying.</td>
                 </tr>`;
             document.getElementById('report-container').innerHTML = '';
+            document.getElementById('report-form').innerHTML = '';
         }
 
-        function collectResults() {
-            const rows = document.querySelectorAll('#results-body tr[data-solved]');
-            const results = [];
-            rows.forEach(row => {
-                let solvedList = null;
-                const scriptEl = document.querySelector(`script#solved-list-${row.id}`);
-                if (scriptEl) {
-                    try {
-                        solvedList = JSON.parse(scriptEl.textContent);
-                    } catch (e) {}
-                }
-                results.push({
-                    crawler: row.dataset.crawler,
-                    username: row.dataset.username,
-                    solved: parseInt(row.dataset.solved) || 0,
-                    submissions: parseInt(row.dataset.submissions) || 0,
-                    solved_list: solvedList,
-                    success: row.classList.contains('success'),
-                });
-            });
-            return results;
-        }
-
-        async function fetchReport() {
-            const results = collectResults();
-            if (results.length === 0) return;
-            
-            const response = await fetch('/api/report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ results }),
-            });
-            
-            const html = await response.text();
-            document.getElementById('report-container').innerHTML = html;
+        function fetchReport() {
+            const inputs = document.querySelectorAll('input[form="report-form"][name="r"]');
+            if (inputs.length > 0) {
+                htmx.trigger('#report-form', 'submit');
+            }
         }
 
         htmx.on('htmx:beforeRequest', function(evt) {

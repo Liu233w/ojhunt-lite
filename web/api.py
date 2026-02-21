@@ -4,12 +4,13 @@ API routes for OJHunt Lite web application.
 
 import os
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Path as PathParam, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi import APIRouter, Form, Path as PathParam, Query
+from fastapi.responses import HTMLResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import BaseModel, Field
 
@@ -52,6 +53,13 @@ class ErrorResponse(BaseModel):
     message: str = Field(..., description="Error message")
 
 
+@dataclass
+class QuerySuccess:
+    result: Dict[str, Any]
+    duration: float
+    title: str
+
+
 router = APIRouter()
 
 CRAWLERS_CACHE: Dict[str, Dict[str, Any]] = {}
@@ -68,6 +76,35 @@ def get_crawlers() -> Dict[str, Dict[str, Any]]:
     if not CRAWLERS_CACHE:
         CRAWLERS_CACHE = discover_crawlers()
     return CRAWLERS_CACHE
+
+
+async def _execute_query(
+    client: HttpClientDep, crawler_name: str, username: str
+) -> QuerySuccess:
+    crawlers = get_crawlers()
+
+    if crawler_name not in crawlers:
+        raise ValueError(f"Unknown crawler '{crawler_name}'")
+
+    crawler_info = crawlers[crawler_name]
+    query_func = crawler_info["query"]
+    meta = crawler_info["meta"]
+    title = meta.get("title", crawler_name)
+
+    kwargs: Dict[str, Any] = {}
+
+    if meta.get("requires_login"):
+        if VJUDGE_USERNAME and VJUDGE_PASSWORD:
+            kwargs["login_user"] = VJUDGE_USERNAME
+            kwargs["login_password"] = VJUDGE_PASSWORD
+        else:
+            raise ValueError("VJudge credentials not configured.")
+
+    start_time = datetime.now()
+    result = await query_func(client, username, **kwargs)
+    duration = (datetime.now() - start_time).total_seconds()
+
+    return QuerySuccess(result=result, duration=duration, title=title)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -98,7 +135,6 @@ async def about() -> str:
     "/api/crawlers/",
     response_model=CrawlersListResponse,
     summary="List all available crawlers",
-    description="Returns a list of all available OJ crawlers with their metadata.",
 )
 async def list_crawlers() -> Dict[str, Any]:
     crawlers = get_crawlers()
@@ -111,6 +147,42 @@ async def list_crawlers() -> Dict[str, Any]:
             url=meta.get("url", ""),
         )
     return CrawlersListResponse(error=False, data=data).model_dump()
+
+
+@router.get(
+    "/api/query/{crawler_name}/{username}",
+    response_model=QueryResponse,
+    responses={400: {"model": ErrorResponse}},
+    summary="Query a crawler for user statistics (JSON)",
+)
+async def query_crawler(
+    client: HttpClientDep,
+    crawler_name: str = PathParam(..., description="Name of the crawler to use"),
+    username: str = PathParam(..., description="Username to query"),
+) -> JSONResponse:
+    try:
+        qs = await _execute_query(client, crawler_name, username)
+        return JSONResponse(
+            QueryResponse(
+                error=False,
+                data=QueryResult(
+                    solved=qs.result["solved"],
+                    submissions=qs.result["submissions"],
+                    solvedList=qs.result.get("solved_list"),
+                ),
+            ).model_dump()
+        )
+    except ValueError as e:
+        return JSONResponse(
+            ErrorResponse(error=True, message=str(e)).model_dump(),
+            status_code=400,
+        )
+    except Exception as e:
+        error_msg = f"{type(e).__name__}: {str(e)}"
+        return JSONResponse(
+            ErrorResponse(error=True, message=error_msg).model_dump(),
+            status_code=400,
+        )
 
 
 @router.get(
@@ -150,102 +222,6 @@ async def get_row_htmx(
 
 
 @router.get(
-    "/api/query/{crawler_name}/{username}",
-    response_class=HTMLResponse,
-    responses={400: {"model": ErrorResponse}},
-    summary="Query a crawler for user statistics",
-    description="Query a specific crawler for a user's solved problems and submission count.",
-)
-async def query_crawler(
-    request: Request,
-    client: HttpClientDep,
-    crawler_name: str = PathParam(..., description="Name of the crawler to use"),
-    username: str = PathParam(..., description="Username to query"),
-) -> Response:
-    crawlers = get_crawlers()
-
-    if crawler_name not in crawlers:
-        error_msg = f"Unknown crawler '{crawler_name}'"
-        if _is_htmx_request(request):
-            return HTMLResponse(
-                content=_render_error_row(crawler_name, username, error_msg)
-            )
-        return JSONResponse(
-            content=ErrorResponse(error=True, message=error_msg).model_dump(),
-            status_code=400,
-        )
-
-    crawler_info = crawlers[crawler_name]
-    query_func = crawler_info["query"]
-    meta = crawler_info["meta"]
-    title = meta.get("title", crawler_name)
-
-    try:
-        start_time = datetime.now()
-
-        kwargs: Dict[str, Any] = {}
-
-        if meta.get("requires_login"):
-            if VJUDGE_USERNAME and VJUDGE_PASSWORD:
-                kwargs["login_user"] = VJUDGE_USERNAME
-                kwargs["login_password"] = VJUDGE_PASSWORD
-            else:
-                error_msg = "VJudge credentials not configured. Set VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables."
-                if _is_htmx_request(request):
-                    return HTMLResponse(
-                        content=_render_error_row(crawler_name, username, error_msg)
-                    )
-                return JSONResponse(
-                    content={"error": True, "message": error_msg}, status_code=400
-                )
-
-        result = await query_func(client, username, **kwargs)
-
-        end_time = datetime.now()
-        duration = (end_time - start_time).total_seconds()
-
-        if _is_htmx_request(request):
-            return HTMLResponse(
-                content=_render_success_row(
-                    crawler_name, title, username, result, duration
-                )
-            )
-
-        return JSONResponse(
-            content=QueryResponse(
-                error=False,
-                data=QueryResult(
-                    solved=result["solved"],
-                    submissions=result["submissions"],
-                    solvedList=result.get("solved_list"),
-                ),
-            ).model_dump()
-        )
-
-    except ValueError as e:
-        error_msg = str(e)
-        if _is_htmx_request(request):
-            return HTMLResponse(
-                content=_render_error_row(crawler_name, username, error_msg)
-            )
-        return JSONResponse(
-            content=ErrorResponse(error=True, message=error_msg).model_dump(),
-            status_code=400,
-        )
-
-    except Exception as e:
-        error_msg = f"{type(e).__name__}: {str(e)}"
-        if _is_htmx_request(request):
-            return HTMLResponse(
-                content=_render_error_row(crawler_name, username, error_msg)
-            )
-        return JSONResponse(
-            content=ErrorResponse(error=True, message=error_msg).model_dump(),
-            status_code=400,
-        )
-
-
-@router.get(
     "/htmx/query/{crawler_name}/{username}",
     response_class=HTMLResponse,
     summary="Query a crawler for HTMX",
@@ -254,52 +230,19 @@ async def query_crawler_htmx(
     client: HttpClientDep,
     crawler_name: str = PathParam(..., description="Name of the crawler to use"),
     username: str = PathParam(..., description="Username to query"),
-) -> Response:
-    crawlers = get_crawlers()
-
-    if crawler_name not in crawlers:
-        error_msg = f"Unknown crawler '{crawler_name}'"
-        return HTMLResponse(
-            content=_render_error_row(crawler_name, username, error_msg)
-        )
-
-    crawler_info = crawlers[crawler_name]
-    query_func = crawler_info["query"]
-    meta = crawler_info["meta"]
-    title = meta.get("title", crawler_name)
-
+) -> HTMLResponse:
     try:
-        start_time = datetime.now()
-
-        kwargs: Dict[str, Any] = {}
-
-        if meta.get("requires_login"):
-            if VJUDGE_USERNAME and VJUDGE_PASSWORD:
-                kwargs["login_user"] = VJUDGE_USERNAME
-                kwargs["login_password"] = VJUDGE_PASSWORD
-            else:
-                error_msg = "VJudge credentials not configured."
-                return HTMLResponse(
-                    content=_render_error_row(crawler_name, username, error_msg)
-                )
-
-        result = await query_func(client, username, **kwargs)
-
-        end_time = datetime.now()
-        duration = (end_time - start_time).total_seconds()
-
+        qs = await _execute_query(client, crawler_name, username)
         return HTMLResponse(
-            content=_render_success_row(crawler_name, title, username, result, duration)
+            _render_success_row(
+                crawler_name, qs.title, username, qs.result, qs.duration
+            )
         )
-
     except ValueError as e:
-        return HTMLResponse(content=_render_error_row(crawler_name, username, str(e)))
-
+        return HTMLResponse(_render_error_row(crawler_name, username, str(e)))
     except Exception as e:
         error_msg = f"{type(e).__name__}: {str(e)}"
-        return HTMLResponse(
-            content=_render_error_row(crawler_name, username, error_msg)
-        )
+        return HTMLResponse(_render_error_row(crawler_name, username, error_msg))
 
 
 @router.get(
@@ -317,38 +260,35 @@ async def get_canceled_row(
     return _render_canceled_row(crawler_name, title, username)
 
 
-@router.post("/api/report", response_class=HTMLResponse)
-async def calculate_report(request: Request) -> str:
-    body = await request.json()
-    results: List[Dict[str, Any]] = body.get("results", [])
+@router.post("/htmx/report", response_class=HTMLResponse)
+async def calculate_report(r: List[str] = Form(default=[])) -> str:
     crawlers = get_crawlers()
-
     all_solved: set = set()
     total_submissions = 0
 
-    for result in results:
-        if not result.get("success"):
+    for entry in r:
+        parts = entry.split(":", 2)
+        if len(parts) < 2:
             continue
-        crawler_name = result.get("crawler", "")
+        crawler_name = parts[0]
+        submissions = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
+        problems = parts[2] if len(parts) > 2 else ""
+
         meta = crawlers.get(crawler_name, {}).get("meta", {})
         is_virtual = meta.get("is_virtual_judge", False)
-        solved_list = result.get("solved_list") or []
-        for problem in solved_list:
-            if is_virtual:
-                all_solved.add(problem)
-            else:
-                all_solved.add(f"{crawler_name}-{problem}")
-        total_submissions += result.get("submissions", 0) or 0
+        for problem in problems.split(",") if problems else []:
+            if problem:
+                if is_virtual:
+                    all_solved.add(problem)
+                else:
+                    all_solved.add(f"{crawler_name}-{problem}")
+        total_submissions += submissions
 
     template = jinja_env.get_template("report.html")
     return template.render(
         total_solved=len(all_solved),
         total_submissions=total_submissions,
     )
-
-
-def _is_htmx_request(request: Request) -> bool:
-    return request.headers.get("HX-Request") == "true"
 
 
 def _generate_row_id(crawler_name: str, username: str) -> str:

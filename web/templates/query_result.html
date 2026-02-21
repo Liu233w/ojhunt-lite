@@ -13,4 +13,4 @@
         <button class="primary" onclick="document.getElementById('dialog-{{ row_id }}').close()">Close</button>
     </div>
 </dialog>
-<script id="solved-list-{{ row_id }}" type="application/json">{{ solved_list | tojson }}</script>
+<input form="report-form" type="hidden" name="r" value="{{ crawler_name }}:{{ submissions }}:{{ solved_list | sort | join(',') }}">

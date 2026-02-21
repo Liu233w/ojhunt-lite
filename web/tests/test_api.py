@@ -73,6 +73,18 @@ def test_htmx_canceled_endpoint(context: BrowserContext):
 
 
 @pytest.mark.playwright
+def test_htmx_report_endpoint(context: BrowserContext):
+    response = context.request.post(
+        f"{BASE_URL}/htmx/report",
+        data="r=codeforces%3A100%3A1A%2C2B%2C3C&r=atcoder%3A50%3Aabc123",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert response.status == 200
+    html = response.text()
+    assert "Total:" in html
+
+
+@pytest.mark.playwright
 def test_api_crawlers_list(context: BrowserContext):
     response = context.request.get(f"{BASE_URL}/api/crawlers/")
     assert response.status == 200
