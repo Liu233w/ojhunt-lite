@@ -7,7 +7,7 @@ A lightweight async Python tool for querying Online Judge (OJ) statistics across
 - **Self-contained crawlers**: Each crawler can be used independently with minimal dependencies
 - **Async/await support**: Built on aiohttp for efficient concurrent requests
 - **Command-line interface**: Query multiple OJ platforms simultaneously
-- **Lightweight**: Only depends on `aiohttp` and `beautifulsoup4` libraries
+- **Lightweight**: Only depends on `aiohttp` and `selectolax` libraries
 - **Easy to maintain**: Simple, readable code with consistent interfaces
 - **BSD-2 Licensed**: Free to use and modify
 
