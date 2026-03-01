@@ -2,14 +2,32 @@
 Unit tests for cli/output.py
 """
 
+from typing import Any
+
 from cli.models import Query
 from cli.output import (
     check_duplicate_queries,
-    collect_solved_problems,
     validate_crawlers,
     validate_credentials,
 )
 from cli.parser import build_all_queries
+from core.models import CrawlerInfo, CrawlerMeta
+
+
+def _make_crawler(name: str, **meta_kwargs: Any) -> CrawlerInfo:
+    """Helper to create a CrawlerInfo with a stub query function."""
+
+    async def _stub_query(*args: Any, **kwargs: Any) -> dict:
+        return {}
+
+    return CrawlerInfo(
+        name=name,
+        meta=CrawlerMeta(
+            title=meta_kwargs.get("title", name),
+            **{k: v for k, v in meta_kwargs.items() if k != "title"},
+        ),
+        query=_stub_query,
+    )
 
 
 class TestBuildAllQueries:
@@ -18,9 +36,9 @@ class TestBuildAllQueries:
     def test_build_all_queries(self):
         """Test building queries for all crawlers."""
         crawlers = {
-            "codeforces": {"meta": {"title": "CodeForces"}},
-            "poj": {"meta": {"title": "POJ"}},
-            "hdu": {"meta": {"title": "HDU"}},
+            "codeforces": _make_crawler("codeforces", title="CodeForces"),
+            "poj": _make_crawler("poj", title="POJ"),
+            "hdu": _make_crawler("hdu", title="HDU"),
         }
         result = build_all_queries("tourist", crawlers)
         assert len(result) == 3
@@ -35,9 +53,9 @@ class TestBuildAllQueries:
     def test_build_all_queries_order(self):
         """Test that order is preserved from dict keys."""
         crawlers = {
-            "a": {"meta": {}},
-            "b": {"meta": {}},
-            "c": {"meta": {}},
+            "a": _make_crawler("a"),
+            "b": _make_crawler("b"),
+            "c": _make_crawler("c"),
         }
         result = build_all_queries("user", crawlers)
         assert [q.crawler for q in result] == ["a", "b", "c"]
@@ -108,8 +126,8 @@ class TestValidateCrawlers:
             Query(crawler="poj", username="user2"),
         ]
         crawlers = {
-            "codeforces": {"meta": {}},
-            "poj": {"meta": {}},
+            "codeforces": _make_crawler("codeforces"),
+            "poj": _make_crawler("poj"),
         }
         assert validate_crawlers(queries, crawlers) is True
 
@@ -120,7 +138,7 @@ class TestValidateCrawlers:
             Query(crawler="unknown", username="user2"),
         ]
         crawlers = {
-            "codeforces": {"meta": {}},
+            "codeforces": _make_crawler("codeforces"),
         }
         assert validate_crawlers(queries, crawlers) is False
         captured = capsys.readouterr()
@@ -132,14 +150,18 @@ class TestValidateCrawlers:
             Query(crawler="zebra", username="user1"),
             Query(crawler="alpha", username="user2"),
         ]
-        crawlers = {"codeforces": {"meta": {}}}
+        crawlers = {
+            "codeforces": _make_crawler("codeforces"),
+        }
         assert validate_crawlers(queries, crawlers) is False
         captured = capsys.readouterr()
         assert "unknown crawler(s): alpha, zebra" in captured.err
 
     def test_empty_queries(self):
         """Test with empty query list."""
-        crawlers = {"codeforces": {"meta": {}}}
+        crawlers = {
+            "codeforces": _make_crawler("codeforces"),
+        }
         assert validate_crawlers([], crawlers) is True
 
     def test_empty_crawlers(self):
@@ -153,28 +175,36 @@ class TestValidateCredentials:
     def test_no_auth_required(self):
         """Test crawler that doesn't require authentication."""
         queries = [Query(crawler="codeforces", username="user1")]
-        crawlers = {"codeforces": {"meta": {}}}
+        crawlers = {
+            "codeforces": _make_crawler("codeforces"),
+        }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
 
     def test_requires_login_with_embedded_password(self):
         """Test requires_login crawler with embedded password."""
         queries = [Query(crawler="vjudge", username="user1", password="pass")]
-        crawlers = {"vjudge": {"meta": {"requires_login": True}}}
+        crawlers = {
+            "vjudge": _make_crawler("vjudge", requires_login=True),
+        }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
 
     def test_requires_login_with_flag_credentials(self):
         """Test requires_login crawler with -l flag credentials."""
         queries = [Query(crawler="vjudge", username="user1")]
-        crawlers = {"vjudge": {"meta": {"requires_login": True}}}
+        crawlers = {
+            "vjudge": _make_crawler("vjudge", requires_login=True),
+        }
         crawler_logins = {"vjudge": ("loginuser", "pass")}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
 
     def test_requires_login_missing_credentials(self, capsys):
         """Test requires_login crawler without any credentials."""
         queries = [Query(crawler="vjudge", username="user1")]
-        crawlers = {"vjudge": {"meta": {"requires_login": True}}}
+        crawlers = {
+            "vjudge": _make_crawler("vjudge", requires_login=True),
+        }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is False
         captured = capsys.readouterr()
@@ -183,7 +213,9 @@ class TestValidateCredentials:
     def test_requires_login_duplicate_credentials(self, capsys):
         """Test requires_login crawler with both embedded and flag credentials."""
         queries = [Query(crawler="vjudge", username="user1", password="pass")]
-        crawlers = {"vjudge": {"meta": {"requires_login": True}}}
+        crawlers = {
+            "vjudge": _make_crawler("vjudge", requires_login=True),
+        }
         crawler_logins = {"vjudge": ("loginuser", "pass2")}
         assert validate_credentials(queries, crawlers, crawler_logins) is False
         captured = capsys.readouterr()
@@ -192,14 +224,18 @@ class TestValidateCredentials:
     def test_requires_password_provided(self):
         """Test requires_password crawler with password provided."""
         queries = [Query(crawler="someoj", username="user1", password="pass")]
-        crawlers = {"someoj": {"meta": {"requires_password": True}}}
+        crawlers = {
+            "someoj": _make_crawler("someoj", requires_password=True),
+        }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
 
     def test_requires_password_missing(self, capsys):
         """Test requires_password crawler without password."""
         queries = [Query(crawler="someoj", username="user1")]
-        crawlers = {"someoj": {"meta": {"requires_password": True}}}
+        crawlers = {
+            "someoj": _make_crawler("someoj", requires_password=True),
+        }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is False
         captured = capsys.readouterr()
@@ -208,7 +244,9 @@ class TestValidateCredentials:
     def test_unwanted_password_in_query(self, capsys):
         """Test crawler that doesn't require auth but password provided."""
         queries = [Query(crawler="codeforces", username="user1", password="pass")]
-        crawlers = {"codeforces": {"meta": {}}}
+        crawlers = {
+            "codeforces": _make_crawler("codeforces"),
+        }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is False
         captured = capsys.readouterr()
@@ -216,7 +254,9 @@ class TestValidateCredentials:
 
     def test_empty_queries(self):
         """Test with empty query list."""
-        crawlers = {"codeforces": {"meta": {}}}
+        crawlers = {
+            "codeforces": _make_crawler("codeforces"),
+        }
         crawler_logins = {}
         assert validate_credentials([], crawlers, crawler_logins) is True
 
@@ -227,122 +267,8 @@ class TestValidateCredentials:
             Query(crawler="vjudge", username="user2", password="pass"),
         ]
         crawlers = {
-            "codeforces": {"meta": {}},
-            "vjudge": {"meta": {"requires_login": True}},
+            "codeforces": _make_crawler("codeforces"),
+            "vjudge": _make_crawler("vjudge", requires_login=True),
         }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
-
-
-class TestCollectSolvedProblems:
-    """Tests for collect_solved_problems function."""
-
-    def test_normal_crawler_prefix(self):
-        """Test that normal crawlers get prefixed with crawler name."""
-        results = [
-            {
-                "crawler": "hdu",
-                "success": True,
-                "solved_list": ["1000", "1001", "1002"],
-            }
-        ]
-        crawlers = {
-            "hdu": {"meta": {}},
-        }
-        solved = collect_solved_problems(results, crawlers)
-        assert solved == {"hdu-1000", "hdu-1001", "hdu-1002"}
-
-    def test_virtual_judge_no_prefix(self):
-        """Test that virtual judges use labels as-is."""
-        results = [
-            {
-                "crawler": "vjudge",
-                "success": True,
-                "solved_list": ["codeforces-123A", "poj-1000"],
-            }
-        ]
-        crawlers = {
-            "vjudge": {"meta": {"is_virtual_judge": True}},
-        }
-        solved = collect_solved_problems(results, crawlers)
-        assert solved == {"codeforces-123A", "poj-1000"}
-
-    def test_mixed_crawlers(self):
-        """Test mix of normal and virtual judges."""
-        results = [
-            {
-                "crawler": "hdu",
-                "success": True,
-                "solved_list": ["1000"],
-            },
-            {
-                "crawler": "vjudge",
-                "success": True,
-                "solved_list": ["codeforces-123A"],
-            },
-        ]
-        crawlers = {
-            "hdu": {"meta": {}},
-            "vjudge": {"meta": {"is_virtual_judge": True}},
-        }
-        solved = collect_solved_problems(results, crawlers)
-        assert solved == {"hdu-1000", "codeforces-123A"}
-
-    def test_deduplication(self):
-        """Test that duplicates are removed."""
-        results = [
-            {
-                "crawler": "hdu",
-                "success": True,
-                "solved_list": ["1000", "1001"],
-            },
-            {
-                "crawler": "hdu",
-                "success": True,
-                "solved_list": ["1000", "1002"],
-            },
-        ]
-        crawlers = {
-            "hdu": {"meta": {}},
-        }
-        solved = collect_solved_problems(results, crawlers)
-        assert solved == {"hdu-1000", "hdu-1001", "hdu-1002"}
-
-    def test_failed_result_ignored(self):
-        """Test that failed results are ignored."""
-        results = [
-            {
-                "crawler": "hdu",
-                "success": True,
-                "solved_list": ["1000"],
-            },
-            {
-                "crawler": "poj",
-                "success": False,
-                "solved_list": ["1001"],
-            },
-        ]
-        crawlers = {
-            "hdu": {"meta": {}},
-            "poj": {"meta": {}},
-        }
-        solved = collect_solved_problems(results, crawlers)
-        assert solved == {"hdu-1000"}
-
-    def test_empty_results(self):
-        """Test with empty results list."""
-        solved = collect_solved_problems([], {})
-        assert solved == set()
-
-    def test_empty_solved_list(self):
-        """Test with empty solved_list in result."""
-        results = [
-            {
-                "crawler": "hdu",
-                "success": True,
-                "solved_list": [],
-            }
-        ]
-        crawlers = {"hdu": {"meta": {}}}
-        solved = collect_solved_problems(results, crawlers)
-        assert solved == set()

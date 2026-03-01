@@ -5,7 +5,6 @@ OJHunt Lite CLI Package.
 from cli.models import Query
 from cli.output import (
     check_duplicate_queries,
-    collect_solved_problems,
     print_crawler_list,
     print_progress,
     print_report,
@@ -27,7 +26,6 @@ __all__ = [
     "TaskStatus",
     "build_all_queries",
     "check_duplicate_queries",
-    "collect_solved_problems",
     "create_parser",
     "parse_args",
     "parse_crawler_login",

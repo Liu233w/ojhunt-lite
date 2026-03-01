@@ -6,9 +6,10 @@ A lightweight async tool for querying Online Judge statistics across multiple pl
 """
 
 import asyncio
+import inspect
 import sys
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 
@@ -23,6 +24,8 @@ from cli import (
     validate_crawlers,
     validate_credentials,
 )
+from core.models import CrawlerInfo, NullCrawler, QueryResult
+from core.runner import run_crawler
 from crawlers import discover_crawlers
 
 
@@ -30,13 +33,13 @@ async def query_crawler(
     session: aiohttp.ClientSession,
     crawler_name: str,
     username: str,
-    crawlers: Dict[str, Dict[str, Any]],
+    crawlers: Dict[str, CrawlerInfo],
     progress: Optional[ProgressManager] = None,
     progress_key: Optional[str] = None,
     password: Optional[str] = None,
     login_user: Optional[str] = None,
     login_password: Optional[str] = None,
-) -> Dict[str, Any]:
+) -> QueryResult:
     """
     Query a single crawler for user statistics.
 
@@ -52,105 +55,70 @@ async def query_crawler(
         login_password: Optional login password (from -l flag)
 
     Returns:
-        Dictionary with crawler results and metadata
+        QueryResult with crawler results and metadata
     """
     if crawler_name not in crawlers:
-        return {
-            "crawler": crawler_name,
-            "username": username,
-            "error": f"Unknown crawler '{crawler_name}'",
-            "success": False,
-        }
+        null_crawler = NullCrawler(crawler_name)
+        return QueryResult(
+            crawler=null_crawler,
+            username=username,
+            success=False,
+            error=f"Unknown crawler '{crawler_name}'",
+        )
 
-    title = crawlers[crawler_name]["meta"].get("title", crawler_name)
+    crawler = crawlers[crawler_name]
 
     if progress and progress_key:
         progress.start_task(progress_key)
 
-    try:
-        query_func = crawlers[crawler_name]["query"]
-        start_time = datetime.now()
+    kwargs: Dict[str, str] = {}
+    if login_user is not None:
+        kwargs["login_user"] = login_user
+    if login_password is not None:
+        kwargs["login_password"] = login_password
+    if password is not None:
+        kwargs["password"] = password
 
-        import inspect
+    sig = inspect.signature(crawler.query)
+    has_login_params = "login_user" in sig.parameters
+    has_password_param = "password" in sig.parameters
 
-        sig = inspect.signature(query_func)
-        has_login_params = "login_user" in sig.parameters
-        has_password_param = "password" in sig.parameters
+    if has_login_params and (login_user is None or login_password is None):
+        if password is not None:
+            kwargs["login_user"] = username
+            kwargs["login_password"] = password
+    elif not has_password_param and "password" in kwargs:
+        del kwargs["password"]
 
-        if has_login_params:
-            result = await query_func(
-                session,
-                username,
-                password=password,
-                login_user=login_user,
-                login_password=login_password,
-            )
-        elif has_password_param:
-            result = await query_func(session, username, password=password)
-        else:
-            result = await query_func(session, username)
+    result = await run_crawler(session, crawler, username, **kwargs)
 
-        end_time = datetime.now()
-        duration = (end_time - start_time).total_seconds()
+    if progress and progress_key:
+        progress.complete_task(
+            progress_key,
+            success=result.success,
+            solved=result.solved,
+            duration=result.duration,
+        )
 
-        if progress and progress_key:
-            progress.complete_task(
-                progress_key,
-                success=True,
-                solved=result["solved"],
-                submissions=result["submissions"],
-                duration=duration,
-            )
-
-        return {
-            "crawler": crawler_name,
-            "username": username,
-            "title": title,
-            "solved": result["solved"],
-            "submissions": result["submissions"],
-            "solved_list": result["solved_list"],
-            "duration": duration,
-            "success": True,
-        }
-    except ValueError as e:
-        if progress and progress_key:
-            progress.complete_task(progress_key, success=False, error=str(e))
-        return {
-            "crawler": crawler_name,
-            "username": username,
-            "title": title,
-            "error": str(e),
-            "success": False,
-        }
-    except Exception as e:
-        error_msg = f"{type(e).__name__}: {str(e)}"
-        if progress and progress_key:
-            progress.complete_task(progress_key, success=False, error=error_msg)
-        return {
-            "crawler": crawler_name,
-            "username": username,
-            "title": title,
-            "error": error_msg,
-            "success": False,
-        }
+    return result
 
 
 async def run_queries(
     queries: List[Query],
-    crawlers: Dict[str, Dict[str, Any]],
+    crawlers: Dict[str, CrawlerInfo],
     crawler_logins: Dict[str, Tuple[str, str]],
     no_progress: bool = False,
-) -> List[Dict[str, Any]]:
+) -> List[QueryResult]:
     """Execute all queries with live progress updates."""
     progress = ProgressManager(is_tty=not no_progress and sys.stdout.isatty())
 
     keys: List[str] = []
     for q in queries:
-        title = crawlers[q.crawler]["meta"].get("title", q.crawler)
+        title = crawlers[q.crawler].meta.title
         key = progress.add_task(q.crawler, title, q.username)
         keys.append(key)
 
-    results: Dict[str, Dict[str, Any]] = {}
+    results: Dict[str, QueryResult] = {}
 
     async with aiohttp.ClientSession() as session:
         with progress:
@@ -180,7 +148,7 @@ async def run_queries(
             for done_task in asyncio.as_completed(tasks):
                 result = await done_task
                 results[
-                    ProgressManager._make_key(result["crawler"], result["username"])
+                    ProgressManager._make_key(result.crawler.name, result.username)
                 ] = result
 
     return [results[key] for key in keys]
@@ -219,7 +187,7 @@ async def main() -> int:
     end_time = datetime.now()
     total_duration = (end_time - start_time).total_seconds()
 
-    return print_report(results, crawlers, args.show_problems, total_duration)
+    return print_report(results, args.show_problems, total_duration)
 
 
 if __name__ == "__main__":

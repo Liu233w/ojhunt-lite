@@ -11,8 +11,9 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from web.api import router as api_router
+from web.htmx import router as htmx_router
 from web.http_client import close_http_client, init_http_client
-from web.api import router
 
 
 @asynccontextmanager
@@ -33,4 +34,5 @@ STATIC_DIR = Path(__file__).parent / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-app.include_router(router)
+app.include_router(api_router)
+app.include_router(htmx_router)

@@ -65,6 +65,21 @@ from typing import Dict, List, Union
 ### Typing
 Use `Dict`, `List`, `Union` from `typing` module (not `dict[str, ...]` syntax).
 
+### Static Typing
+Use dataclasses from `core/models.py` for structured data. Prefer typed models over `Dict[str, Any]`.
+
+Example:
+```python
+from core.models import CrawlerInfo, QueryResult
+from crawlers import discover_crawlers
+
+# discover_crawlers returns Dict[str, CrawlerInfo] (cached)
+crawlers: Dict[str, CrawlerInfo] = discover_crawlers()
+
+# QueryResult is a typed dataclass with crawler reference
+result: QueryResult = await run_crawler(client, crawlers["codeforces"], "tourist")
+```
+
 ### HTML Parsing
 Use `selectolax.lexbor.LexborHTMLParser`.
 
@@ -133,10 +148,14 @@ Each test must assert all three fields: `solved`, `submissions`, `solved_list`:
 
 | Purpose | File |
 |---------|------|
+| Core models | `core/models.py` |
+| Core crawler runner | `core/runner.py` |
 | API-based crawler | `crawlers/codeforces.py` |
 | HTML-scraping crawler | `crawlers/hdu.py` |
 | Test example | `crawlers/codeforces_test.py` |
 | CLI entry point | `ojhunt.py` |
+| Web API routes | `web/api.py` |
+| Web HTMX routes | `web/htmx.py` |
 | Archived crawlers | `archived_crawlers/` |
 
 ## Archived Crawlers
