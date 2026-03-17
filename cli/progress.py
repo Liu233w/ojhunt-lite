@@ -125,6 +125,7 @@ class ProgressManager:
                 self._build_table(),
                 console=self.console,
                 refresh_per_second=10,
+                transient=True,
             )
             self.live.__enter__()
         return self

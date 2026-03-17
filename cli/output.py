@@ -6,6 +6,9 @@ import sys
 from collections import Counter
 from typing import Dict, List, Tuple
 
+from rich.console import Console
+from rich.table import Table
+
 from cli.models import Query
 from core.models import CrawlerInfo, QueryResult
 from core.stats import collect_solved_problems
@@ -121,27 +124,34 @@ def print_report(
     print(f"Total: {len(all_solved)} solved / {total_submissions} submissions")
     print()
 
-    print("=" * 80)
-    print(
-        f"{'Crawler':<20} {'Username':<20} {'Solved':<10} {'Submissions':<12} {'Status'}"
-    )
-    print("=" * 80)
+    console = Console()
+
+    table = Table()
+    table.add_column("Crawler")
+    table.add_column("Username")
+    table.add_column("Solved", justify="right", no_wrap=True)
+    table.add_column("Submissions", justify="right", no_wrap=True)
+    table.add_column("Status")
 
     for result in results:
-        title = result.crawler.meta.title
-        username = result.username
         if result.success:
-            solved = result.solved
-            submissions = result.submissions
-            duration = result.duration
-            status = f"OK ({duration:.2f}s)"
-            print(f"{title:<20} {username:<20} {solved:<10} {submissions:<12} {status}")
+            table.add_row(
+                result.crawler.meta.title,
+                result.username,
+                str(result.solved),
+                str(result.submissions),
+                f"OK ({result.duration:.2f}s)",
+            )
         else:
-            error = result.error
-            status = f"ERROR: {error}"
-            print(f"{title:<20} {username:<20} {'N/A':<10} {'N/A':<12} {status}")
+            table.add_row(
+                result.crawler.meta.title,
+                result.username,
+                "N/A",
+                "N/A",
+                f"ERROR: {result.error}",
+            )
 
-    print("=" * 80)
+    console.print(table)
     print(
         f"Completed: {len(successful)} OK, {len(failed)} failed ({total_duration:.2f}s total)"
     )
@@ -156,7 +166,7 @@ def print_report(
             if solved_list:
                 problems_str = ", ".join(sorted(solved_list))
                 print(f"{title} ({username}): {problems_str}")
-        print()
+            print()
 
     return 0 if not failed else 1
 
