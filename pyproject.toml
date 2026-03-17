@@ -19,15 +19,17 @@ exclude = ["archived_crawlers"]
 
 [tool.pytest.ini_options]
 python_files = "*_test.py"
-testpaths = ["crawlers", "cli"]
+testpaths = ["crawlers", "cli", "web"]
 markers = [
     "network: tests that make real HTTP requests",
+    "playwright: tests that require a running web server",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
     "pytest-asyncio>=1.3.0",
+    "pytest-playwright>=0.7.2",
     "pytest-timeout>=2.4.0",
     "ruff>=0.15.1",
 ]
