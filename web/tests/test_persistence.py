@@ -33,12 +33,14 @@ def test_username_persists_when_crawler_added(page: Page):
 @pytest.mark.playwright
 def test_cleared_row_does_not_persist(page: Page):
     page.goto(BASE_URL)
+    page.evaluate("localStorage.clear()")
+    page.reload()
     page.select_option("select[x-model='selectedCrawler']", "codeforces")
     page.fill("input[placeholder='Username']", "tourist")
     page.click('button:has-text("Add")')
     row = page.locator("tr.result-row").filter(has_text="CodeForces")
     expect(row).to_be_visible(timeout=5000)
-    row.locator("button.remove-btn").click()
+    row.locator("button.remove-btn").first.click()
     expect(row).not_to_be_visible(timeout=2000)
     page.reload()
     row = page.locator("tr.result-row").filter(has_text="CodeForces")
