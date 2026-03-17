@@ -139,29 +139,21 @@
                         <tr :id="result.rowId" :class="'result-row ' + result.status">
                             <td x-text="crawlers[result.crawler]?.title || result.crawler"></td>
                             <td x-text="result.username"></td>
-                            <template x-if="result.status === 'loading'">
-                                <td colspan="4" class="loading-spinner">Loading...</td>
-                            </template>
-                            <template x-if="result.status === 'success'">
-                                <td>
-                                    <a href="#" class="solved-count" @click.prevent="showDialog(result)" x-text="result.solved"></a>
-                                </td>
-                            </template>
-                            <template x-if="result.status === 'error'">
-                                <td>N/A</td>
-                            </template>
-                            <template x-if="result.status === 'success'">
-                                <td x-text="result.submissions"></td>
-                            </template>
-                            <template x-if="result.status === 'error'">
-                                <td>N/A</td>
-                            </template>
-                            <template x-if="result.status === 'success'">
-                                <td class="status" x-text="'OK (' + result.duration.toFixed(2) + 's)'"></td>
-                            </template>
-                            <template x-if="result.status === 'error'">
-                                <td class="status error" x-text="'ERROR: ' + result.error"></td>
-                            </template>
+                            <td>
+                                <span x-show="result.status === 'loading'" class="loading-spinner">Loading...</span>
+                                <a href="#" x-show="result.status === 'success'" class="solved-count" @click.prevent="showDialog(result)" x-text="result.solved"></a>
+                                <span x-show="result.status === 'error'">N/A</span>
+                            </td>
+                            <td>
+                                <span x-show="result.status === 'loading'" class="loading-spinner"></span>
+                                <span x-show="result.status === 'success'" x-text="result.submissions"></span>
+                                <span x-show="result.status === 'error'">N/A</span>
+                            </td>
+                            <td>
+                                <span x-show="result.status === 'loading'" class="loading-spinner"></span>
+                                <span x-show="result.status === 'success'" class="status" x-text="'OK (' + result.duration.toFixed(2) + 's)'"></span>
+                                <span x-show="result.status === 'error'" class="status error" x-text="'ERROR: ' + result.error"></span>
+                            </td>
                             <td>
                                 <button class="retry-btn" @click="retryQuery(result.crawler, result.username, result.rowId)">Retry</button>
                             </td>
