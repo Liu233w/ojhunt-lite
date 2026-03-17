@@ -4,9 +4,11 @@ CLI output and validation functions for OJHunt Lite.
 
 import sys
 from collections import Counter
-from typing import Dict, List, Set, Any, Tuple
+from typing import Dict, List, Tuple
 
 from cli.models import Query
+from core.models import CrawlerInfo, QueryResult
+from core.stats import collect_solved_problems
 from crawlers import discover_crawlers
 
 
@@ -21,9 +23,7 @@ def check_duplicate_queries(queries: List[Query]) -> None:
             )
 
 
-def validate_crawlers(
-    queries: List[Query], crawlers: Dict[str, Dict[str, Any]]
-) -> bool:
+def validate_crawlers(queries: List[Query], crawlers: Dict[str, CrawlerInfo]) -> bool:
     """Validate that all queried crawlers exist."""
     unknown = set(q.crawler for q in queries if q.crawler not in crawlers)
     if unknown:
@@ -38,7 +38,7 @@ def validate_crawlers(
 
 def validate_credentials(
     queries: List[Query],
-    crawlers: Dict[str, Dict[str, Any]],
+    crawlers: Dict[str, CrawlerInfo],
     crawler_logins: Dict[str, Tuple[str, str]],
 ) -> bool:
     """
@@ -54,16 +54,16 @@ def validate_credentials(
 
     Args:
         queries: List of Query objects
-        crawlers: Dictionary of crawler metadata
+        crawlers: Dictionary of CrawlerInfo objects
         crawler_logins: Login credentials from -l flag, keyed by crawler name
 
     Returns:
         True if all validations pass, False otherwise
     """
     for q in queries:
-        meta = crawlers[q.crawler]["meta"]
-        requires_login = meta.get("requires_login", False)
-        requires_password = meta.get("requires_password", False)
+        meta = crawlers[q.crawler].meta
+        requires_login = meta.requires_login
+        requires_password = meta.requires_password
 
         if requires_login:
             has_query_creds = q.password is not None
@@ -105,42 +105,17 @@ def validate_credentials(
     return True
 
 
-def collect_solved_problems(
-    results: List[Dict[str, Any]], crawlers: Dict[str, Dict[str, Any]]
-) -> Set[str]:
-    """
-    Collect all solved problems with deduplication.
-
-    For normal crawlers: prefix with crawler name (e.g., 'hdu-1000')
-    For virtual judges: use labels as-is (already prefixed like 'codeforces-123A')
-    """
-    all_solved: Set[str] = set()
-    for result in results:
-        if not result["success"]:
-            continue
-        meta = crawlers[result["crawler"]]["meta"]
-        is_virtual = meta.get("is_virtual_judge", False)
-        solved_list = result.get("solved_list") or []
-        for problem in solved_list:
-            if is_virtual:
-                all_solved.add(problem)
-            else:
-                all_solved.add(f"{result['crawler']}-{problem}")
-    return all_solved
-
-
 def print_report(
-    results: List[Dict[str, Any]],
-    crawlers: Dict[str, Dict[str, Any]],
+    results: List[QueryResult],
     show_problems: bool,
     total_duration: float,
 ) -> int:
     """Print the final report and return exit code."""
-    successful = [r for r in results if r["success"]]
-    failed = [r for r in results if not r["success"]]
+    successful = [r for r in results if r.success]
+    failed = [r for r in results if not r.success]
 
-    all_solved = collect_solved_problems(results, crawlers)
-    total_submissions = sum(r.get("submissions", 0) for r in successful)
+    all_solved = collect_solved_problems(results)
+    total_submissions = sum(r.submissions for r in successful)
 
     print()
     print(f"Total: {len(all_solved)} solved / {total_submissions} submissions")
@@ -153,16 +128,16 @@ def print_report(
     print("=" * 80)
 
     for result in results:
-        title = result["title"]
-        username = result["username"]
-        if result["success"]:
-            solved = result["solved"]
-            submissions = result["submissions"]
-            duration = result["duration"]
+        title = result.crawler.meta.title
+        username = result.username
+        if result.success:
+            solved = result.solved
+            submissions = result.submissions
+            duration = result.duration
             status = f"OK ({duration:.2f}s)"
             print(f"{title:<20} {username:<20} {solved:<10} {submissions:<12} {status}")
         else:
-            error = result["error"]
+            error = result.error
             status = f"ERROR: {error}"
             print(f"{title:<20} {username:<20} {'N/A':<10} {'N/A':<12} {status}")
 
@@ -175,9 +150,9 @@ def print_report(
     if show_problems and successful:
         print("--- Detailed Report ---")
         for result in successful:
-            title = result["title"]
-            username = result["username"]
-            solved_list = result["solved_list"]
+            title = result.crawler.meta.title
+            username = result.username
+            solved_list = result.solved_list
             if solved_list:
                 problems_str = ", ".join(sorted(solved_list))
                 print(f"{title} ({username}): {problems_str}")
@@ -200,12 +175,12 @@ def print_crawler_list() -> None:
     rows = []
 
     for name in sorted(crawlers.keys()):
-        meta = crawlers[name]["meta"]
-        description = meta.get("description", "")
-        url = meta.get("url", "")
-        if meta.get("requires_login", False):
+        meta = crawlers[name].meta
+        description = meta.description
+        url = meta.url
+        if meta.requires_login:
             auth_status = "Yes"
-        elif meta.get("requires_password", False):
+        elif meta.requires_password:
             auth_status = "Password"
         else:
             auth_status = "No"
