@@ -7,8 +7,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Path as PathParam, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi import APIRouter, Path as PathParam
+from fastapi.responses import HTMLResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import BaseModel, Field
 
@@ -27,6 +27,7 @@ class CrawlerInfo(BaseModel):
     title: str = Field(..., description="Display name of the crawler")
     description: str = Field(..., description="Description of the platform")
     url: str = Field(..., description="URL of the platform")
+    isVirtualJudge: bool = Field(False, description="Whether this is a virtual judge")
 
 
 class CrawlersListResponse(BaseModel):
@@ -40,6 +41,7 @@ class QueryResult(BaseModel):
     solvedList: Optional[List[str]] = Field(
         None, description="List of solved problem IDs"
     )
+    duration: float = Field(0, description="Query duration in seconds")
 
 
 class QueryResponse(BaseModel):
@@ -65,7 +67,11 @@ jinja_env = Environment(
 async def index() -> str:
     crawlers = discover_crawlers()
     crawler_data = {
-        name: {"title": info.meta.title, "description": info.meta.description}
+        name: {
+            "title": info.meta.title,
+            "description": info.meta.description,
+            "isVirtualJudge": info.meta.is_virtual_judge,
+        }
         for name, info in sorted(crawlers.items())
     }
     template = jinja_env.get_template("index.html")
@@ -103,6 +109,7 @@ async def list_crawlers() -> Dict[str, Any]:
             title=meta.title,
             description=meta.description,
             url=meta.url,
+            isVirtualJudge=meta.is_virtual_judge,
         )
     return CrawlersListResponse(error=False, data=data).model_dump()
 
@@ -115,27 +122,20 @@ async def list_crawlers() -> Dict[str, Any]:
     description="Query a specific crawler for a user's solved problems and submission count.",
 )
 async def query_crawler(
-    request: Request,
     client: HttpClientDep,
     crawler_name: str = PathParam(..., description="Name of the crawler to use"),
     username: str = PathParam(..., description="Username to query"),
-    row_id: Optional[str] = Query(None, description="Row ID for HTMX responses"),
-) -> Response:
+) -> JSONResponse:
     crawlers = discover_crawlers()
 
     if crawler_name not in crawlers:
         error_msg = f"Unknown crawler '{crawler_name}'"
-        if _is_htmx_request(request):
-            return HTMLResponse(
-                content=_render_error_row(crawler_name, username, error_msg, row_id)
-            )
         return JSONResponse(
             content=ErrorResponse(error=True, message=error_msg).model_dump(),
             status_code=400,
         )
 
     crawler = crawlers[crawler_name]
-    title = crawler.meta.title
 
     kwargs: Dict[str, str] = {}
 
@@ -145,10 +145,6 @@ async def query_crawler(
             kwargs["login_password"] = VJUDGE_PASSWORD
         else:
             error_msg = "VJudge credentials not configured. Set VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables."
-            if _is_htmx_request(request):
-                return HTMLResponse(
-                    content=_render_error_row(crawler_name, username, error_msg, row_id)
-                )
             return JSONResponse(
                 content={"error": True, "message": error_msg}, status_code=400
             )
@@ -157,20 +153,9 @@ async def query_crawler(
 
     if not result.success:
         error_msg = result.error or "Unknown error"
-        if _is_htmx_request(request):
-            return HTMLResponse(
-                content=_render_error_row(crawler_name, username, error_msg, row_id)
-            )
         return JSONResponse(
             content=ErrorResponse(error=True, message=error_msg).model_dump(),
             status_code=400,
-        )
-
-    if _is_htmx_request(request):
-        return HTMLResponse(
-            content=_render_success_row(
-                crawler_name, title, username, result, result.duration, row_id
-            )
         )
 
     return JSONResponse(
@@ -180,82 +165,7 @@ async def query_crawler(
                 solved=result.solved,
                 submissions=result.submissions,
                 solvedList=result.solved_list,
+                duration=result.duration,
             ),
         ).model_dump()
-    )
-
-
-@router.post("/api/report", response_class=HTMLResponse)
-async def calculate_report(request: Request) -> str:
-    body = await request.json()
-    results: List[Dict[str, Any]] = body.get("results", [])
-    crawlers = discover_crawlers()
-
-    all_solved: set = set()
-    total_submissions = 0
-
-    for result in results:
-        if not result.get("success"):
-            continue
-        crawler_name = result.get("crawler", "")
-        crawler = crawlers.get(crawler_name)
-        is_virtual = crawler.meta.is_virtual_judge if crawler else False
-        solved_list = result.get("solved_list") or []
-        for problem in solved_list:
-            if is_virtual:
-                all_solved.add(problem)
-            else:
-                all_solved.add(f"{crawler_name}-{problem}")
-        total_submissions += result.get("submissions", 0) or 0
-
-    template = jinja_env.get_template("report.html")
-    return template.render(
-        total_solved=len(all_solved),
-        total_submissions=total_submissions,
-    )
-
-
-def _is_htmx_request(request: Request) -> bool:
-    return request.headers.get("HX-Request") == "true"
-
-
-def _render_success_row(
-    crawler_name: str,
-    title: str,
-    username: str,
-    result: Any,
-    duration: float,
-    row_id: Optional[str] = None,
-) -> str:
-    if row_id is None:
-        row_id = f"query-{crawler_name}-{username}"
-    template = jinja_env.get_template("query_result.html")
-    solved_list = result.solved_list or []
-    return template.render(
-        row_id=row_id,
-        crawler_name=crawler_name,
-        title=title,
-        username=username,
-        solved=result.solved,
-        submissions=result.submissions,
-        duration=duration,
-        solved_list=solved_list,
-    )
-
-
-def _render_error_row(
-    crawler_name: str, username: str, error: str, row_id: Optional[str] = None
-) -> str:
-    crawlers = discover_crawlers()
-    crawler = crawlers.get(crawler_name)
-    title = crawler.meta.title if crawler else crawler_name
-    if row_id is None:
-        row_id = f"query-{crawler_name}-{username}"
-    template = jinja_env.get_template("query_error.html")
-    return template.render(
-        row_id=row_id,
-        crawler_name=crawler_name,
-        title=title,
-        username=username,
-        error=error,
     )
