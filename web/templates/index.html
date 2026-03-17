@@ -87,6 +87,9 @@
         <div class="query-builder-row">
             <select id="crawler-select">
                 <option value="">Select crawler...</option>
+                {% for name, info in crawlers.items() %}
+                <option value="{{ name }}">{{ info.title }}{% if info.description %} - {{ info.description }}{% endif %}</option>
+                {% endfor %}
             </select>
             <input type="text" id="username-input" placeholder="Username" />
             <button class="primary" onclick="addQuery()" title="Enter">Add</button>
@@ -128,9 +131,9 @@
     
     <div id="report-container"></div>
     
+    <script>window.__CRAWLERS__ = {{ crawlers | tojson }};</script>
     <script>
         let queries = [];
-        let crawlers = {};
         let queryIdCounter = 0;
         let pendingResults = {};
         const STORAGE_KEY = 'ojhunt-queries';
@@ -155,7 +158,7 @@
                 }
                 if (data.queries && Array.isArray(data.queries)) {
                     data.queries.forEach(q => {
-                        if (q.crawler && q.username && crawlers[q.crawler]) {
+                        if (q.crawler && q.username && __CRAWLERS__[q.crawler]) {
                             queries.push({
                                 id: queryIdCounter++,
                                 crawler: q.crawler,
@@ -166,23 +169,6 @@
                     renderQueryList();
                 }
             } catch (e) {}
-        }
-        
-        async function loadCrawlers() {
-            const response = await fetch('/api/crawlers/');
-            const data = await response.json();
-            crawlers = data.data;
-            
-            const select = document.getElementById('crawler-select');
-            const sortedCrawlers = Object.entries(crawlers).sort((a, b) => a[0].localeCompare(b[0]));
-            for (const [name, meta] of sortedCrawlers) {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = meta.title + (meta.description ? ` - ${meta.description}` : '');
-                select.appendChild(option);
-            }
-            
-            loadSavedQueries();
         }
         
         function addQuery() {
@@ -224,7 +210,7 @@
                 return;
             }
             
-            for (const crawlerName of Object.keys(crawlers)) {
+            for (const crawlerName of Object.keys(__CRAWLERS__)) {
                 const existingQuery = queries.find(q => q.crawler === crawlerName && q.username === username);
                 if (!existingQuery) {
                     queries.push({ 
@@ -264,7 +250,7 @@
             
             container.innerHTML = queries.map((q, index) => `
                 <div class="query-item">
-                    <span><strong>${escapeHtml(crawlers[q.crawler]?.title || q.crawler)}</strong>: ${escapeHtml(q.username)}</span>
+                    <span><strong>${escapeHtml(__CRAWLERS__[q.crawler]?.title || q.crawler)}</strong>: ${escapeHtml(q.username)}</span>
                     <button class="danger" onclick="removeQuery(${index})">Remove</button>
                 </div>
             `).join('');
@@ -294,7 +280,7 @@
                 tr.id = rowId;
                 tr.className = 'result-row loading';
                 tr.innerHTML = `
-                    <td>${escapeHtml(crawlers[q.crawler]?.title || q.crawler)}</td>
+                    <td>${escapeHtml(__CRAWLERS__[q.crawler]?.title || q.crawler)}</td>
                     <td>${escapeHtml(q.username)}</td>
                     <td colspan="4" class="loading-spinner">⏳ Loading...</td>
                 `;
@@ -337,7 +323,7 @@
                         if (tr) {
                             tr.className = 'result-row error';
                             tr.innerHTML = `
-                                <td>${escapeHtml(crawlers[q.crawler]?.title || q.crawler)}</td>
+                                <td>${escapeHtml(__CRAWLERS__[q.crawler]?.title || q.crawler)}</td>
                                 <td>${escapeHtml(q.username)}</td>
                                 <td>N/A</td>
                                 <td>N/A</td>
@@ -403,7 +389,7 @@
             if (tr) {
                 tr.className = 'result-row loading';
                 tr.innerHTML = `
-                    <td>${escapeHtml(crawlers[crawlerName]?.title || crawlerName)}</td>
+                    <td>${escapeHtml(__CRAWLERS__[crawlerName]?.title || crawlerName)}</td>
                     <td>${escapeHtml(username)}</td>
                     <td colspan="4" class="loading-spinner">⏳ Loading...</td>
                 `;
@@ -434,7 +420,7 @@
                     if (tr) {
                         tr.className = 'result-row error';
                         tr.innerHTML = `
-                            <td>${escapeHtml(crawlers[crawlerName]?.title || crawlerName)}</td>
+                            <td>${escapeHtml(__CRAWLERS__[crawlerName]?.title || crawlerName)}</td>
                             <td>${escapeHtml(username)}</td>
                             <td>N/A</td>
                             <td>N/A</td>
@@ -456,7 +442,7 @@
                 });
         }
         
-        document.addEventListener('DOMContentLoaded', loadCrawlers);
+        document.addEventListener('DOMContentLoaded', loadSavedQueries);
         document.getElementById('username-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) addQuery();
         });
