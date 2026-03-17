@@ -8,11 +8,14 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from web.http_client import close_http_client, init_http_client
 from web.api import router
+
+load_dotenv()
 
 
 @asynccontextmanager

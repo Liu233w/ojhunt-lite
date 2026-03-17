@@ -30,10 +30,8 @@ uv run ruff check .                        # Run linter (required after edits)
 
 To test web services, ask user to run the following code on their terminal to spin up the service:
 ```bash
-VJUDGE_USERNAME= VJUDGE_PASSWORD= uv run fastapi dev web/app.py 2>&1 > logs/web.log
+source .env && uv run fastapi dev web/app.py --port 8080 2>&1 > logs/web.log
 ```
-
-The user needs to fill the VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables with their credentials before running the service.
 
 For you to test the frontend, use playwright skills instructed in https://github.com/microsoft/playwright-cli
 
@@ -128,3 +126,25 @@ The web application accepts the following environment variables:
 | `VJUDGE_PASSWORD` | For VJudge | Password for VJudge authentication |
 | `BUILD_TIME` | No | Build timestamp (Unix epoch or ISO format), shown on About page |
 | `GIT_COMMIT_SHA` | No | Git commit hash, used to generate source code link on About page |
+
+**Test Credentials:** VJudge test credentials are stored in `.env` (gitignored):
+```
+VJUDGE_USERNAME=...
+VJUDGE_PASSWORD=...
+```
+
+The user will need to fill the fields.
+
+### Testing CLI with VJudge
+
+For CLI testing with VJudge, read credentials from `.env` and construct the command:
+```bash
+uv run ojhunt.py -l username:password@vjudge -- target_user@vjudge
+```
+
+### Future Enhancement (TODO)
+
+When more `requires_login` crawlers are added, consider migrating to a generic env var pattern:
+- CLI checks `LOGIN_CRAWLER_USERNAME__<CRAWLER>`/`LOGIN_CRAWLER_PASSWORD__<CRAWLER>` as fallback
+- This would allow `.env` to work for both CLI and web without code changes per crawler
+- See: `web/api.py` for current VJudge-specific env var handling
