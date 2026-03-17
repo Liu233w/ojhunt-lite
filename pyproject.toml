@@ -18,7 +18,7 @@ dependencies = [
 exclude = ["archived_crawlers"]
 
 [tool.pytest.ini_options]
-python_files = "*_test.py"
+python_files = ["*_test.py", "test_*.py"]
 testpaths = ["crawlers", "cli", "web"]
 markers = [
     "network: tests that make real HTTP requests",

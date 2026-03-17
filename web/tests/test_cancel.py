@@ -22,8 +22,8 @@ def test_cancel_query(page: Page):
     row.locator("button.query-btn").click()
     expect(row.locator("button.cancel-btn")).to_be_visible(timeout=2000)
     row.locator("button.cancel-btn").click()
-    expect(row.locator(".status:has-text('Canceled')")).to_be_visible(timeout=2000)
-    expect(row.locator("button.retry-btn")).to_be_visible()
+    expect(row).to_have_class("result-row pending", timeout=2000)
+    expect(row.locator("button.query-btn")).to_be_visible()
     page.unroute("**/*", delay_response)
 
 
@@ -44,7 +44,7 @@ def test_cancel_shows_immediately(page: Page):
     row.locator("button.query-btn").click()
     expect(row.locator("button.cancel-btn")).to_be_visible(timeout=1000)
     row.locator("button.cancel-btn").click()
-    expect(row.locator(".status:has-text('Canceled')")).to_be_visible(timeout=500)
+    expect(row).to_have_class("result-row pending", timeout=500)
     page.unroute("**/*", delay_response)
 
 
@@ -69,7 +69,7 @@ def test_retry_after_cancel(page: Page):
     row.locator("button.query-btn").click()
     expect(row.locator("button.cancel-btn")).to_be_visible(timeout=2000)
     row.locator("button.cancel-btn").click()
-    expect(row.locator(".status:has-text('Canceled')")).to_be_visible(timeout=2000)
-    row.locator("button.retry-btn").click()
-    expect(row.locator(".status.success, .status.error")).to_be_visible(timeout=30000)
+    expect(row).to_have_class("result-row pending", timeout=2000)
+    row.locator("button.query-btn").click()
+    expect(row).to_have_class("result-row success", timeout=30000)
     page.unroute("**/*", delay_then_respond)
