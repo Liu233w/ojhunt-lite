@@ -4,9 +4,10 @@ CLI argument parser for OJHunt Lite.
 
 import argparse
 import sys
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple
 
 from cli.models import Query
+from core.models import CrawlerInfo
 
 
 def parse_crawler_login(values: Optional[List[str]]) -> Dict[str, Tuple[str, str]]:
@@ -62,7 +63,7 @@ def parse_crawler_login(values: Optional[List[str]]) -> Dict[str, Tuple[str, str
 
 
 def build_all_queries(
-    default_username: str, crawlers: Dict[str, Dict[str, Any]]
+    default_username: str, crawlers: Dict[str, CrawlerInfo]
 ) -> List[Query]:
     """Build queries for all crawlers using default username."""
     return [Query(crawler=name, username=default_username) for name in crawlers.keys()]
