@@ -322,6 +322,119 @@ function ojhunt() {
         },
         
         /**
+         * Download report as PDF
+         * @returns {void}
+         */
+        downloadReport() {
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
+            const filename = `ojhunt-report-${dateStr}.pdf`;
+            
+            const reportContent = this.generateReportHTML();
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert('Please allow popups to download PDF');
+                return;
+            }
+            
+            printWindow.document.write(reportContent);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            setTimeout(() => {
+                printWindow.print();
+            }, 250);
+        },
+        
+        /**
+         * Generate HTML for PDF report
+         * @returns {string}
+         */
+        generateReportHTML() {
+            const now = new Date();
+            const dateStr = now.toLocaleString();
+            const fileDateStr = now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
+            
+            const successfulQueries = this.queries.filter(q => q.status === 'success');
+            const errorQueries = this.queries.filter(q => q.status === 'error');
+            
+            let tableRows = '';
+            for (const q of this.queries) {
+                const title = this.crawlers[q.crawler]?.title || q.crawler;
+                const statusClass = q.status === 'success' ? 'success' : (q.status === 'error' ? 'error' : '');
+                const solved = q.status === 'success' ? q.solved : 'N/A';
+                const submissions = q.status === 'success' ? q.submissions : 'N/A';
+                const status = q.status === 'success' ? `OK (${q.duration.toFixed(2)}s)` : (q.status === 'error' ? `ERROR: ${q.error}` : q.status);
+                
+                tableRows += `
+                    <tr class="${statusClass}">
+                        <td>${title}</td>
+                        <td>${q.username}</td>
+                        <td>${solved}</td>
+                        <td>${submissions}</td>
+                        <td>${status}</td>
+                    </tr>
+                `;
+            }
+            
+            return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>OJHunt Report ${fileDateStr}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; margin-bottom: 0.5rem; }
+        .date { text-align: center; color: #666; margin-bottom: 2rem; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; font-weight: 600; }
+        .success { background: #f0fff4; }
+        .error { background: #ffeef0; }
+        .summary { background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+        .summary strong { font-size: 1.1rem; }
+        @media print {
+            body { padding: 0; }
+            button { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <h1>OJHunt Lite Report</h1>
+    <p class="date">Generated: ${dateStr}</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Crawler</th>
+                <th>Username</th>
+                <th>Solved</th>
+                <th>Submissions</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${tableRows}
+        </tbody>
+    </table>
+    
+    <div class="summary">
+        <strong>Total: ${this.report.totalSolved || 0} solved / ${this.report.totalSubmissions || 0} submissions</strong>
+    </div>
+    
+    <script>
+        window.onload = function() {
+            // Auto-trigger print dialog
+        };
+    <\/script>
+</body>
+</html>
+            `;
+        },
+        
+        /**
          * Initialize the component
          * @returns {void}
          */

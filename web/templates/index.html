@@ -53,8 +53,10 @@
         .solved-count { cursor: pointer; text-decoration: underline; color: #0066cc; }
         .solved-count:hover { color: #0055aa; }
         
-        .report { background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+        .report { background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
         .report strong { font-size: 1.1rem; }
+        .download-btn { background: #2e7d32; color: white; border: none; border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.875rem; cursor: pointer; }
+        .download-btn:hover { background: #1b5e20; }
         
         .loading-spinner { color: #666; }
         
@@ -160,6 +162,7 @@
         
         <div class="report" x-show="report.totalSolved !== null">
             <strong>Total: <span x-text="report.totalSolved"></span> solved / <span x-text="report.totalSubmissions"></span> submissions</strong>
+            <button type="button" class="download-btn" @click="downloadReport()">Download PDF</button>
         </div>
         
         <template x-for="q in queries" :key="q.id">
