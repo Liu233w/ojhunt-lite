@@ -15,9 +15,6 @@
         .header .org-title { color: #666; margin: 0.25rem 0 0.5rem 0; }
         .header .subtitle { color: #888; margin: 0; font-size: 0.95rem; }
         
-        h1 { margin-bottom: 0.5rem; }
-        .subtitle { color: #666; margin-bottom: 1.5rem; }
-        
         .query-builder { background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }
         .query-builder-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
         .query-builder-row select, .query-builder-row input { padding: 0.5rem; font-size: 1rem; }
@@ -30,15 +27,12 @@
         button.secondary { background: #e0e0e0; border: none; border-radius: 4px; }
         button.secondary:hover { background: #d0d0d0; }
         button.danger { background: #cc4444; color: white; border: none; border-radius: 4px; }
+        button.query-btn { background: #0066cc; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        button.cancel-btn { background: #cc4444; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
         button.retry-btn { background: #ff9800; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        button.remove-btn { background: #e0e0e0; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
         
         .actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-        
-        .query-list { margin-bottom: 1.5rem; }
-        .query-list h3 { margin-bottom: 0.5rem; }
-        .query-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; }
-        .query-item span { flex: 1; }
-        .query-item button { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
         
         .results-section { margin-top: 1.5rem; flex: 1; }
         .results-section h3 { margin-bottom: 0.5rem; }
@@ -48,9 +42,12 @@
         th { background: #f5f5f5; font-weight: 600; }
         .status { color: #22863a; }
         .status.error { color: #cb2431; }
+        .status.pending { color: #666; }
+        .status.loading { color: #f5a623; }
         .result-row.success { background: #f0fff4; }
         .result-row.error { background: #ffeef0; }
         .result-row.loading { background: #fffde7; }
+        .result-row.pending { background: #fafafa; }
         
         .solved-count { cursor: pointer; text-decoration: underline; color: #0066cc; }
         .solved-count:hover { color: #0055aa; }
@@ -89,37 +86,21 @@
                 <select x-model="selectedCrawler">
                     <option value="">Select crawler...</option>
                     <template x-for="[name, info] in Object.entries(crawlers)" :key="name">
-                        <option :value="name">
-                            <span x-text="info.title"></span>
-                            <span x-show="info.description"> - <span x-text="info.description"></span></span>
-                        </option>
+                        <option :value="name" x-text="info.title"></option>
                     </template>
+                    <option value="*">All Crawlers</option>
                 </select>
                 <input type="text" placeholder="Username" x-model="username" @keydown.enter="addQuery()" />
-                <button class="primary" @click="addQuery()" title="Enter">Add</button>
-                <button class="secondary" @click="addAllCrawlers()">Add All</button>
+                <button type="button" class="primary" @click="addQuery()" title="Enter">Add</button>
             </div>
             <div class="actions">
-                <button class="primary" @click="queryAll()" title="Ctrl(⌘)+Enter">Query All</button>
-                <button class="secondary" @click="clearAll()">Clear All</button>
-            </div>
-        </div>
-        
-        <div class="query-list">
-            <h3>Query List (<span x-text="queries.length"></span>)</h3>
-            <div id="query-list-container">
-                <p class="empty-state" x-show="queries.length === 0">No queries added yet. Add crawlers above.</p>
-                <template x-for="(q, index) in queries" :key="q.id">
-                    <div class="query-item">
-                        <span><strong x-text="crawlers[q.crawler]?.title || q.crawler"></strong>: <span x-text="q.username"></span></span>
-                        <button class="danger" @click="removeQuery(index)">Remove</button>
-                    </div>
-                </template>
+                <button type="button" class="primary" @click="queryAll()" title="Ctrl(⌘)+Enter">Query All</button>
+                <button type="button" class="secondary" @click="clearAll()">Clear All</button>
             </div>
         </div>
         
         <div class="results-section">
-            <h3>Results</h3>
+            <h3>Queries</h3>
             <table>
                 <thead>
                     <tr>
@@ -132,30 +113,43 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr x-show="Object.keys(results).length === 0">
-                        <td colspan="6" class="empty-state">Click "Query All" to start querying.</td>
+                    <tr x-show="queries.length === 0">
+                        <td colspan="6" class="empty-state">Add crawlers above to start querying.</td>
                     </tr>
-                    <template x-for="(result, index) in sortedResults" :key="result.rowId">
-                        <tr :id="result.rowId" :class="'result-row ' + result.status">
-                            <td x-text="crawlers[result.crawler]?.title || result.crawler"></td>
-                            <td x-text="result.username"></td>
+                    <template x-for="q in queries" :key="q.id">
+                        <tr :id="'row-' + q.id" :class="'result-row ' + q.status">
+                            <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
+                            <td x-text="q.username"></td>
                             <td>
-                                <span x-show="result.status === 'loading'" class="loading-spinner">Loading...</span>
-                                <a href="#" x-show="result.status === 'success'" class="solved-count" @click.prevent="showDialog(result)" x-text="result.solved"></a>
-                                <span x-show="result.status === 'error'">N/A</span>
+                                <span x-show="q.status === 'pending'">-</span>
+                                <span x-show="q.status === 'loading'" class="loading-spinner">Loading...</span>
+                                <a href="#" x-show="q.status === 'success'" class="solved-count" @click.prevent="showDialog(q)" x-text="q.solved"></a>
+                                <span x-show="q.status === 'error'">N/A</span>
                             </td>
                             <td>
-                                <span x-show="result.status === 'loading'" class="loading-spinner"></span>
-                                <span x-show="result.status === 'success'" x-text="result.submissions"></span>
-                                <span x-show="result.status === 'error'">N/A</span>
+                                <span x-show="q.status === 'pending'">-</span>
+                                <span x-show="q.status === 'loading'" class="loading-spinner"></span>
+                                <span x-show="q.status === 'success'" x-text="q.submissions"></span>
+                                <span x-show="q.status === 'error'">N/A</span>
                             </td>
                             <td>
-                                <span x-show="result.status === 'loading'" class="loading-spinner"></span>
-                                <span x-show="result.status === 'success'" class="status" x-text="'OK (' + result.duration.toFixed(2) + 's)'"></span>
-                                <span x-show="result.status === 'error'" class="status error" x-text="'ERROR: ' + result.error"></span>
+                                <span x-show="q.status === 'pending'" class="status pending">Pending</span>
+                                <span x-show="q.status === 'loading'" class="status loading">Loading...</span>
+                                <span x-show="q.status === 'success'" class="status" x-text="'OK (' + q.duration.toFixed(2) + 's)'"></span>
+                                <span x-show="q.status === 'error'" class="status error" x-text="'ERROR: ' + q.error"></span>
                             </td>
                             <td>
-                                <button class="retry-btn" @click="retryQuery(result.crawler, result.username, result.rowId)">Retry</button>
+                                <span x-show="q.status === 'pending'">
+                                    <button type="button" class="query-btn" @click="queryOne(q.id)">Query</button>
+                                    <button type="button" class="remove-btn" @click="removeQuery(q.id)">Remove</button>
+                                </span>
+                                <span x-show="q.status === 'loading'">
+                                    <button type="button" class="cancel-btn" @click="stopQuery(q.id)">Stop</button>
+                                </span>
+                                <span x-show="q.status === 'success' || q.status === 'error'">
+                                    <button type="button" class="retry-btn" @click="retryQuery(q.id)">Retry</button>
+                                    <button type="button" class="remove-btn" @click="removeQuery(q.id)">Remove</button>
+                                </span>
                             </td>
                         </tr>
                     </template>
@@ -167,251 +161,24 @@
             <strong>Total: <span x-text="report.totalSolved"></span> solved / <span x-text="report.totalSubmissions"></span> submissions</strong>
         </div>
         
-        <template x-for="(result, index) in sortedResults" :key="result.rowId">
-            <dialog :id="'dialog-' + result.rowId" x-show="result.status === 'success'">
+        <template x-for="q in queries" :key="q.id">
+            <dialog :id="'dialog-' + q.id" x-show="q.status === 'success'">
                 <h3>
-                    <span x-text="crawlers[result.crawler]?.title || result.crawler"></span>
-                    (<span x-text="result.username"></span>): 
-                    <span x-text="result.solvedList?.length || 0"></span> problems
+                    <span x-text="crawlers[q.crawler]?.title || q.crawler"></span>
+                    (<span x-text="q.username"></span>): 
+                    <span x-text="q.solvedList?.length || 0"></span> problems
                 </h3>
-                <div class="problems-list" x-text="result.solvedList?.sort().join(', ') || ''"></div>
+                <div class="problems-list" x-text="q.solvedList?.sort().join(', ') || ''"></div>
                 <div class="dialog-actions">
-                    <button class="primary" @click="closeDialog(result.rowId)">Close</button>
+                    <button type="button" class="primary" @click="closeDialog(q.id)">Close</button>
                 </div>
             </dialog>
         </template>
     </div>
     
     <script>window.__CRAWLERS__ = {{ crawlers | tojson }};</script>
+    <script src="/static/app.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script>
-        function ojhunt() {
-            return {
-                crawlers: window.__CRAWLERS__,
-                queries: [],
-                results: {},
-                selectedCrawler: '',
-                username: '',
-                queryIdCounter: 0,
-                report: {
-                    totalSolved: null,
-                    totalSubmissions: 0
-                },
-                STORAGE_KEY: 'ojhunt-queries',
-                
-                get sortedResults() {
-                    return Object.values(this.results).sort((a, b) => {
-                        const orderA = this.queries.findIndex(q => `row-${q.id}` === a.rowId);
-                        const orderB = this.queries.findIndex(q => `row-${q.id}` === b.rowId);
-                        return orderA - orderB;
-                    });
-                },
-                
-                init() {
-                    this.loadSavedQueries();
-                    this.$nextTick(() => {
-                        document.addEventListener('keydown', (e) => {
-                            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                                this.queryAll();
-                            }
-                        });
-                    });
-                },
-                
-                loadSavedQueries() {
-                    const saved = localStorage.getItem(this.STORAGE_KEY);
-                    if (!saved) return;
-                    
-                    try {
-                        const data = JSON.parse(saved);
-                        if (data.username) {
-                            this.username = data.username;
-                        }
-                        if (data.queries && Array.isArray(data.queries)) {
-                            data.queries.forEach(q => {
-                                if (q.crawler && q.username && this.crawlers[q.crawler]) {
-                                    this.queries.push({
-                                        id: this.queryIdCounter++,
-                                        crawler: q.crawler,
-                                        username: q.username
-                                    });
-                                }
-                            });
-                        }
-                    } catch (e) {}
-                },
-                
-                saveQueries() {
-                    const data = {
-                        username: this.username,
-                        queries: this.queries.map(q => ({ crawler: q.crawler, username: q.username }))
-                    };
-                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
-                },
-                
-                addQuery() {
-                    if (!this.selectedCrawler) {
-                        alert('Please select a crawler');
-                        return;
-                    }
-                    if (!this.username.trim()) {
-                        alert('Please enter a username');
-                        return;
-                    }
-                    
-                    const existingQuery = this.queries.find(
-                        q => q.crawler === this.selectedCrawler && q.username === this.username.trim()
-                    );
-                    if (existingQuery) {
-                        alert('This query already exists in the list');
-                        return;
-                    }
-                    
-                    this.queries.push({
-                        id: this.queryIdCounter++,
-                        crawler: this.selectedCrawler,
-                        username: this.username.trim()
-                    });
-                    this.selectedCrawler = '';
-                },
-                
-                addAllCrawlers() {
-                    if (!this.username.trim()) {
-                        alert('Please enter a username first');
-                        return;
-                    }
-                    
-                    for (const crawlerName of Object.keys(this.crawlers)) {
-                        const existingQuery = this.queries.find(
-                            q => q.crawler === crawlerName && q.username === this.username.trim()
-                        );
-                        if (!existingQuery) {
-                            this.queries.push({
-                                id: this.queryIdCounter++,
-                                crawler: crawlerName,
-                                username: this.username.trim()
-                            });
-                        }
-                    }
-                },
-                
-                removeQuery(index) {
-                    this.queries.splice(index, 1);
-                },
-                
-                clearAll() {
-                    this.queries = [];
-                    this.results = {};
-                    this.report = { totalSolved: null, totalSubmissions: 0 };
-                },
-                
-                async queryAll() {
-                    if (this.queries.length === 0) {
-                        alert('Please add at least one query');
-                        return;
-                    }
-                    
-                    this.saveQueries();
-                    this.results = {};
-                    this.report = { totalSolved: null, totalSubmissions: 0 };
-                    
-                    const promises = this.queries.map(q => this.executeQuery(q));
-                    await Promise.all(promises);
-                    await this.calculateReport();
-                },
-                
-                async executeQuery(q) {
-                    const rowId = `row-${q.id}`;
-                    
-                    this.results[rowId] = {
-                        rowId,
-                        crawler: q.crawler,
-                        username: q.username,
-                        status: 'loading',
-                        solved: 0,
-                        submissions: 0,
-                        solvedList: null,
-                        duration: 0,
-                        error: null
-                    };
-                    
-                    try {
-                        const url = `/api/crawlers/${encodeURIComponent(q.crawler)}/${encodeURIComponent(q.username)}`;
-                        const response = await fetch(url);
-                        const data = await response.json();
-                        
-                        if (data.error) {
-                            this.results[rowId] = {
-                                ...this.results[rowId],
-                                status: 'error',
-                                error: data.message
-                            };
-                        } else {
-                            this.results[rowId] = {
-                                ...this.results[rowId],
-                                status: 'success',
-                                solved: data.data.solved,
-                                submissions: data.data.submissions,
-                                solvedList: data.data.solvedList,
-                                duration: data.data.duration || 0
-                            };
-                        }
-                    } catch (error) {
-                        this.results[rowId] = {
-                            ...this.results[rowId],
-                            status: 'error',
-                            error: error.message
-                        };
-                    }
-                },
-                
-                async retryQuery(crawler, username, rowId) {
-                    const q = this.queries.find(q => `row-${q.id}` === rowId);
-                    if (!q) return;
-                    
-                    await this.executeQuery(q);
-                    await this.calculateReport();
-                },
-                
-                async calculateReport() {
-                    const crawlers = this.crawlers;
-                    const allSolved = new Set();
-                    let totalSubmissions = 0;
-                    
-                    for (const result of Object.values(this.results)) {
-                        if (result.status !== 'success') continue;
-                        
-                        const isVirtual = crawlers[result.crawler]?.isVirtualJudge || false;
-                        const solvedList = result.solvedList || [];
-                        
-                        for (const problem of solvedList) {
-                            if (isVirtual) {
-                                allSolved.add(problem);
-                            } else {
-                                allSolved.add(`${result.crawler}-${problem}`);
-                            }
-                        }
-                        totalSubmissions += result.submissions;
-                    }
-                    
-                    this.report = {
-                        totalSolved: allSolved.size,
-                        totalSubmissions
-                    };
-                },
-                
-                showDialog(result) {
-                    const dialog = document.getElementById(`dialog-${result.rowId}`);
-                    if (dialog) dialog.showModal();
-                },
-                
-                closeDialog(rowId) {
-                    const dialog = document.getElementById(`dialog-${rowId}`);
-                    if (dialog) dialog.close();
-                }
-            };
-        }
-    </script>
     
     <footer class="footer">
         <p>
