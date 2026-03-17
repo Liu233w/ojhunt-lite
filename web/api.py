@@ -63,8 +63,13 @@ jinja_env = Environment(
 
 @router.get("/", response_class=HTMLResponse)
 async def index() -> str:
+    crawlers = discover_crawlers()
+    crawler_data = {
+        name: {"title": info.meta.title, "description": info.meta.description}
+        for name, info in sorted(crawlers.items())
+    }
     template = jinja_env.get_template("index.html")
-    return template.render()
+    return template.render(crawlers=crawler_data)
 
 
 @router.get("/about", response_class=HTMLResponse)

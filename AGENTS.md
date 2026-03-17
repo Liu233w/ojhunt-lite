@@ -28,12 +28,31 @@ uv run fastapi run web/app.py --port 8080 # Run web prod server
 uv run ruff check .                        # Run linter (required after edits)
 ```
 
-To test web services, ask user to run the following code on their terminal to spin up the service:
+To test web services, use tmux to manage the background server:
+
+**Session name:** `ojhunt-web` | **Port:** `8080`
+
 ```bash
-source .env && uv run fastapi dev web/app.py --port 8080 2>&1 > logs/web.log
+# Check if service is running
+tmux has-session -t ojhunt-web 2>/dev/null && echo "Running" || echo "Not running"
+
+# Start server (if not running)
+tmux new-session -d -s ojhunt-web -c <project folder> "source .env && uv run fastapi dev web/app.py --port 8080"
+
+# View logs
+tmux capture-pane -t ojhunt-web -p
+
+# Stop server
+tmux kill-session -t ojhunt-web
 ```
 
-For you to test the frontend, use playwright skills instructed in https://github.com/microsoft/playwright-cli
+**Workflow:**
+1. Check if `ojhunt-web` session exists before starting
+2. Keep the server running after testing (don't stop it)
+3. User can ask to stop the service
+4. If tmux is not installed, inform user it works best with tmux
+
+Then use `curl` or Playwright skills to test the frontend.
 
 ## Dependency Management
 
