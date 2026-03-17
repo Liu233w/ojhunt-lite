@@ -28,4 +28,4 @@ jobs:
         uv run ruff check .
     - name: Test with pytest
       run: |
-        uv run pytest -m "not network"
+        uv run pytest -m "not network and not playwright"

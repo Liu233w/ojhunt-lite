@@ -228,8 +228,8 @@ All crawlers return a dictionary with the following structure:
 ### Running Tests
 
 ```bash
-# Run all tests
-pytest
+# Run all tests (excluding network and playwright)
+pytest -m "not network and not playwright"
 
 # Run specific crawler tests
 pytest crawlers/codeforces_test.py
@@ -242,6 +242,9 @@ pytest -m "not network"
 
 # Run only network tests
 pytest -m network
+
+# Run playwright/e2e tests (requires running web server)
+pytest -m playwright web/tests/
 ```
 
 #### Testing Login-Required Crawlers
