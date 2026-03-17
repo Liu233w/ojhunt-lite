@@ -55,8 +55,16 @@
         
         .report { background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
         .report strong { font-size: 1.1rem; }
+        .report-actions { display: flex; gap: 0.5rem; }
         .download-btn { background: #2e7d32; color: white; border: none; border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.875rem; cursor: pointer; }
         .download-btn:hover { background: #1b5e20; }
+        .export-btn { background: #1565c0; color: white; border: none; border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.875rem; cursor: pointer; }
+        .export-btn:hover { background: #0d47a1; }
+        .import-btn { background: #616161; color: white; border: none; border-radius: 4px; padding: 0.5rem 1rem; font-size: 0.875rem; cursor: pointer; }
+        .import-btn:hover { background: #424242; }
+        .history { margin-top: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 8px; }
+        .history h3 { margin-bottom: 0.5rem; }
+        .history canvas { width: 100%; max-width: 600px; }
         
         .loading-spinner { color: #666; }
         
@@ -162,7 +170,19 @@
         
         <div class="report" x-show="report.totalSolved !== null">
             <strong>Total: <span x-text="report.totalSolved"></span> solved / <span x-text="report.totalSubmissions"></span> submissions</strong>
-            <button type="button" class="download-btn" @click="downloadReport()">Download PDF</button>
+            <div class="report-actions">
+                <button type="button" class="download-btn" @click="downloadReport()">Download PDF</button>
+                <button type="button" class="export-btn" @click="exportData()">Export Data</button>
+                <label class="import-btn">
+                    Import Data
+                    <input type="file" accept=".json" @change="importData($event.target.files[0])" style="display: none;">
+                </label>
+            </div>
+        </div>
+        
+        <div class="history" x-show="history.length > 0">
+            <h3>History</h3>
+            <canvas id="history-chart" width="600" height="200"></canvas>
         </div>
         
         <template x-for="q in queries" :key="q.id">

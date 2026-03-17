@@ -22,7 +22,17 @@
  * @property {Array<{crawler: string, username: string}>} queries - Saved queries
  */
 
+/**
+ * @typedef {object} HistoryEntry
+ * @property {string} date - ISO date string
+ * @property {number} totalSolved
+ * @property {number} totalSubmissions
+ * @property {string} username - Query username
+ */
+
 const STORAGE_KEY = 'ojhunt-queries';
+const HISTORY_KEY = 'ojhunt-history';
+const MAX_HISTORY_ENTRIES = 100;
 
 /**
  * Creates a new Query object with default values
@@ -68,6 +78,9 @@ function ojhunt() {
             totalSolved: null,
             totalSubmissions: 0
         },
+        
+        /** @type {HistoryEntry[]} */
+        history: [],
         
         /** @type {boolean} */
         _initialized: false,
@@ -263,6 +276,107 @@ function ojhunt() {
                 totalSolved: allSolved.size,
                 totalSubmissions
             };
+            
+            if (allSolved.size > 0) {
+                this.saveToHistory();
+            }
+        },
+        
+        /**
+         * Save current result to history
+         * @returns {void}
+         */
+        saveToHistory() {
+            const entry = {
+                date: new Date().toISOString(),
+                totalSolved: this.report.totalSolved || 0,
+                totalSubmissions: this.report.totalSubmissions || 0,
+                username: this.username
+            };
+            
+            this.history.push(entry);
+            
+            if (this.history.length > MAX_HISTORY_ENTRIES) {
+                this.history = this.history.slice(-MAX_HISTORY_ENTRIES);
+            }
+            
+            this.saveHistory();
+        },
+        
+        /**
+         * Save history to localStorage
+         * @returns {void}
+         */
+        saveHistory() {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
+        },
+        
+        /**
+         * Load history from localStorage
+         * @returns {void}
+         */
+        loadHistory() {
+            const saved = localStorage.getItem(HISTORY_KEY);
+            if (!saved) return;
+            
+            try {
+                const data = JSON.parse(saved);
+                if (Array.isArray(data)) {
+                    this.history = data;
+                }
+            } catch (e) {}
+        },
+        
+        /**
+         * Export all data (queries + history) as JSON
+         * @returns {void}
+         */
+        exportData() {
+            const data = {
+                version: 1,
+                exportedAt: new Date().toISOString(),
+                queries: JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'),
+                history: this.history
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ojhunt-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        },
+        
+        /**
+         * Import data from JSON file
+         * @param {File} file
+         * @returns {Promise<void>}
+         */
+        async importData(file) {
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                
+                if (data.version !== 1) {
+                    alert('Unsupported backup version');
+                    return;
+                }
+                
+                if (data.queries) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data.queries));
+                }
+                
+                if (Array.isArray(data.history)) {
+                    this.history = data.history;
+                    this.saveHistory();
+                }
+                
+                alert('Data imported successfully. Reloading...');
+                location.reload();
+            } catch (e) {
+                alert('Failed to import data: ' + e.message);
+            }
         },
         
         /**
@@ -347,6 +461,38 @@ function ojhunt() {
         },
         
         /**
+         * Generate history chart HTML for PDF
+         * @returns {string}
+         */
+        generateHistoryChartHTML() {
+            const data = this.history.slice(-20);
+            const maxSolved = Math.max(...data.map(d => d.totalSolved));
+            
+            let bars = '';
+            data.forEach((entry, i) => {
+                const height = Math.round((entry.totalSolved / maxSolved) * 100);
+                const date = new Date(entry.date).toLocaleDateString();
+                bars += `
+                    <div class="bar-container">
+                        <div class="bar" style="height: ${height}%;">
+                            <span class="bar-value">${entry.totalSolved}</span>
+                        </div>
+                        <span class="bar-label">${date}</span>
+                    </div>
+                `;
+            });
+            
+            return `
+                <div class="history-section">
+                    <h2>Progress History</h2>
+                    <div class="chart">
+                        ${bars}
+                    </div>
+                </div>
+            `;
+        },
+        
+        /**
          * Generate HTML for PDF report
          * @returns {string}
          */
@@ -395,6 +541,13 @@ function ojhunt() {
         .error { background: #ffeef0; }
         .summary { background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
         .summary strong { font-size: 1.1rem; }
+        .history-section { margin-top: 2rem; }
+        .history-section h2 { margin-bottom: 1rem; }
+        .chart { display: flex; align-items: flex-end; height: 150px; gap: 4px; }
+        .bar-container { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+        .bar { background: #4CAF50; width: 100%; border-radius: 2px 2px 0 0; display: flex; align-items: flex-start; justify-content: center; min-height: 20px; }
+        .bar-value { color: white; font-size: 10px; padding: 2px; }
+        .bar-label { font-size: 8px; color: #666; margin-top: 4px; }
         @media print {
             body { padding: 0; }
             button { display: none; }
@@ -424,6 +577,12 @@ function ojhunt() {
         <strong>Total: ${this.report.totalSolved || 0} solved / ${this.report.totalSubmissions || 0} submissions</strong>
     </div>
     
+    ${this.history.length > 1 ? this.generateHistoryChartHTML() : ''}
+    
+    <script id="ojhunt-history" type="application/json">
+    ${JSON.stringify(this.history)}
+    <\/script>
+    
     <script>
         window.onload = function() {
             // Auto-trigger print dialog
@@ -443,13 +602,69 @@ function ojhunt() {
             this._initialized = true;
             
             this.loadSavedQueries();
+            this.loadHistory();
             this.$nextTick(() => {
                 document.addEventListener('keydown', (e) => {
                     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                         this.queryAll();
                     }
                 });
+                this.renderHistoryChart();
             });
+        },
+        
+        /**
+         * Render history chart using Canvas
+         * @returns {void}
+         */
+        renderHistoryChart() {
+            if (this.history.length < 2) return;
+            
+            const canvas = document.getElementById('history-chart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 40;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            const data = this.history.slice(-20);
+            const maxSolved = Math.max(...data.map(d => d.totalSolved));
+            
+            const chartWidth = width - padding * 2;
+            const chartHeight = height - padding * 2;
+            const barWidth = chartWidth / data.length - 4;
+            
+            ctx.fillStyle = '#22863a';
+            ctx.strokeStyle = '#ddd';
+            
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            
+            data.forEach((entry, i) => {
+                const barHeight = (entry.totalSolved / maxSolved) * chartHeight;
+                const x = padding + i * (chartWidth / data.length) + 2;
+                const y = height - padding - barHeight;
+                
+                ctx.fillStyle = '#4CAF50';
+                ctx.fillRect(x, y, barWidth, barHeight);
+                
+                if (i % Math.ceil(data.length / 5) === 0) {
+                    ctx.fillStyle = '#666';
+                    ctx.font = '10px system-ui';
+                    const date = new Date(entry.date).toLocaleDateString();
+                    ctx.fillText(date, x, height - padding + 15);
+                }
+            });
+            
+            ctx.fillStyle = '#333';
+            ctx.font = '12px system-ui';
+            ctx.fillText('Solved Problems', padding, padding - 10);
         }
     };
 }
