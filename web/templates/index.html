@@ -83,372 +83,342 @@
         <p class="subtitle">Query Online Judge statistics across multiple platforms</p>
     </div>
     
-    <div class="query-builder">
-        <div class="query-builder-row">
-            <select id="crawler-select">
-                <option value="">Select crawler...</option>
-                {% for name, info in crawlers.items() %}
-                <option value="{{ name }}">{{ info.title }}{% if info.description %} - {{ info.description }}{% endif %}</option>
-                {% endfor %}
-            </select>
-            <input type="text" id="username-input" placeholder="Username" />
-            <button class="primary" onclick="addQuery()" title="Enter">Add</button>
-            <button class="secondary" onclick="addAllCrawlers()">Add All</button>
+    <div x-data="ojhunt()" x-init="init()">
+        <div class="query-builder">
+            <div class="query-builder-row">
+                <select x-model="selectedCrawler">
+                    <option value="">Select crawler...</option>
+                    <template x-for="[name, info] in Object.entries(crawlers)" :key="name">
+                        <option :value="name">
+                            <span x-text="info.title"></span>
+                            <span x-show="info.description"> - <span x-text="info.description"></span></span>
+                        </option>
+                    </template>
+                </select>
+                <input type="text" placeholder="Username" x-model="username" @keydown.enter="addQuery()" />
+                <button class="primary" @click="addQuery()" title="Enter">Add</button>
+                <button class="secondary" @click="addAllCrawlers()">Add All</button>
+            </div>
+            <div class="actions">
+                <button class="primary" @click="queryAll()" title="Ctrl(⌘)+Enter">Query All</button>
+                <button class="secondary" @click="clearAll()">Clear All</button>
+            </div>
         </div>
-        <div class="actions">
-            <button class="primary" onclick="queryAll()" title="Ctrl(⌘)+Enter">Query All</button>
-            <button class="secondary" onclick="clearAll()">Clear All</button>
+        
+        <div class="query-list">
+            <h3>Query List (<span x-text="queries.length"></span>)</h3>
+            <div id="query-list-container">
+                <p class="empty-state" x-show="queries.length === 0">No queries added yet. Add crawlers above.</p>
+                <template x-for="(q, index) in queries" :key="q.id">
+                    <div class="query-item">
+                        <span><strong x-text="crawlers[q.crawler]?.title || q.crawler"></strong>: <span x-text="q.username"></span></span>
+                        <button class="danger" @click="removeQuery(index)">Remove</button>
+                    </div>
+                </template>
+            </div>
         </div>
-    </div>
-    
-    <div class="query-list">
-        <h3>Query List (<span id="query-count">0</span>)</h3>
-        <div id="query-list-container">
-            <p class="empty-state">No queries added yet. Add crawlers above.</p>
+        
+        <div class="results-section">
+            <h3>Results</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Crawler</th>
+                        <th>Username</th>
+                        <th>Solved</th>
+                        <th>Submissions</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr x-show="Object.keys(results).length === 0">
+                        <td colspan="6" class="empty-state">Click "Query All" to start querying.</td>
+                    </tr>
+                    <template x-for="(result, index) in sortedResults" :key="result.rowId">
+                        <tr :id="result.rowId" :class="'result-row ' + result.status">
+                            <td x-text="crawlers[result.crawler]?.title || result.crawler"></td>
+                            <td x-text="result.username"></td>
+                            <template x-if="result.status === 'loading'">
+                                <td colspan="4" class="loading-spinner">Loading...</td>
+                            </template>
+                            <template x-if="result.status === 'success'">
+                                <td>
+                                    <a href="#" class="solved-count" @click.prevent="showDialog(result)" x-text="result.solved"></a>
+                                </td>
+                            </template>
+                            <template x-if="result.status === 'error'">
+                                <td>N/A</td>
+                            </template>
+                            <template x-if="result.status === 'success'">
+                                <td x-text="result.submissions"></td>
+                            </template>
+                            <template x-if="result.status === 'error'">
+                                <td>N/A</td>
+                            </template>
+                            <template x-if="result.status === 'success'">
+                                <td class="status" x-text="'OK (' + result.duration.toFixed(2) + 's)'"></td>
+                            </template>
+                            <template x-if="result.status === 'error'">
+                                <td class="status error" x-text="'ERROR: ' + result.error"></td>
+                            </template>
+                            <td>
+                                <button class="retry-btn" @click="retryQuery(result.crawler, result.username, result.rowId)">Retry</button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
         </div>
+        
+        <div class="report" x-show="report.totalSolved !== null">
+            <strong>Total: <span x-text="report.totalSolved"></span> solved / <span x-text="report.totalSubmissions"></span> submissions</strong>
+        </div>
+        
+        <template x-for="(result, index) in sortedResults" :key="result.rowId">
+            <dialog :id="'dialog-' + result.rowId" x-show="result.status === 'success'">
+                <h3>
+                    <span x-text="crawlers[result.crawler]?.title || result.crawler"></span>
+                    (<span x-text="result.username"></span>): 
+                    <span x-text="result.solvedList?.length || 0"></span> problems
+                </h3>
+                <div class="problems-list" x-text="result.solvedList?.sort().join(', ') || ''"></div>
+                <div class="dialog-actions">
+                    <button class="primary" @click="closeDialog(result.rowId)">Close</button>
+                </div>
+            </dialog>
+        </template>
     </div>
-    
-    <div class="results-section">
-        <h3>Results</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Crawler</th>
-                    <th>Username</th>
-                    <th>Solved</th>
-                    <th>Submissions</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="results-body">
-                <tr id="empty-results">
-                    <td colspan="6" class="empty-state">Click "Query All" to start querying.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    
-    <div id="report-container"></div>
     
     <script>window.__CRAWLERS__ = {{ crawlers | tojson }};</script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
-        let queries = [];
-        let queryIdCounter = 0;
-        let pendingResults = {};
-        const STORAGE_KEY = 'ojhunt-queries';
-
-        function saveQueries() {
-            const username = document.getElementById('username-input').value.trim();
-            const data = {
-                username: username,
-                queries: queries.map(q => ({ crawler: q.crawler, username: q.username }))
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
-        
-        function loadSavedQueries() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (!saved) return;
-            
-            try {
-                const data = JSON.parse(saved);
-                if (data.username) {
-                    document.getElementById('username-input').value = data.username;
-                }
-                if (data.queries && Array.isArray(data.queries)) {
-                    data.queries.forEach(q => {
-                        if (q.crawler && q.username && __CRAWLERS__[q.crawler]) {
-                            queries.push({
-                                id: queryIdCounter++,
-                                crawler: q.crawler,
-                                username: q.username
+        function ojhunt() {
+            return {
+                crawlers: window.__CRAWLERS__,
+                queries: [],
+                results: {},
+                selectedCrawler: '',
+                username: '',
+                queryIdCounter: 0,
+                report: {
+                    totalSolved: null,
+                    totalSubmissions: 0
+                },
+                STORAGE_KEY: 'ojhunt-queries',
+                
+                get sortedResults() {
+                    return Object.values(this.results).sort((a, b) => {
+                        const orderA = this.queries.findIndex(q => `row-${q.id}` === a.rowId);
+                        const orderB = this.queries.findIndex(q => `row-${q.id}` === b.rowId);
+                        return orderA - orderB;
+                    });
+                },
+                
+                init() {
+                    this.loadSavedQueries();
+                    this.$nextTick(() => {
+                        document.addEventListener('keydown', (e) => {
+                            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                                this.queryAll();
+                            }
+                        });
+                    });
+                },
+                
+                loadSavedQueries() {
+                    const saved = localStorage.getItem(this.STORAGE_KEY);
+                    if (!saved) return;
+                    
+                    try {
+                        const data = JSON.parse(saved);
+                        if (data.username) {
+                            this.username = data.username;
+                        }
+                        if (data.queries && Array.isArray(data.queries)) {
+                            data.queries.forEach(q => {
+                                if (q.crawler && q.username && this.crawlers[q.crawler]) {
+                                    this.queries.push({
+                                        id: this.queryIdCounter++,
+                                        crawler: q.crawler,
+                                        username: q.username
+                                    });
+                                }
                             });
                         }
-                    });
-                    renderQueryList();
-                }
-            } catch (e) {}
-        }
-        
-        function addQuery() {
-            const select = document.getElementById('crawler-select');
-            const usernameInput = document.getElementById('username-input');
-            
-            const crawlerName = select.value;
-            const username = usernameInput.value.trim();
-            
-            if (!crawlerName) {
-                alert('Please select a crawler');
-                return;
-            }
-            if (!username) {
-                alert('Please enter a username');
-                return;
-            }
-            
-            const existingQuery = queries.find(q => q.crawler === crawlerName && q.username === username);
-            if (existingQuery) {
-                alert('This query already exists in the list');
-                return;
-            }
-            
-            queries.push({ 
-                id: queryIdCounter++,
-                crawler: crawlerName, 
-                username: username 
-            });
-            renderQueryList();
-        }
-        
-        function addAllCrawlers() {
-            const usernameInput = document.getElementById('username-input');
-            const username = usernameInput.value.trim();
-            
-            if (!username) {
-                alert('Please enter a username first');
-                return;
-            }
-            
-            for (const crawlerName of Object.keys(__CRAWLERS__)) {
-                const existingQuery = queries.find(q => q.crawler === crawlerName && q.username === username);
-                if (!existingQuery) {
-                    queries.push({ 
-                        id: queryIdCounter++,
-                        crawler: crawlerName, 
-                        username: username 
-                    });
-                }
-            }
-            renderQueryList();
-        }
-        
-        function removeQuery(index) {
-            queries.splice(index, 1);
-            renderQueryList();
-        }
-        
-        function clearAll() {
-            queries = [];
-            renderQueryList();
-            document.getElementById('results-body').innerHTML = `
-                <tr id="empty-results">
-                    <td colspan="6" class="empty-state">Click "Query All" to start querying.</td>
-                </tr>`;
-            document.getElementById('report-container').innerHTML = '';
-            pendingResults = {};
-        }
-        
-        function renderQueryList() {
-            const container = document.getElementById('query-list-container');
-            document.getElementById('query-count').textContent = queries.length;
-            
-            if (queries.length === 0) {
-                container.innerHTML = '<p class="empty-state">No queries added yet. Add crawlers above.</p>';
-                return;
-            }
-            
-            container.innerHTML = queries.map((q, index) => `
-                <div class="query-item">
-                    <span><strong>${escapeHtml(__CRAWLERS__[q.crawler]?.title || q.crawler)}</strong>: ${escapeHtml(q.username)}</span>
-                    <button class="danger" onclick="removeQuery(${index})">Remove</button>
-                </div>
-            `).join('');
-        }
-        
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        function queryAll() {
-            if (queries.length === 0) {
-                alert('Please add at least one query');
-                return;
-            }
-            
-            saveQueries();
-            
-            const tbody = document.getElementById('results-body');
-            tbody.innerHTML = '';
-            pendingResults = {};
-            
-            queries.forEach((q) => {
-                const rowId = `query-row-${q.id}`;
-                const tr = document.createElement('tr');
-                tr.id = rowId;
-                tr.className = 'result-row loading';
-                tr.innerHTML = `
-                    <td>${escapeHtml(__CRAWLERS__[q.crawler]?.title || q.crawler)}</td>
-                    <td>${escapeHtml(q.username)}</td>
-                    <td colspan="4" class="loading-spinner">⏳ Loading...</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            
-            document.getElementById('report-container').innerHTML = '';
-            
-            let completedCount = 0;
-            const totalCount = queries.length;
-            
-            queries.forEach((q) => {
-                const rowId = `query-row-${q.id}`;
-                const url = `/api/crawlers/${encodeURIComponent(q.crawler)}/${encodeURIComponent(q.username)}?row_id=${rowId}`;
+                    } catch (e) {}
+                },
                 
-                fetch(url, { headers: { 'HX-Request': 'true' } })
-                    .then(response => response.text())
-                    .then(html => {
-                        const tr = document.getElementById(rowId);
-                        if (tr) {
-                            tr.outerHTML = html;
-                        }
-                        
-                        pendingResults[rowId] = {
-                            crawler: q.crawler,
-                            username: q.username,
-                            solved: extractSolvedFromHtml(html),
-                            submissions: extractSubmissionsFromHtml(html),
-                            solved_list: extractSolvedListFromHtml(html, rowId),
-                            success: !html.includes('result-row error'),
-                        };
-                        
-                        completedCount++;
-                        if (completedCount === totalCount) {
-                            fetchReport();
-                        }
-                    })
-                    .catch(error => {
-                        const tr = document.getElementById(rowId);
-                        if (tr) {
-                            tr.className = 'result-row error';
-                            tr.innerHTML = `
-                                <td>${escapeHtml(__CRAWLERS__[q.crawler]?.title || q.crawler)}</td>
-                                <td>${escapeHtml(q.username)}</td>
-                                <td>N/A</td>
-                                <td>N/A</td>
-                                <td class="status error">ERROR: ${escapeHtml(error.message)}</td>
-                                <td></td>
-                            `;
-                        }
-                        
-                        pendingResults[rowId] = {
-                            crawler: q.crawler,
-                            username: q.username,
-                            solved: 0,
-                            submissions: 0,
-                            solved_list: null,
-                            success: false,
-                        };
-                        
-                        completedCount++;
-                        if (completedCount === totalCount) {
-                            fetchReport();
-                        }
-                    });
-            });
-        }
-        
-        function extractSolvedFromHtml(html) {
-            const match = html.match(/data-solved="(\d+)"/);
-            return match ? parseInt(match[1]) : 0;
-        }
-        
-        function extractSubmissionsFromHtml(html) {
-            const match = html.match(/data-submissions="(\d+)"/);
-            return match ? parseInt(match[1]) : 0;
-        }
-        
-        function extractSolvedListFromHtml(html, rowId) {
-            const match = html.match(new RegExp(`<script id="solved-list-${rowId}" type="application/json">([\\s\\S]*?)<\\/script>`));
-            if (match) {
-                try {
-                    return JSON.parse(match[1]);
-                } catch (e) {
-                    return null;
-                }
-            }
-            return null;
-        }
-        
-        async function fetchReport() {
-            const results = Object.values(pendingResults);
-            
-            const response = await fetch('/api/report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ results }),
-            });
-            
-            const html = await response.text();
-            document.getElementById('report-container').innerHTML = html;
-        }
-        
-        function retryQuery(crawlerName, username, rowId) {
-            const tr = document.getElementById(rowId);
-            if (tr) {
-                tr.className = 'result-row loading';
-                tr.innerHTML = `
-                    <td>${escapeHtml(__CRAWLERS__[crawlerName]?.title || crawlerName)}</td>
-                    <td>${escapeHtml(username)}</td>
-                    <td colspan="4" class="loading-spinner">⏳ Loading...</td>
-                `;
-            }
-            
-            const url = `/api/crawlers/${encodeURIComponent(crawlerName)}/${encodeURIComponent(username)}?row_id=${rowId}`;
-            fetch(url, { headers: { 'HX-Request': 'true' } })
-                .then(response => response.text())
-                .then(html => {
-                    const tr = document.getElementById(rowId);
-                    if (tr) {
-                        tr.outerHTML = html;
-                    }
-                    
-                    pendingResults[rowId] = {
-                        crawler: crawlerName,
-                        username: username,
-                        solved: extractSolvedFromHtml(html),
-                        submissions: extractSubmissionsFromHtml(html),
-                        solved_list: extractSolvedListFromHtml(html, rowId),
-                        success: !html.includes('result-row error'),
+                saveQueries() {
+                    const data = {
+                        username: this.username,
+                        queries: this.queries.map(q => ({ crawler: q.crawler, username: q.username }))
                     };
-                    
-                    fetchReport();
-                })
-                .catch(error => {
-                    const tr = document.getElementById(rowId);
-                    if (tr) {
-                        tr.className = 'result-row error';
-                        tr.innerHTML = `
-                            <td>${escapeHtml(__CRAWLERS__[crawlerName]?.title || crawlerName)}</td>
-                            <td>${escapeHtml(username)}</td>
-                            <td>N/A</td>
-                            <td>N/A</td>
-                            <td class="status error">ERROR: ${escapeHtml(error.message)}</td>
-                            <td></td>
-                        `;
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+                },
+                
+                addQuery() {
+                    if (!this.selectedCrawler) {
+                        alert('Please select a crawler');
+                        return;
+                    }
+                    if (!this.username.trim()) {
+                        alert('Please enter a username');
+                        return;
                     }
                     
-                    pendingResults[rowId] = {
-                        crawler: crawlerName,
-                        username: username,
+                    const existingQuery = this.queries.find(
+                        q => q.crawler === this.selectedCrawler && q.username === this.username.trim()
+                    );
+                    if (existingQuery) {
+                        alert('This query already exists in the list');
+                        return;
+                    }
+                    
+                    this.queries.push({
+                        id: this.queryIdCounter++,
+                        crawler: this.selectedCrawler,
+                        username: this.username.trim()
+                    });
+                    this.selectedCrawler = '';
+                },
+                
+                addAllCrawlers() {
+                    if (!this.username.trim()) {
+                        alert('Please enter a username first');
+                        return;
+                    }
+                    
+                    for (const crawlerName of Object.keys(this.crawlers)) {
+                        const existingQuery = this.queries.find(
+                            q => q.crawler === crawlerName && q.username === this.username.trim()
+                        );
+                        if (!existingQuery) {
+                            this.queries.push({
+                                id: this.queryIdCounter++,
+                                crawler: crawlerName,
+                                username: this.username.trim()
+                            });
+                        }
+                    }
+                },
+                
+                removeQuery(index) {
+                    this.queries.splice(index, 1);
+                },
+                
+                clearAll() {
+                    this.queries = [];
+                    this.results = {};
+                    this.report = { totalSolved: null, totalSubmissions: 0 };
+                },
+                
+                async queryAll() {
+                    if (this.queries.length === 0) {
+                        alert('Please add at least one query');
+                        return;
+                    }
+                    
+                    this.saveQueries();
+                    this.results = {};
+                    this.report = { totalSolved: null, totalSubmissions: 0 };
+                    
+                    const promises = this.queries.map(q => this.executeQuery(q));
+                    await Promise.all(promises);
+                    await this.calculateReport();
+                },
+                
+                async executeQuery(q) {
+                    const rowId = `row-${q.id}`;
+                    
+                    this.results[rowId] = {
+                        rowId,
+                        crawler: q.crawler,
+                        username: q.username,
+                        status: 'loading',
                         solved: 0,
                         submissions: 0,
-                        solved_list: null,
-                        success: false,
+                        solvedList: null,
+                        duration: 0,
+                        error: null
                     };
                     
-                    fetchReport();
-                });
+                    try {
+                        const url = `/api/crawlers/${encodeURIComponent(q.crawler)}/${encodeURIComponent(q.username)}`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            this.results[rowId] = {
+                                ...this.results[rowId],
+                                status: 'error',
+                                error: data.message
+                            };
+                        } else {
+                            this.results[rowId] = {
+                                ...this.results[rowId],
+                                status: 'success',
+                                solved: data.data.solved,
+                                submissions: data.data.submissions,
+                                solvedList: data.data.solvedList,
+                                duration: data.data.duration || 0
+                            };
+                        }
+                    } catch (error) {
+                        this.results[rowId] = {
+                            ...this.results[rowId],
+                            status: 'error',
+                            error: error.message
+                        };
+                    }
+                },
+                
+                async retryQuery(crawler, username, rowId) {
+                    const q = this.queries.find(q => `row-${q.id}` === rowId);
+                    if (!q) return;
+                    
+                    await this.executeQuery(q);
+                    await this.calculateReport();
+                },
+                
+                async calculateReport() {
+                    const crawlers = this.crawlers;
+                    const allSolved = new Set();
+                    let totalSubmissions = 0;
+                    
+                    for (const result of Object.values(this.results)) {
+                        if (result.status !== 'success') continue;
+                        
+                        const isVirtual = crawlers[result.crawler]?.isVirtualJudge || false;
+                        const solvedList = result.solvedList || [];
+                        
+                        for (const problem of solvedList) {
+                            if (isVirtual) {
+                                allSolved.add(problem);
+                            } else {
+                                allSolved.add(`${result.crawler}-${problem}`);
+                            }
+                        }
+                        totalSubmissions += result.submissions;
+                    }
+                    
+                    this.report = {
+                        totalSolved: allSolved.size,
+                        totalSubmissions
+                    };
+                },
+                
+                showDialog(result) {
+                    const dialog = document.getElementById(`dialog-${result.rowId}`);
+                    if (dialog) dialog.showModal();
+                },
+                
+                closeDialog(rowId) {
+                    const dialog = document.getElementById(`dialog-${rowId}`);
+                    if (dialog) dialog.close();
+                }
+            };
         }
-        
-        document.addEventListener('DOMContentLoaded', loadSavedQueries);
-        document.getElementById('username-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) addQuery();
-        });
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') queryAll();
-        });
     </script>
     
     <footer class="footer">
