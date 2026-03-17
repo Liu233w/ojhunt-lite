@@ -40,10 +40,11 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; }
         th { background: #f5f5f5; font-weight: 600; }
-        .status { color: #22863a; }
+        .status { color: #22863a; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
         .status.error { color: #cb2431; }
         .status.pending { color: #666; }
         .status.loading { color: #f5a623; }
+        .status[title] { cursor: help; }
         .result-row.success { background: #f0fff4; }
         .result-row.error { background: #ffeef0; }
         .result-row.loading { background: #fffde7; }
@@ -135,8 +136,8 @@
                             <td>
                                 <span x-show="q.status === 'pending'" class="status pending">Pending</span>
                                 <span x-show="q.status === 'loading'" class="status loading">Loading...</span>
-                                <span x-show="q.status === 'success'" class="status" x-text="'OK (' + q.duration.toFixed(2) + 's)'"></span>
-                                <span x-show="q.status === 'error'" class="status error" x-text="'ERROR: ' + q.error"></span>
+                                <span x-show="q.status === 'success'" class="status" :title="'OK (' + q.duration.toFixed(2) + 's)'" x-text="'OK (' + q.duration.toFixed(2) + 's)'"></span>
+                                <span x-show="q.status === 'error'" class="status error" :title="'ERROR: ' + q.error" x-text="'ERROR: ' + q.error"></span>
                             </td>
                             <td>
                                 <span x-show="q.status === 'pending'">
