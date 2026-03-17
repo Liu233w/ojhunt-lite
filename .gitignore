@@ -268,7 +268,6 @@ problem_labels.db
 # macOS
 .DS_Store
 
-# Skills and Playright
-.claude
+# Playright
 .playwright
 .playwright-cli
