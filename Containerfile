@@ -10,6 +10,7 @@ RUN uv sync --frozen --no-dev
 COPY crawlers ./crawlers
 COPY cli ./cli
 COPY web ./web
+COPY core ./core
 COPY ojhunt.py ./
 
 ARG GIT_COMMIT_SHA
