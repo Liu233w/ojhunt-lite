@@ -135,6 +135,10 @@ Crawlers for dead sites or sites with unfixable issues are moved to `archived_cr
 - Tests in `archived_crawlers/` are NOT run by pytest
 - Do not create stub crawlers that just raise exceptions - add them to `archived_crawlers/README.md` instead
 
+## Containerfile
+
+When adding new Python packages/modules, update `Containerfile` to COPY the new directory. The container builds by copying each package individually (not a full `COPY . .`).
+
 ## Environment Variables
 
 The web application accepts the following environment variables:
