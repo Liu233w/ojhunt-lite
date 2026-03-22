@@ -99,22 +99,33 @@ uv run ojhunt.py -l myuser:mypass@vjudge -- target_user@vjudge
 
 ### Login-Required Crawlers
 
-Some crawlers (like VJudge) require authentication to query any user's statistics. You can provide credentials in two ways:
+Some crawlers require authentication. There are two distinct reasons why:
 
-**1. Embedded credentials (query yourself):**
+**Type A — Login to see your own data:**
+The platform only shows your statistics when you are logged in. You must log in *as the target user* to query their stats.
+
+```bash
+# Login as myuser and query myuser's own data
+uv run ojhunt.py myuser:mypass@qoj
+```
+
+The `-l` flag is not applicable here — there is no way to query another user's stats from this type of platform.
+
+**Type B — Login as any account to query anyone:**
+The platform requires authentication, but once logged in you can view *any* user's statistics. You only need one account regardless of who you want to query.
+
 ```bash
 # Login as yourself, query your own stats
 uv run ojhunt.py myuser:mypass@vjudge
-```
 
-**2. Using `-l` flag (query anyone):**
-```bash
 # Login as yourself, query someone else
 uv run ojhunt.py -l myuser:mypass@vjudge -- target_user@vjudge
 
 # Multiple login-required crawlers
 uv run ojhunt.py -l user1:pass1@vjudge -l user2:pass2@otheroj -- target1@vjudge target2@otheroj
 ```
+
+Currently, VJudge is the only Type B crawler in this project.
 
 **Parsing rules for `user:pass@crawler`:**
 - First `:` separates username from password
