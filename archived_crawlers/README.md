@@ -37,5 +37,7 @@ These crawlers have been archived due to:
 | zoj | Migrated to pintia.cn, requires authentication |
 | ztrening | Site offline |
 | hackerrank | API returns 403 Forbidden for all requests |
+| nbut | SSL certificate expired on ac.2333.moe, site neglected |
+| uestc (CDOJ/Lutece) | hydro.ac API now behind Cerberus bot protection (JS PoW challenge) |
 
 These crawlers are kept for reference and may be restored if the issues are resolved.
