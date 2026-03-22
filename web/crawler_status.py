@@ -7,7 +7,8 @@ Checks each crawler one at a time, caching results in memory.
 import asyncio
 import logging
 import os
-from typing import Dict, Optional
+from dataclasses import dataclass
+from enum import Enum
 
 import aiohttp
 
@@ -17,25 +18,33 @@ from crawlers import discover_crawlers
 
 logger = logging.getLogger(__name__)
 
-STATUS_ONLINE = "online"
-STATUS_OFFLINE = "offline"
-STATUS_WAITING = "waiting"
-STATUS_NO_CREDENTIALS = "no_credentials"
+
+class CheckStatus(Enum):
+    ONLINE = "online"
+    OFFLINE = "offline"
+    WAITING = "waiting"
+
+
+@dataclass
+class CrawlerAvailability:
+    status: CheckStatus
+    error: str | None = None
+
 
 # Check interval between individual crawlers (seconds)
 CHECK_INTERVAL = 2
 # Interval between full passes (seconds)
 FULL_PASS_INTERVAL = 7200
 
-_status: Dict[str, str] = {}
-_checker_task: Optional[asyncio.Task] = None
+_status: dict[str, CrawlerAvailability] = {}
+_checker_task: asyncio.Task | None = None
 
 
-def get_all_status() -> Dict[str, str]:
+def get_all_status() -> dict[str, CrawlerAvailability]:
     return dict(_status)
 
 
-def _get_login_kwargs(crawler: CrawlerInfo) -> Optional[Dict[str, str]]:
+def _get_login_kwargs(crawler: CrawlerInfo) -> dict[str, str] | None:
     """Get login kwargs for requires_login crawlers. Returns None if credentials unavailable."""
     if not crawler.meta.requires_login:
         return {}
@@ -46,22 +55,25 @@ def _get_login_kwargs(crawler: CrawlerInfo) -> Optional[Dict[str, str]]:
     return None
 
 
-async def _check_one(client: aiohttp.ClientSession, name: str, crawler: CrawlerInfo) -> str:
-    """Check a single crawler's availability. Returns status string."""
+async def _check_one(client: aiohttp.ClientSession, name: str, crawler: CrawlerInfo) -> CrawlerAvailability:
+    """Check a single crawler's availability."""
     kwargs = _get_login_kwargs(crawler)
     if kwargs is None:
-        return STATUS_NO_CREDENTIALS
+        return CrawlerAvailability(CheckStatus.OFFLINE,
+            error="Login credentials not configured (set VJUDGE_USERNAME / VJUDGE_PASSWORD)")
 
     test_user = crawler.meta.test_username
     if not test_user:
-        return STATUS_OFFLINE
+        return CrawlerAvailability(CheckStatus.OFFLINE, error="No test_username configured")
 
     try:
         result = await run_crawler(client, crawler, test_user, **kwargs)
-        return STATUS_ONLINE if result.success else STATUS_OFFLINE
+        if result.success:
+            return CrawlerAvailability(CheckStatus.ONLINE)
+        return CrawlerAvailability(CheckStatus.OFFLINE, error=result.error)
     except Exception:
         logger.exception("Error checking crawler %s", name)
-        return STATUS_OFFLINE
+        return CrawlerAvailability(CheckStatus.OFFLINE, error="Unexpected error during check")
 
 
 async def _checker_loop(client: aiohttp.ClientSession) -> None:
@@ -70,18 +82,18 @@ async def _checker_loop(client: aiohttp.ClientSession) -> None:
 
     # Initialize all to waiting
     for name in crawlers:
-        _status[name] = STATUS_WAITING
+        _status[name] = CrawlerAvailability(CheckStatus.WAITING)
 
     while True:
         for name, crawler in crawlers.items():
-            _status[name] = STATUS_WAITING
+            _status[name] = CrawlerAvailability(CheckStatus.WAITING)
             try:
                 _status[name] = await _check_one(client, name, crawler)
             except asyncio.CancelledError:
                 raise
             except Exception:
                 logger.exception("Unexpected error in checker loop for %s", name)
-                _status[name] = STATUS_OFFLINE
+                _status[name] = CrawlerAvailability(CheckStatus.OFFLINE, error="Unexpected error in checker loop")
             await asyncio.sleep(CHECK_INTERVAL)
 
         await asyncio.sleep(FULL_PASS_INTERVAL)
