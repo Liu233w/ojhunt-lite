@@ -1,4 +1,4 @@
-# AGENTS.md - Guidelines for AI Agents
+# CLAUDE.md - Guidelines for AI Agents
 
 ## Project Overview
 
@@ -6,6 +6,15 @@ OJHunt Lite is an async Python tool for querying Online Judge statistics across 
 
 **Read these files first:**
 - `README.md` - Usage examples, crawler templates, development setup
+
+## Directory Structure
+
+```
+crawlers/          # Active crawlers (auto-discovered via __init__.py)
+core/              # Shared models and runner
+web/               # FastAPI web app
+archived_crawlers/ # Dead/broken crawlers (not a package, not tested)
+```
 
 ## Parallel Execution
 
@@ -22,7 +31,7 @@ uv add <package>                           # Add a new dependency (don't specify
 pytest                                     # Run all tests
 pytest crawlers/codeforces_test.py         # Run single test file
 pytest crawlers/codeforces_test.py::test_valid_user  # Run single test
-uv run ojhunt.py --crawler codeforces --username tourist  # Run CLI
+uv run ojhunt.py tourist@codeforces                       # Run CLI
 uv run fastapi dev web/app.py --port 8080 # Run web dev server
 uv run fastapi run web/app.py --port 8080 # Run web prod server
 uv run ruff check .                        # Run linter (required after edits)
@@ -59,7 +68,7 @@ Then use `curl` or Playwright skills to test the frontend.
 - **Never specify version numbers** when adding dependencies. Use `uv add <package>` and let uv resolve the version.
 - This applies to all dependencies including FastAPI, uvicorn, etc.
 
-## Updating AGENTS.md
+## Updating CLAUDE.md
 
 When the user provides guidance about practices or conventions during a conversation (e.g., "use uv add without version numbers"), add those rules to this file automatically.
 
@@ -118,7 +127,7 @@ There are two distinct types of login-required crawlers. Always identify which t
 - The crawler must log in *as the target user* to retrieve their data.
 - `login_user` and `login_password` equal `username` and `password`.
 - CLI usage: `user:pass@crawler` (the `-l` flag is redundant/inapplicable).
-- Example platforms: QOJ, LightOJ, Jisuanke (if implemented).
+- Example platforms (implemented): CSES. (Not yet implemented: QOJ, LightOJ, Jisuanke.)
 
 **Type B — Any account can query any user:**
 - The platform requires login, but once authenticated any user's stats are visible.
@@ -130,6 +139,7 @@ There are two distinct types of login-required crawlers. Always identify which t
 **How to identify the type:** Visit the site as a guest and try to access another user's profile. If it's blocked (login wall on all profiles), it's Type B. If profiles are public for others but not for yourself, it's Type A.
 
 **Reference implementations:**
+- Type A: `crawlers/cses.py`
 - Type B: `crawlers/vjudge.py`
 
 ## Crawler Metadata Fields (`__crawler_meta__`)
