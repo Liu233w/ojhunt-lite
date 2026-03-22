@@ -95,6 +95,29 @@ BSD-2 Clause license header (copy from existing crawler, use current year for ne
 - `ValueError`: User input errors (empty username, user not found)
 - `RuntimeError`: Network failures, parsing errors, unexpected issues
 
+## Login-Required Crawlers
+
+There are two distinct types of login-required crawlers. Always identify which type before implementing:
+
+**Type A — Login to see your own data only:**
+- The platform only exposes a user's own stats when they are logged in.
+- The crawler must log in *as the target user* to retrieve their data.
+- `login_user` and `login_password` equal `username` and `password`.
+- CLI usage: `user:pass@crawler` (the `-l` flag is redundant/inapplicable).
+- Example platforms: QOJ, LightOJ, Jisuanke (if implemented).
+
+**Type B — Any account can query any user:**
+- The platform requires login, but once authenticated any user's stats are visible.
+- A single shared account can query arbitrary target users.
+- `login_user`/`login_password` (from `-l` flag) may differ from `username`.
+- CLI usage: `-l mylogin:mypass@crawler -- target@crawler`.
+- Example platforms: VJudge.
+
+**How to identify the type:** Visit the site as a guest and try to access another user's profile. If it's blocked (login wall on all profiles), it's Type B. If profiles are public for others but not for yourself, it's Type A.
+
+**Reference implementations:**
+- Type B: `crawlers/vjudge.py`
+
 ## Design Principles
 
 - **Easy to add new crawlers.** Adding a new crawler should only require creating one crawler file + one test file. All crawler-specific data (metadata, test username) lives in `__crawler_meta__`. Avoid centralizing crawler-specific data elsewhere — if adding a crawler requires editing unrelated files, that's a design smell.
@@ -131,6 +154,9 @@ Each test must assert all three fields: `solved`, `submissions`, `solved_list`:
 | Crawler metadata model | `core/models.py` |
 | CLI entry point | `ojhunt.py` |
 | Archived crawlers | `archived_crawlers/` |
+| Type B login crawler | `crawlers/vjudge.py` |
+| Numeric ID crawler | `crawlers/luogu.py`, `crawlers/nod.py` |
+| Crawler analysis guide | `.claude/skills/analyze-crawler.md` |
 
 ## Archived Crawlers
 
