@@ -28,7 +28,7 @@
         .status-online { color: #22863a; font-weight: 500; }
         .status-offline { color: #cb2431; font-weight: 500; }
         .status-waiting { color: #999; }
-        .status-no-credentials { color: #cb2431; cursor: help; }
+        .status-has-error { cursor: help; }
     </style>
 </head>
 <body>
@@ -61,12 +61,11 @@
                 </td>
                 <td><span class="crawler-desc">{{ c.description }}</span></td>
                 <td>
-                    {% if c.status == "online" %}
+                    {% if c.availability.status.value == "online" %}
                     <span class="status-online">Online</span>
-                    {% elif c.status == "no_credentials" %}
-                    <span class="status-no-credentials" title="Server admin needs to provide login credentials for this crawler to work.">Offline (No Credentials)</span>
-                    {% elif c.status == "offline" %}
-                    <span class="status-offline">Offline</span>
+                    {% elif c.availability.status.value == "offline" %}
+                    <span class="status-offline{% if c.availability.error %} status-has-error{% endif %}"
+                      {% if c.availability.error %}title="{{ c.availability.error }}"{% endif %}>Offline</span>
                     {% else %}
                     <span class="status-waiting">Waiting...</span>
                     {% endif %}
