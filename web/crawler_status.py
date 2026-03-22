@@ -6,12 +6,12 @@ Checks each crawler one at a time, caching results in memory.
 
 import asyncio
 import logging
-import os
 from dataclasses import dataclass
 from enum import Enum
 
 import aiohttp
 
+from core.credentials import get_login_kwargs
 from core.models import CrawlerInfo
 from core.runner import run_crawler
 from crawlers import discover_crawlers
@@ -44,23 +44,16 @@ def get_all_status() -> dict[str, CrawlerAvailability]:
     return dict(_status)
 
 
-def _get_login_kwargs(crawler: CrawlerInfo) -> dict[str, str] | None:
-    """Get login kwargs for requires_login crawlers. Returns None if credentials unavailable."""
-    if not crawler.meta.requires_login:
-        return {}
-    username = os.environ.get("VJUDGE_USERNAME")
-    password = os.environ.get("VJUDGE_PASSWORD")
-    if username and password:
-        return {"login_user": username, "login_password": password}
-    return None
-
-
 async def _check_one(client: aiohttp.ClientSession, name: str, crawler: CrawlerInfo) -> CrawlerAvailability:
     """Check a single crawler's availability."""
-    kwargs = _get_login_kwargs(crawler)
-    if kwargs is None:
-        return CrawlerAvailability(CheckStatus.OFFLINE,
-            error="Login credentials not configured (set VJUDGE_USERNAME / VJUDGE_PASSWORD)")
+    if crawler.meta.requires_login:
+        kwargs = get_login_kwargs(name)
+        if kwargs is None:
+            upper = name.upper()
+            return CrawlerAvailability(CheckStatus.OFFLINE,
+                error=f"Login credentials not configured (set LOGIN_USERNAME__{upper} / LOGIN_PASSWORD__{upper})")
+    else:
+        kwargs = {}
 
     test_user = crawler.meta.test_username
     if not test_user:
