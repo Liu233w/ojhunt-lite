@@ -271,3 +271,6 @@ problem_labels.db
 # Playright
 .playwright
 .playwright-cli
+
+# Others
+/.claude/settings.local.json
