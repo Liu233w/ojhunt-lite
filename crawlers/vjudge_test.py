@@ -3,7 +3,7 @@ Tests for VJudge crawler
 
 Note: VJudge tests require configuration with login credentials.
 These tests will be skipped if environment variables are not set.
-Set VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables to run these tests.
+Set LOGIN_USERNAME__VJUDGE and LOGIN_PASSWORD__VJUDGE environment variables to run these tests.
 """
 
 import pytest
@@ -23,15 +23,15 @@ async def session():
         yield s
 
 
-VJUDGE_USERNAME = os.getenv("VJUDGE_USERNAME")
-VJUDGE_PASSWORD = os.getenv("VJUDGE_PASSWORD")
+VJUDGE_USERNAME = os.getenv("LOGIN_USERNAME__VJUDGE")
+VJUDGE_PASSWORD = os.getenv("LOGIN_PASSWORD__VJUDGE")
 
 
 pytestmark = [
     pytest.mark.network,
     pytest.mark.skipif(
         not VJUDGE_USERNAME or not VJUDGE_PASSWORD,
-        reason="VJudge credentials not configured. Set VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables.",
+        reason="VJudge credentials not configured. Set LOGIN_USERNAME__VJUDGE and LOGIN_PASSWORD__VJUDGE environment variables.",
     ),
 ]
 

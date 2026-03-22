@@ -3,7 +3,7 @@ Tests for CSES crawler
 
 Note: CSES tests require login credentials.
 These tests will be skipped if environment variables are not set.
-Set CSES_USERNAME and CSES_PASSWORD environment variables to run these tests.
+Set LOGIN_USERNAME__CSES and LOGIN_PASSWORD__CSES environment variables to run these tests.
 """
 
 import os
@@ -15,14 +15,14 @@ from crawlers.cses import query, __crawler_meta__
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_ID = "9999999999"
 
-CSES_USERNAME = os.getenv("CSES_USERNAME")
-CSES_PASSWORD = os.getenv("CSES_PASSWORD")
+CSES_USERNAME = os.getenv("LOGIN_USERNAME__CSES")
+CSES_PASSWORD = os.getenv("LOGIN_PASSWORD__CSES")
 
 pytestmark = [
     pytest.mark.network,
     pytest.mark.skipif(
         not CSES_USERNAME or not CSES_PASSWORD,
-        reason="CSES credentials not configured. Set CSES_USERNAME and CSES_PASSWORD environment variables.",
+        reason="CSES credentials not configured. Set LOGIN_USERNAME__CSES and LOGIN_PASSWORD__CSES environment variables.",
     ),
 ]
 
