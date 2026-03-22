@@ -16,6 +16,7 @@ class CrawlerMeta:
 
     title: str
     description: str = ""
+    cli_description: str = ""
     url: str = ""
     is_virtual_judge: bool = False
     requires_login: bool = False

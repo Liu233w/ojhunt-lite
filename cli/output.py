@@ -186,7 +186,7 @@ def print_crawler_list() -> None:
 
     for name in sorted(crawlers.keys()):
         meta = crawlers[name].meta
-        description = meta.description
+        description = meta.cli_description or meta.description
         url = meta.url
         if meta.requires_login:
             auth_status = "Yes"

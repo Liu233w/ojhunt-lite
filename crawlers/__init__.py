@@ -45,6 +45,7 @@ def discover_crawlers() -> Dict[str, CrawlerInfo]:
                 meta = CrawlerMeta(
                     title=meta_dict.get("title", module_name),
                     description=meta_dict.get("description", ""),
+                    cli_description=meta_dict.get("cli_description", ""),
                     url=meta_dict.get("url", ""),
                     is_virtual_judge=meta_dict.get("is_virtual_judge", False),
                     requires_login=meta_dict.get("requires_login", False),
