@@ -95,12 +95,17 @@ BSD-2 Clause license header (copy from existing crawler, use current year for ne
 - `ValueError`: User input errors (empty username, user not found)
 - `RuntimeError`: Network failures, parsing errors, unexpected issues
 
+## Design Principles
+
+- **Easy to add new crawlers.** Adding a new crawler should only require creating one crawler file + one test file. All crawler-specific data (metadata, test username) lives in `__crawler_meta__`. Avoid centralizing crawler-specific data elsewhere — if adding a crawler requires editing unrelated files, that's a design smell.
+- **Challenge decisions.** When a proposed approach duplicates data, makes adding crawlers harder, or adds unnecessary complexity — flag it before implementing.
+
 ## Test Structure
 
 - Test file: `crawlers/<name>_test.py`
 - Use `pytest_asyncio.fixture` for aiohttp session
 - Standard test cases: `test_user_not_exist`, `test_username_with_space`, `test_valid_user`
-- Use real test usernames from existing tests (e.g., `leoloveacm`, `vjudge5`)
+- `TEST_USERNAME` comes from the crawler's `__crawler_meta__["test_username"]` — import it, don't hardcode
 
 ### Test Assertions
 
@@ -123,6 +128,7 @@ Each test must assert all three fields: `solved`, `submissions`, `solved_list`:
 | API-based crawler | `crawlers/codeforces.py` |
 | HTML-scraping crawler | `crawlers/hdu.py` |
 | Test example | `crawlers/codeforces_test.py` |
+| Crawler metadata model | `core/models.py` |
 | CLI entry point | `ojhunt.py` |
 | Archived crawlers | `archived_crawlers/` |
 
