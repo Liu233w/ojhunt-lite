@@ -13,8 +13,15 @@ from core.runner import run_crawler
 from crawlers import discover_crawlers
 from web.http_client import HttpClientDep
 
-VJUDGE_USERNAME = os.environ.get("VJUDGE_USERNAME")
-VJUDGE_PASSWORD = os.environ.get("VJUDGE_PASSWORD")
+def _get_crawler_login(crawler_name: str):
+    upper = crawler_name.upper()
+    username = os.environ.get(f"LOGIN_USERNAME__{upper}")
+    password = os.environ.get(f"LOGIN_PASSWORD__{upper}")
+    # Backwards compat for VJudge
+    if crawler_name == "vjudge" and not username:
+        username = os.environ.get("VJUDGE_USERNAME")
+        password = os.environ.get("VJUDGE_PASSWORD")
+    return username, password
 
 
 class CrawlerInfo(BaseModel):
@@ -97,11 +104,16 @@ async def query_crawler(
     kwargs: Dict[str, str] = {}
 
     if crawler.meta.requires_login:
-        if VJUDGE_USERNAME and VJUDGE_PASSWORD:
-            kwargs["login_user"] = VJUDGE_USERNAME
-            kwargs["login_password"] = VJUDGE_PASSWORD
+        login_user, login_password = _get_crawler_login(crawler_name)
+        if login_user and login_password:
+            kwargs["login_user"] = login_user
+            kwargs["login_password"] = login_password
         else:
-            error_msg = "VJudge credentials not configured. Set VJUDGE_USERNAME and VJUDGE_PASSWORD environment variables."
+            upper = crawler_name.upper()
+            error_msg = (
+                f"Login credentials not configured for '{crawler_name}'. "
+                f"Set LOGIN_USERNAME__{upper} and LOGIN_PASSWORD__{upper} environment variables."
+            )
             return JSONResponse(
                 content={"error": True, "message": error_msg}, status_code=400
             )
