@@ -25,6 +25,9 @@ markers = [
     "playwright: tests that require a running web server",
 ]
 
+[tool.uv]
+link-mode = "copy"
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
