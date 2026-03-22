@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crawlers - OJHunt Lite</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header .logo { height: 60px; margin-bottom: 0.5rem; }
+        .header h1 { margin: 0; font-size: 1.5rem; }
+
+        .back-link { display: inline-block; margin-bottom: 1rem; color: #0066cc; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; font-weight: 600; }
+
+        .crawler-tag { font-family: monospace; font-size: 0.85rem; color: #555; }
+        .crawler-link { color: #0066cc; text-decoration: none; }
+        .crawler-link:hover { text-decoration: underline; }
+        .crawler-desc { color: #666; font-size: 0.875rem; }
+
+        .status-online { color: #22863a; font-weight: 500; }
+        .status-offline { color: #cb2431; font-weight: 500; }
+        .status-waiting { color: #999; }
+        .status-no-credentials { color: #cb2431; cursor: help; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">&larr; Back to Home</a>
+
+    <div class="header">
+        <img src="/static/logo.png" alt="OJHunt Logo" class="logo">
+        <h1>Crawlers</h1>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tag</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in crawlers %}
+            <tr>
+                <td><span class="crawler-tag">{{ c.name }}</span></td>
+                <td>
+                    {% if c.url %}
+                    <a href="{{ c.url }}" target="_blank" rel="noopener noreferrer" class="crawler-link">{{ c.title }}</a>
+                    {% else %}
+                    {{ c.title }}
+                    {% endif %}
+                </td>
+                <td><span class="crawler-desc">{{ c.description }}</span></td>
+                <td>
+                    {% if c.status == "online" %}
+                    <span class="status-online">Online</span>
+                    {% elif c.status == "no_credentials" %}
+                    <span class="status-no-credentials" title="Server admin needs to provide login credentials for this crawler to work.">Offline (No Credentials)</span>
+                    {% elif c.status == "offline" %}
+                    <span class="status-offline">Offline</span>
+                    {% else %}
+                    <span class="status-waiting">Waiting...</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
