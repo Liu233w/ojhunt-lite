@@ -62,7 +62,7 @@ podman run --rm ghcr.io/liu233w/ojhunt-lite -d tourist -- codeforces atcoder
 podman run -p 8080:8080 ghcr.io/liu233w/ojhunt-lite
 
 # With VJudge credentials
-podman run -p 8080:8080 -e VJUDGE_USERNAME=user -e VJUDGE_PASSWORD=pass ghcr.io/liu233w/ojhunt-lite
+podman run -p 8080:8080 -e LOGIN_USERNAME__VJUDGE=user -e LOGIN_PASSWORD__VJUDGE=pass ghcr.io/liu233w/ojhunt-lite
 ```
 
 > Replace `podman` with `docker` if you prefer Docker. Both commands work identically.
@@ -191,10 +191,10 @@ uv run fastapi run web/app.py --port 8080 --workers 4
 
 The web interface will be available at http://127.0.0.1:8080
 
-For VJudge support, set environment variables:
+For login-required crawlers (VJudge, CSES), set environment variables:
 
 ```bash
-VJUDGE_USERNAME=user VJUDGE_PASSWORD=pass uv run fastapi dev web/app.py --port 8080
+LOGIN_USERNAME__VJUDGE=user LOGIN_PASSWORD__VJUDGE=pass uv run fastapi dev web/app.py --port 8080
 ```
 
 ### API Documentation
@@ -264,8 +264,8 @@ For crawlers that require authentication (e.g., VJudge), set environment variabl
 
 ```bash
 # Set credentials for VJudge tests
-export VJUDGE_USERNAME=your_username
-export VJUDGE_PASSWORD=your_password
+export LOGIN_USERNAME__VJUDGE=your_username
+export LOGIN_PASSWORD__VJUDGE=your_password
 
 # Run VJudge tests
 pytest crawlers/vjudge_test.py

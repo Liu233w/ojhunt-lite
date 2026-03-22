@@ -204,15 +204,19 @@ The web application accepts the following environment variables:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VJUDGE_USERNAME` | For VJudge | Username for VJudge authentication |
-| `VJUDGE_PASSWORD` | For VJudge | Password for VJudge authentication |
+| `LOGIN_USERNAME__VJUDGE` | For VJudge | Username for VJudge authentication |
+| `LOGIN_PASSWORD__VJUDGE` | For VJudge | Password for VJudge authentication |
+| `LOGIN_USERNAME__CSES` | For CSES | Username for CSES authentication |
+| `LOGIN_PASSWORD__CSES` | For CSES | Password for CSES authentication |
+| `VJUDGE_USERNAME` | Legacy | Backwards-compat alias for `LOGIN_USERNAME__VJUDGE` |
+| `VJUDGE_PASSWORD` | Legacy | Backwards-compat alias for `LOGIN_PASSWORD__VJUDGE` |
 | `BUILD_TIME` | No | Build timestamp (Unix epoch or ISO format), shown on About page |
 | `GIT_COMMIT_SHA` | No | Git commit hash, used to generate source code link on About page |
 
 **Test Credentials:** VJudge test credentials are stored in `.env` (gitignored):
 ```
-VJUDGE_USERNAME=...
-VJUDGE_PASSWORD=...
+LOGIN_USERNAME__VJUDGE=...
+LOGIN_PASSWORD__VJUDGE=...
 ```
 
 The user will need to fill the fields.
@@ -223,10 +227,3 @@ For CLI testing with VJudge, read credentials from `.env` and construct the comm
 ```bash
 uv run ojhunt.py -l username:password@vjudge -- target_user@vjudge
 ```
-
-### Future Enhancement (TODO)
-
-When more `requires_login` crawlers are added, consider migrating to a generic env var pattern:
-- CLI checks `LOGIN_CRAWLER_USERNAME__<CRAWLER>`/`LOGIN_CRAWLER_PASSWORD__<CRAWLER>` as fallback
-- This would allow `.env` to work for both CLI and web without code changes per crawler
-- See: `web/api.py` for current VJudge-specific env var handling
