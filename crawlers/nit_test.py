@@ -6,12 +6,11 @@ import pytest
 import pytest_asyncio
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from crawlers.nit import query, _extract_number_from_cell
+from crawlers.nit import __crawler_meta__, query, _extract_number_from_cell
 
 pytestmark = pytest.mark.network
 
-# Test username from crawlers.test.js
-TEST_USERNAME = "teito"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

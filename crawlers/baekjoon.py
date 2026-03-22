@@ -34,6 +34,7 @@ __crawler_meta__ = {
     "title": "Baekjoon Online Judge",
     "description": "Uses solved.ac API for solved count",
     "url": "https://www.acmicpc.net/",
+    "test_username": "xiaowuc1",
 }
 
 HEADERS = {

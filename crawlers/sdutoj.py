@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "SDUT OJ",
     "description": "",
     "url": "https://oj.sdutacm.cn/",
+    "test_username": "root",
 }
 
 

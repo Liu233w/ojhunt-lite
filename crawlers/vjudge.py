@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "url": "https://vjudge.net/",
     "is_virtual_judge": True,
     "requires_login": True,
+    "test_username": "leoloveacm",
 }
 
 HOSTNAME = "vjudge.net"

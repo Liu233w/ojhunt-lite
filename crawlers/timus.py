@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "Timus (URAL)",
     "description": "",
     "url": "http://acm.timus.ru/",
+    "test_username": "vjudge11",
 }
 
 

@@ -5,12 +5,11 @@ Tests for SDUTOJ crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.sdutoj import query
+from crawlers.sdutoj import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-# Test username from crawlers.test.js
-TEST_USERNAME = "root"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

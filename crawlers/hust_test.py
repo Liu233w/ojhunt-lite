@@ -5,11 +5,11 @@ Tests for HUST crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.hust import query
+from crawlers.hust import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "freefcw"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

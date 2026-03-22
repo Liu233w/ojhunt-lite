@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "CSG",
     "description": "CSGrandeur Online Judge",
     "url": "https://cpc.csgrandeur.cn/",
+    "test_username": "CSGrandeur",
 }
 
 

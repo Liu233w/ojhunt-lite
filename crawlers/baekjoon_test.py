@@ -5,11 +5,11 @@ Tests for Baekjoon Online Judge crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.baekjoon import query
+from crawlers.baekjoon import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "xiaowuc1"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

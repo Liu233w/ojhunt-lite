@@ -34,6 +34,7 @@ __crawler_meta__ = {
     "title": "Toph",
     "description": "Bangladesh competitive programming platform",
     "url": "https://toph.co/",
+    "test_username": "BigBag",
 }
 
 

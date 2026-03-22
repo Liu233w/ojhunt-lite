@@ -5,11 +5,11 @@ Tests for Kilonova crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.kilonova import query
+from crawlers.kilonova import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "AlexVasiluta"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

@@ -5,12 +5,11 @@ Tests for Luogu crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.luogu import query
+from crawlers.luogu import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-# Test username from crawlers.test.js
-TEST_USERNAME_ID = "811437"  # user_id
+TEST_USERNAME_ID = __crawler_meta__["test_username"]  # user_id
 TEST_USERNAME_HEAVY = "NaCly_Fish"  # user with >1000 submissions
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 

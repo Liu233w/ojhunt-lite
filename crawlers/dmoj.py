@@ -38,6 +38,7 @@ __crawler_meta__ = {
     "title": "DMOJ",
     "description": "",
     "url": "https://dmoj.ca/",
+    "test_username": "Xyene",
 }
 
 

@@ -34,6 +34,7 @@ __crawler_meta__ = {
     "title": "LibreOJ",
     "description": "",
     "url": "https://loj.ac/",
+    "test_username": "cz_xuyixuan",
 }
 
 

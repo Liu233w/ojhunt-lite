@@ -20,6 +20,7 @@ class CrawlerMeta:
     is_virtual_judge: bool = False
     requires_login: bool = False
     requires_password: bool = False
+    test_username: str = ""
 
 
 @dataclass

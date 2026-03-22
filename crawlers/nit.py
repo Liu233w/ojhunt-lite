@@ -37,6 +37,7 @@ __crawler_meta__ = {
     "description": "",
     "url": "https://www.nitacm.com/",
     "is_virtual_judge": True,
+    "test_username": "teito",
 }
 
 

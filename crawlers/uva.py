@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "UVA",
     "description": "",
     "url": "https://uva.onlinejudge.org/",
+    "test_username": "leoloveacm",
 }
 
 UHUNT_PREFIX = "https://uhunt.onlinejudge.org"

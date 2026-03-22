@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "yukicoder",
     "description": "Japanese competitive programming platform",
     "url": "https://yukicoder.me/",
+    "test_username": "kmjp",
 }
 
 API_BASE = "https://yukicoder.me/api/v1"

@@ -5,11 +5,11 @@ Tests for Yosupo Judge crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.yosupo import query
+from crawlers.yosupo import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "yosupo"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "nonexistentuser12345678xyz"
 
 

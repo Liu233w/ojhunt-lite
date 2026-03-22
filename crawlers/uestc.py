@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "CDOJ (Lutece)",
     "description": "UESTC Online Judge (migrated to Hydro)",
     "url": "https://cdoj.site/",
+    "test_username": "HeRaNO",
 }
 
 

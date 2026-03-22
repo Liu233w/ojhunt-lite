@@ -5,12 +5,11 @@ Tests for UVA crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.uva import query
+from crawlers.uva import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-# Test username from crawlers.test.js
-TEST_USERNAME = "leoloveacm"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

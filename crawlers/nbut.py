@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "NBUT",
     "description": "",
     "url": "https://ac.2333.moe/",
+    "test_username": "vjudge5",
 }
 
 

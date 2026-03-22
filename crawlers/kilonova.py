@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "Kilonova",
     "description": "Romanian competitive programming platform",
     "url": "https://kilonova.ro/",
+    "test_username": "AlexVasiluta",
 }
 
 BASE_URL = "https://kilonova.ro/api"

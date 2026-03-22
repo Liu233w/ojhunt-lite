@@ -5,11 +5,11 @@ Tests for oj.uz crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.ojuz import query
+from crawlers.ojuz import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "iamsazidh"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

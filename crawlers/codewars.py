@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "Codewars",
     "description": "Currently it does not have submission number.\nUsername is case sensitive.",
     "url": "https://www.codewars.com",
+    "test_username": "Liu233w",
 }
 
 

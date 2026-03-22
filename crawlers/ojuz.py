@@ -34,6 +34,7 @@ __crawler_meta__ = {
     "title": "oj.uz",
     "description": "Online Judge hosting IOI/BOI/JOI/APIO problems",
     "url": "https://oj.uz/",
+    "test_username": "iamsazidh",
 }
 
 BASE_URL = "https://oj.uz"

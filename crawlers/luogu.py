@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "洛谷",
     "description": "Both username and user_id are supported",
     "url": "https://www.luogu.com.cn",
+    "test_username": "811437",
 }
 
 

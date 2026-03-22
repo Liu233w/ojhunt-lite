@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "CSU",
     "description": "",
     "url": "https://vlab.csu.edu.cn/oj",
+    "test_username": "admin",
 }
 
 

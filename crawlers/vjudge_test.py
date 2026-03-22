@@ -10,9 +10,9 @@ import pytest
 import pytest_asyncio
 import aiohttp
 import os
-from crawlers.vjudge import query
+from crawlers.vjudge import __crawler_meta__, query
 
-TEST_USERNAME = "leoloveacm"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 USERNAME_WITHOUT_SUBMISSIONS = "nwpuacm"
 

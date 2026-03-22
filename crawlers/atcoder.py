@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "AtCoder",
     "description": "API provided by kenkoooo (https://github.com/kenkoooo/AtCoderProblems). Only AC number is supported",
     "url": "https://atcoder.jp",
+    "test_username": "wata",
 }
 
 

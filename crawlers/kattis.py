@@ -34,6 +34,7 @@ __crawler_meta__ = {
     "title": "Kattis",
     "description": "Uses score-based system (sum of problem difficulties) instead of solved count",
     "url": "https://open.kattis.com/",
+    "test_username": "xiaowuc1",
 }
 
 
