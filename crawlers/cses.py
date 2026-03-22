@@ -74,7 +74,7 @@ async def _login(
         raise RuntimeError(f"Login request failed: {str(e)}")
 
 
-async def _get_login_user_id(session: aiohttp.ClientSession) -> str:
+async def _get_login_user_id(session: aiohttp.ClientSession) -> Optional[str]:
     async with session.get(
         f"{BASE_URL}/",
         timeout=aiohttp.ClientTimeout(total=30),
@@ -83,14 +83,11 @@ async def _get_login_user_id(session: aiohttp.ClientSession) -> str:
 
     account_link = LexborHTMLParser(text).css_first("a.account")
     if not account_link:
-        raise RuntimeError("Failed to extract user ID after login")
+        return None
 
     href = account_link.attributes.get("href", "")
     match = re.search(r"/user/(\d+)", href)
-    if not match:
-        raise RuntimeError(f"Unexpected account link format: {href}")
-
-    return match.group(1)
+    return match.group(1) if match else None
 
 
 async def query(
@@ -112,44 +109,62 @@ async def query(
     else:
         raise ValueError("CSES requires login credentials.")
 
-    await _login(session, cred_user, cred_pass)
+    user_id: Optional[str] = None
+    if username != cred_user:
+        if username.isdigit():
+            user_id = username
+        else:
+            raise ValueError("CSES requires a numeric user ID to query other users")
 
-    if username == cred_user:
-        user_id = await _get_login_user_id(session)
-    elif username.isdigit():
-        user_id = username
+    MAX_LOGIN_RETRIES = 2
+    user_text: Optional[str] = None
+    problemset_text: Optional[str] = None
+
+    for attempt in range(MAX_LOGIN_RETRIES + 1):
+        if attempt > 0:
+            await _login(session, cred_user, cred_pass)
+
+        current_user_id = user_id
+        if current_user_id is None:
+            current_user_id = await _get_login_user_id(session)
+            not_logged_in = current_user_id is None
+            if not_logged_in:
+                continue
+
+        try:
+            async with session.get(
+                f"{BASE_URL}/user/{current_user_id}",
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as response:
+                if response.status in (404, 500):
+                    raise ValueError("The user does not exist")
+                response.raise_for_status()
+                user_text = await response.text()
+
+            async with session.get(
+                f"{BASE_URL}/problemset/user/{current_user_id}/",
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as response:
+                if response.status in (404, 500):
+                    raise ValueError("The user does not exist")
+                response.raise_for_status()
+                problemset_text = await response.text()
+        except aiohttp.ClientError as e:
+            raise RuntimeError(f"Request failed: {str(e)}")
+
+        session_expired = LexborHTMLParser(problemset_text).css_first('.content:lexbor-contains("Please login")')
+        if session_expired:
+            continue
+
+        break  # success
     else:
-        raise ValueError("CSES requires a numeric user ID to query other users")
-
-    try:
-        async with session.get(
-            f"{BASE_URL}/user/{user_id}",
-            timeout=aiohttp.ClientTimeout(total=30),
-        ) as response:
-            if response.status in (404, 500):
-                raise ValueError("The user does not exist")
-            response.raise_for_status()
-            user_text = await response.text()
-
-        async with session.get(
-            f"{BASE_URL}/problemset/user/{user_id}/",
-            timeout=aiohttp.ClientTimeout(total=30),
-        ) as response:
-            if response.status in (404, 500):
-                raise ValueError("The user does not exist")
-            response.raise_for_status()
-            problemset_text = await response.text()
-    except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise ValueError("CSES login failed after multiple attempts")
 
     user_doc = LexborHTMLParser(user_text)
     sub_cell = user_doc.css_first('td:lexbor-contains("Submission count") + td')
     submissions = int(sub_cell.text(strip=True)) if sub_cell else 0
 
     problemset_doc = LexborHTMLParser(problemset_text)
-    if problemset_doc.css_first('.content:lexbor-contains("Please login")'):
-        raise RuntimeError("Session expired; login failed")
-
     solved_paragraph = problemset_doc.css_first(".content p")
     if not solved_paragraph:
         raise ValueError("The user does not exist")
