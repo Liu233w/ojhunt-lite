@@ -37,7 +37,7 @@ To test web services, use tmux to manage the background server:
 tmux has-session -t ojhunt-web 2>/dev/null && echo "Running" || echo "Not running"
 
 # Start server (if not running)
-tmux new-session -d -s ojhunt-web -c <project folder> "source .env && uv run fastapi dev web/app.py --port 8080"
+tmux new-session -d -s ojhunt-web -c <project folder> "uv run fastapi dev web/app.py --port 8080"
 
 # View logs
 tmux capture-pane -t ojhunt-web -p
@@ -213,10 +213,12 @@ The web application accepts the following environment variables:
 | `BUILD_TIME` | No | Build timestamp (Unix epoch or ISO format), shown on About page |
 | `GIT_COMMIT_SHA` | No | Git commit hash, used to generate source code link on About page |
 
-**Test Credentials:** VJudge test credentials are stored in `.env` (gitignored):
+**Credentials** are stored in `.env` (gitignored) — loaded automatically by `load_dotenv()` in `web/app.py`, no need to `source .env` manually:
 ```
 LOGIN_USERNAME__VJUDGE=...
 LOGIN_PASSWORD__VJUDGE=...
+LOGIN_USERNAME__CSES=...
+LOGIN_PASSWORD__CSES=...
 ```
 
 The user will need to fill the fields.
