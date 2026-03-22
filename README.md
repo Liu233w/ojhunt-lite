@@ -319,7 +319,8 @@ async def query(session: aiohttp.ClientSession, username: str, password: Optiona
 ```python
 __crawler_meta__ = {
     'title': 'Your OJ',
-    'description': 'Description here',
+    'description': 'Description here',           # Shown in web UI
+    'cli_description': 'Login required. ...',    # Optional: shown in CLI --list instead of description
     'url': 'https://your-oj.com/',
     'requires_login': True,  # Any valid account can query any user
     'test_username': 'known_active_user',

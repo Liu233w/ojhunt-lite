@@ -33,10 +33,11 @@ from typing import Dict, List, Union, Optional
 
 __crawler_meta__ = {
     "title": "CSES",
-    "description": "Enter your CSES username or numeric user ID (login required).",
+    "description": "Enter your numeric user ID.",
+    "cli_description": "Login required. Use username:password@cses to query yourself, or -l login:pass@cses -- id@cses to query another user by numeric ID.",
     "url": "https://cses.fi/",
     "requires_login": True,
-    "test_username": "ojhuntlite",
+    "test_username": "3",
 }
 
 BASE_URL = "https://cses.fi"
@@ -73,7 +74,7 @@ async def _login(
         raise RuntimeError(f"Login request failed: {str(e)}")
 
 
-async def _get_user_id(session: aiohttp.ClientSession) -> str:
+async def _get_login_user_id(session: aiohttp.ClientSession) -> str:
     async with session.get(
         f"{BASE_URL}/",
         timeout=aiohttp.ClientTimeout(total=30),
@@ -113,14 +114,14 @@ async def query(
 
     await _login(session, cred_user, cred_pass)
 
-    # Resolve username to numeric ID
-    if username.isdigit():
+    # Resolve to numeric user ID
+    if username == cred_user:
+        # Self-query: resolve own username to numeric ID via the logged-in session
+        user_id = await _get_login_user_id(session)
+    elif username.isdigit():
         user_id = username
-    elif cred_user == username:
-        # Type A: querying self — extract own ID from the logged-in session
-        user_id = await _get_user_id(session)
     else:
-        raise ValueError("CSES requires a numeric user ID to query users other than yourself")
+        raise ValueError("CSES requires a numeric user ID to query other users")
 
     try:
         async with session.get(
