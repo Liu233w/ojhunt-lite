@@ -5,12 +5,12 @@ Tests for DMOJ crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.dmoj import query
+from crawlers.dmoj import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
 # Test username from crawlers.test.js
-TEST_USERNAME = "Xyene"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

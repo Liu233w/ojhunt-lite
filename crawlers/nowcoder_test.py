@@ -5,12 +5,11 @@ Tests for Nowcoder crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.nowcoder import query
+from crawlers.nowcoder import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-# Test username from crawlers.test.js - must be user ID (numeric format)
-TEST_USERNAME = "112946"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "11"  # This ID doesn't exist
 
 

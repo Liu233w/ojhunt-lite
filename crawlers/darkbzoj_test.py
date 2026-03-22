@@ -5,11 +5,11 @@ Tests for DarkBZOJ crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.darkbzoj import query
+from crawlers.darkbzoj import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "Qingyu"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

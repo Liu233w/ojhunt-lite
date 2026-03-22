@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "HDU",
     "description": "",
     "url": "http://acm.hdu.edu.cn/",
+    "test_username": "vjudge4",
 }
 
 

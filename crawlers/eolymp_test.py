@@ -5,11 +5,11 @@ Tests for EOlymp crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.eolymp import query
+from crawlers.eolymp import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "vjudge5"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

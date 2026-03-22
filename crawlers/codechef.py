@@ -34,6 +34,7 @@ __crawler_meta__ = {
     "title": "CodeChef",
     "description": "",
     "url": "https://www.codechef.com/",
+    "test_username": "vjudge",
 }
 
 

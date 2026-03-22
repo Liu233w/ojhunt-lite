@@ -34,6 +34,7 @@ __crawler_meta__ = {
     "title": "EOlymp",
     "description": "",
     "url": "https://www.eolymp.com/",
+    "test_username": "vjudge5",
 }
 
 GRAPHQL_URL = (

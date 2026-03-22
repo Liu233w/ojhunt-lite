@@ -5,12 +5,12 @@ Tests for Codewars crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.codewars import query
+from crawlers.codewars import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
 # Test username from crawlers.test.js - username is case sensitive
-TEST_USERNAME = "Liu233w"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

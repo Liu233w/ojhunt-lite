@@ -5,11 +5,11 @@ Tests for Toph crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.toph import query
+from crawlers.toph import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "BigBag"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

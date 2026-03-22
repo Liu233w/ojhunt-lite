@@ -280,6 +280,7 @@ __crawler_meta__ = {
     'title': 'Your OJ',
     'description': 'Description here',
     'url': 'https://your-oj.com/',
+    'test_username': 'known_active_user',  # Used for tests and availability checks
 }
 
 async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str], None]]:
@@ -310,6 +311,7 @@ __crawler_meta__ = {
     'description': 'Description here',
     'url': 'https://your-oj.com/',
     'requires_login': True,  # Any valid account can query any user
+    'test_username': 'known_active_user',
 }
 
 async def query(
@@ -342,6 +344,7 @@ __crawler_meta__ = {
     'title': 'Your OJ',
     'description': 'Description here',
     'url': 'https://your-oj.com/',
+    'test_username': 'known_active_user',  # Used for tests and availability checks
 }
 
 async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str]]]:

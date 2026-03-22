@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "UOJ",
     "description": "",
     "url": "http://uoj.ac/",
+    "test_username": "matthew99",
 }
 
 

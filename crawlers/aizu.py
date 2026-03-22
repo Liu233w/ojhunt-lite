@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "AIZU",
     "description": "",
     "url": "http://judge.u-aizu.ac.jp/onlinejudge/index.jsp",
+    "test_username": "vjudge5",
 }
 
 

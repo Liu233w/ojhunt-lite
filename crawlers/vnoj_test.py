@@ -5,11 +5,11 @@ Tests for VNOJ crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.vnoj import query
+from crawlers.vnoj import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "admin"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

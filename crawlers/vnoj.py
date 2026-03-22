@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "VNOJ",
     "description": "VNOI Online Judge",
     "url": "https://oj.vnoi.info/",
+    "test_username": "admin",
 }
 
 BASE_URL = "https://oj.vnoi.info"

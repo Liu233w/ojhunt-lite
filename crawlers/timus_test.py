@@ -5,12 +5,11 @@ Tests for Timus crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.timus import query
+from crawlers.timus import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-# Test username from crawlers.test.js
-TEST_USERNAME = "vjudge11"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

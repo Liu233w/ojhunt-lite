@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "CodeForces",
     "description": "Including CodeForces::Gym",
     "url": "http://codeforces.com/",
+    "test_username": "leoloveacm",
 }
 
 MAX_PAGE_SIZE = 10000

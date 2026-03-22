@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "Yosupo Judge",
     "description": "Library Checker (judge.yosupo.jp)",
     "url": "https://judge.yosupo.jp/",
+    "test_username": "yosupo",
 }
 
 API_BASE_URL = "https://v3.api.judge.yosupo.jp"

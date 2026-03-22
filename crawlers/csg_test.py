@@ -5,11 +5,11 @@ Tests for CSG crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.csg import query
+from crawlers.csg import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
-TEST_USERNAME = "CSGrandeur"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "nonexistentuserxyz12345"
 
 

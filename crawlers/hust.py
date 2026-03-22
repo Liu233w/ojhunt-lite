@@ -34,6 +34,7 @@ __crawler_meta__ = {
     "title": "HUST",
     "description": "HUST Online Judge",
     "url": "https://hustoj.org/",
+    "test_username": "freefcw",
 }
 
 

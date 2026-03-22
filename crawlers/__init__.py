@@ -49,6 +49,7 @@ def discover_crawlers() -> Dict[str, CrawlerInfo]:
                     is_virtual_judge=meta_dict.get("is_virtual_judge", False),
                     requires_login=meta_dict.get("requires_login", False),
                     requires_password=meta_dict.get("requires_password", False),
+                    test_username=meta_dict.get("test_username", ""),
                 )
                 crawlers[module_name] = CrawlerInfo(
                     name=module_name,

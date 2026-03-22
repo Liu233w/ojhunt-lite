@@ -34,6 +34,7 @@ __crawler_meta__ = {
     "title": "牛客OJ",
     "description": "目前只支持输入用户ID（在你的AC列表的URL中）",
     "url": "https://ac.nowcoder.com/acm/home",
+    "test_username": "112946",
 }
 
 

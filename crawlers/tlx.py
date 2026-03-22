@@ -33,6 +33,7 @@ __crawler_meta__ = {
     "title": "TLX (TOKI Learning Exchange)",
     "description": "Indonesia's largest competitive programming training website",
     "url": "https://tlx.toki.id/",
+    "test_username": "tourist",
 }
 
 API_BASE_URL = "https://api.tlx.toki.id/v2"

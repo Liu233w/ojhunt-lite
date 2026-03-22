@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "DarkBZOJ",
     "description": "",
     "url": "https://darkbzoj.cc/",
+    "test_username": "Qingyu",
 }
 
 
