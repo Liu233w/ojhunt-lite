@@ -23,7 +23,7 @@ STATUS_WAITING = "waiting"
 STATUS_NO_CREDENTIALS = "no_credentials"
 
 # Check interval between individual crawlers (seconds)
-CHECK_INTERVAL = 120
+CHECK_INTERVAL = 2
 # Interval between full passes (seconds)
 FULL_PASS_INTERVAL = 7200
 
