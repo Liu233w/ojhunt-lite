@@ -13,7 +13,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from web.http_client import close_http_client, init_http_client
-from web.api import router
+from web.api import router as api_router
+from web.pages import router as pages_router
 
 load_dotenv()
 
@@ -36,4 +37,5 @@ STATIC_DIR = Path(__file__).parent / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-app.include_router(router)
+app.include_router(pages_router)
+app.include_router(api_router)
