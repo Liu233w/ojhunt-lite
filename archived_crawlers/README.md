@@ -14,7 +14,6 @@ These crawlers have been archived due to:
 | acdream | Domain dead (DNS does not resolve) |
 | bzoj | Cerberus JS PoW challenge (bot protection); use darkbzoj crawler instead |
 | csacademy | SPA uses WebSocket for data, not scrapable via HTTP |
-| cses | Requires numeric user ID; no public solved count |
 | dashiye (HYSBZ) | Site dead (2010-2020) |
 | eljudge (EIJudge) | Domain repurposed (acm.mipt.ru is now MIPT CS department homepage, OJ no longer exists) |
 | fzu | Site dead (2012-2021) |
@@ -30,7 +29,7 @@ These crawlers have been archived due to:
 | spoj | Cloudflare bot protection |
 | szkopul | Platform does not expose public user profiles |
 | topcoder | Arena shut down July 2024 |
-| usaco | No public user profiles |
+| usaco | Contest-based platform with no "problems solved" count; no public user profiles by username; per-contest scores only accessible via 50+ contest result pages after login |
 | uvalive | Site dead |
 | zoj | Migrated to pintia.cn, requires authentication |
 | ztrening | Site dead (connection refused) |
