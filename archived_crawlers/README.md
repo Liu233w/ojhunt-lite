@@ -23,8 +23,6 @@ These crawlers have been archived due to:
 | hrbust | Site unreachable |
 | jisuanke | Alibaba Cloud WAF blocks all automated requests (HTTP 405 for all paths) |
 | leetcode_cn | Cloudflare bot protection |
-| lightoj | **Revived** — moved to active crawlers (`crawlers/lightoj.py`); public REST API available |
-| nod (51Nod) | **Revived** — moved to active crawlers (`crawlers/nod.py`); requires numeric userId (no public username lookup) |
 | openjudge | Requires authentication; user data is group-scoped with no global stats (group-based OJ) |
 | poj | Site dead (connection refused) |
 | qoj | Cloudflare bot protection (JS challenge); profile page is public but requires browser rendering (UOJ-based) |

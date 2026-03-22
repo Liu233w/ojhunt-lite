@@ -217,12 +217,13 @@ async def test_valid_user(session):
 
 ## Step 7: Verification Checklist
 
-- [ ] `pytest crawlers/<name>_test.py` — all 3 standard tests pass
+- [ ] `uv run pytest crawlers/<name>_test.py` — all 3 standard tests pass
 - [ ] `uv run ruff check .` — no lint errors
 - [ ] `__crawler_meta__` has all required fields: `title`, `url`, `test_username`
 - [ ] BSD-2 license header present (only in `crawlers/` files, not tests)
 - [ ] `solved_list` is `None` (not `[]`) when unavailable
 - [ ] Error messages match: "Please enter username", "The user does not exist"
+- [ ] If crawler was previously archived: remove its files from `archived_crawlers/` and remove its entry from `archived_crawlers/README.md`
 
 ---
 
