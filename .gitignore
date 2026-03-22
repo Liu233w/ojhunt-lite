@@ -274,3 +274,4 @@ problem_labels.db
 
 # Others
 /.claude/settings.local.json
+archived_crawlers/test_accounts.md
