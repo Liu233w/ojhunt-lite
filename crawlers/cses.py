@@ -114,9 +114,7 @@ async def query(
 
     await _login(session, cred_user, cred_pass)
 
-    # Resolve to numeric user ID
     if username == cred_user:
-        # Self-query: resolve own username to numeric ID via the logged-in session
         user_id = await _get_login_user_id(session)
     elif username.isdigit():
         user_id = username
@@ -125,25 +123,34 @@ async def query(
 
     try:
         async with session.get(
+            f"{BASE_URL}/user/{user_id}",
+            timeout=aiohttp.ClientTimeout(total=30),
+        ) as response:
+            if response.status in (404, 500):
+                raise ValueError("The user does not exist")
+            response.raise_for_status()
+            user_text = await response.text()
+
+        async with session.get(
             f"{BASE_URL}/problemset/user/{user_id}/",
             timeout=aiohttp.ClientTimeout(total=30),
         ) as response:
             if response.status in (404, 500):
                 raise ValueError("The user does not exist")
             response.raise_for_status()
-            text = await response.text()
+            problemset_text = await response.text()
     except aiohttp.ClientError as e:
         raise RuntimeError(f"Request failed: {str(e)}")
 
-    doc = LexborHTMLParser(text)
+    user_doc = LexborHTMLParser(user_text)
+    sub_cell = user_doc.css_first('td:lexbor-contains("Submission count") + td')
+    submissions = int(sub_cell.text(strip=True)) if sub_cell else 0
 
-    # Check for login wall (in case session expired)
-    content = doc.css_first(".content")
-    if content and "Please login" in content.text():
+    problemset_doc = LexborHTMLParser(problemset_text)
+    if problemset_doc.css_first('.content:lexbor-contains("Please login")'):
         raise RuntimeError("Session expired; login failed")
 
-    # Parse "Solved tasks: X/400"
-    solved_paragraph = doc.css_first(".content p")
+    solved_paragraph = problemset_doc.css_first(".content p")
     if not solved_paragraph:
         raise ValueError("The user does not exist")
 
@@ -153,9 +160,8 @@ async def query(
 
     solved = int(match.group(1))
 
-    # Extract solved problem IDs from links with class "task-score full"
     solved_list = []
-    for link in doc.css("a.task-score.full"):
+    for link in problemset_doc.css("a.task-score.full"):
         href = link.attributes.get("href", "")
         task_match = re.search(r"/problemset/task/(\d+)/", href)
         if task_match:
@@ -163,6 +169,6 @@ async def query(
 
     return {
         "solved": solved,
-        "submissions": 0,  # CSES does not expose total submission count publicly
+        "submissions": submissions,
         "solved_list": solved_list,
     }

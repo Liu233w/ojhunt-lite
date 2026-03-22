@@ -62,7 +62,6 @@ async def test_missing_credentials(session):
 @pytest.mark.asyncio
 @pytest.mark.timeout(30)
 async def test_valid_user(session):
-    # TEST_USERNAME is a numeric ID for a different user; login credentials are used to authenticate
     result = await query(
         session,
         TEST_USERNAME,
@@ -70,7 +69,16 @@ async def test_valid_user(session):
         login_password=CSES_PASSWORD,
     )
     assert result["solved"] > 0
-    # CSES does not expose total submission count
-    assert result["submissions"] == 0
+    assert result["submissions"] >= result["solved"]
     assert isinstance(result["solved_list"], list)
     assert len(result["solved_list"]) == result["solved"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(30)
+async def test_self_query(session):
+    assert CSES_USERNAME is not None
+    result = await query(session, CSES_USERNAME, password=CSES_PASSWORD)
+    assert result["solved"] >= 0
+    assert result["submissions"] >= 0
+    assert isinstance(result["solved_list"], list)

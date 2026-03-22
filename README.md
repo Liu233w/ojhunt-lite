@@ -281,6 +281,12 @@ Tests will be automatically skipped if the required environment variables are no
 4. Create `crawlers/your_crawler_test.py` with pytest-asyncio tests
 5. The crawler will be automatically discovered by the CLI
 
+**Optional metadata fields:**
+- `description` — shown in the web UI
+- `cli_description` — shown in `--list` CLI output instead of `description` when present (useful when CLI usage differs, e.g. login instructions)
+- `requires_login` / `requires_password` — controls credential validation
+- `is_virtual_judge` — marks aggregator platforms like VJudge
+
 **For API-based crawlers:**
 ```python
 """BSD-2 License header..."""
@@ -319,8 +325,7 @@ async def query(session: aiohttp.ClientSession, username: str, password: Optiona
 ```python
 __crawler_meta__ = {
     'title': 'Your OJ',
-    'description': 'Description here',           # Shown in web UI
-    'cli_description': 'Login required. ...',    # Optional: shown in CLI --list instead of description
+    'description': 'Description here',
     'url': 'https://your-oj.com/',
     'requires_login': True,  # Any valid account can query any user
     'test_username': 'known_active_user',

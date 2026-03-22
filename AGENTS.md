@@ -85,6 +85,20 @@ Use `Dict`, `List`, `Union` from `typing` module (not `dict[str, ...]` syntax).
 ### HTML Parsing
 Use `selectolax.lexbor.LexborHTMLParser`.
 
+Prefer CSS selectors over regex when extracting values from HTML structure. Use the `lexbor-contains` pseudo-class to find an element by its text content, then navigate to sibling/child elements for the value:
+
+```python
+# Find a <td> containing "Submission count", then get the next sibling <td>
+# Note: do NOT include a trailing colon in the text — lexbor parses it as CSS pseudo-class syntax
+count = doc.css_first('td:lexbor-contains("Submission count") + td').text(strip=True)
+
+# Check presence of text in a container
+if doc.css_first('.content:lexbor-contains("Please login")'):
+    ...
+```
+
+Reserve `re` for strings that are not structured HTML — e.g. extracting a numeric ID from a URL (`/user/(\d+)`), or parsing a value embedded mid-sentence in a text node (`"Solved tasks: 150/400"`). See `archived_crawlers/fzu.py` for a reference example.
+
 ### License Header
 BSD-2 Clause license header (copy from existing crawler, use current year for new files).
 - **Only add license headers to files in `crawlers/` folder** - users can copy individual crawler files.
@@ -117,6 +131,19 @@ There are two distinct types of login-required crawlers. Always identify which t
 
 **Reference implementations:**
 - Type B: `crawlers/vjudge.py`
+
+## Crawler Metadata Fields (`__crawler_meta__`)
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `title` | Yes | Display name |
+| `url` | Yes | Homepage URL |
+| `test_username` | Yes | Used for tests and `/crawlers` availability checks |
+| `description` | No | Shown in web UI (default: `""`) |
+| `cli_description` | No | Shown in `--list` CLI output instead of `description` when present. Use for crawlers where the CLI usage differs significantly (e.g., login instructions, ID vs. username). |
+| `requires_login` | No | Requires credentials via `user:pass@crawler` or `-l` flag |
+| `requires_password` | No | Requires password embedded in query |
+| `is_virtual_judge` | No | Whether this is a virtual judge |
 
 ## Design Principles
 
