@@ -127,20 +127,19 @@ There are two distinct types of login-required crawlers. Always identify which t
 - The crawler must log in *as the target user* to retrieve their data.
 - `login_user` and `login_password` equal `username` and `password`.
 - CLI usage: `user:pass@crawler` (the `-l` flag is redundant/inapplicable).
-- Example platforms (implemented): CSES. (Not yet implemented: QOJ, LightOJ, Jisuanke.)
+- Example platforms: QOJ, LightOJ, Jisuanke (if implemented).
 
 **Type B — Any account can query any user:**
 - The platform requires login, but once authenticated any user's stats are visible.
 - A single shared account can query arbitrary target users.
 - `login_user`/`login_password` (from `-l` flag) may differ from `username`.
 - CLI usage: `-l mylogin:mypass@crawler -- target@crawler`.
-- Example platforms: VJudge.
+- Example platforms (implemented): CSES, VJudge.
 
 **How to identify the type:** Visit the site as a guest and try to access another user's profile. If it's blocked (login wall on all profiles), it's Type B. If profiles are public for others but not for yourself, it's Type A.
 
 **Reference implementations:**
-- Type A: `crawlers/cses.py`
-- Type B: `crawlers/vjudge.py`
+- Type B: `crawlers/vjudge.py`, `crawlers/cses.py`
 
 ## Crawler Metadata Fields (`__crawler_meta__`)
 
