@@ -181,7 +181,7 @@ def print_crawler_list() -> None:
 
     console = Console()
 
-    table = Table(title=f"Available crawlers ({len(crawlers)})")
+    table = Table(title=f"Available crawlers ({len(crawlers)})", show_lines=True)
     table.add_column("Name")
     table.add_column("Description")
     table.add_column("URL")
