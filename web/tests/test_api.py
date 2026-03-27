@@ -9,8 +9,9 @@ def test_api_query_returns_json(context: BrowserContext):
     response = context.request.get(f"{BASE_URL}/api/crawlers/codeforces/tourist")
     assert response.status == 200
     data = response.json()
-    assert "error" in data
     assert data["error"] is False
+    assert data["crawler"] == "codeforces"
+    assert data["username"] == "tourist"
     assert "data" in data
     assert "solved" in data["data"]
     assert "submissions" in data["data"]
@@ -24,6 +25,8 @@ def test_api_query_user_not_found(context: BrowserContext):
     assert response.status == 400
     data = response.json()
     assert data["error"] is True
+    assert data["crawler"] == "codeforces"
+    assert data["username"] == "nonexistentuser12345xyz"
     assert "message" in data
 
 
@@ -33,6 +36,7 @@ def test_api_query_unknown_crawler(context: BrowserContext):
     assert response.status == 400
     data = response.json()
     assert data["error"] is True
+    assert data["crawler"] == "unknown_crawler"
     assert "Unknown crawler" in data["message"]
 
 

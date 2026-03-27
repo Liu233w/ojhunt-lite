@@ -2,7 +2,7 @@
 API routes for OJHunt Lite web application.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Path as PathParam
 from fastapi.responses import JSONResponse
@@ -10,7 +10,10 @@ from pydantic import BaseModel, Field
 
 from core.credentials import get_login_kwargs
 from core.models import LoginType
+from core.models import NullCrawler
+from core.models import QueryResult as CoreQueryResult
 from core.runner import run_crawler
+from core.stats import collect_solved_problems
 from crawlers import discover_crawlers
 from web.http_client import HttpClientDep
 
@@ -36,14 +39,61 @@ class QueryResult(BaseModel):
     duration: float = Field(0, description="Query duration in seconds")
 
 
-class QueryResponse(BaseModel):
-    error: bool = Field(False, description="Always false for success")
-    data: QueryResult = Field(..., description="Query result")
+class CrawlerResult(BaseModel):
+    """
+    Result of querying a single crawler. Used as both the query endpoint response
+    and the input element for POST /api/merge.
 
+    crawler and username are always present. On success, error=false and data is
+    populated. On failure, error=true and message describes the error.
+    """
 
-class ErrorResponse(BaseModel):
-    error: bool = Field(True, description="Always true for error")
-    message: str = Field(..., description="Error message")
+    crawler: str = Field(..., description="Crawler name (e.g. 'codeforces')")
+    username: str = Field(..., description="Username that was queried")
+    error: bool = Field(..., description="True if the query failed")
+    data: Optional[QueryResult] = Field(
+        None, description="Query data (present on success)"
+    )
+    message: Optional[str] = Field(
+        None, description="Error message (present on failure)"
+    )
+
+    @classmethod
+    def from_model(cls, result: CoreQueryResult) -> "CrawlerResult":
+        return cls(
+            crawler=result.crawler.name,
+            username=result.username,
+            error=not result.success,
+            data=QueryResult(
+                solved=result.solved,
+                submissions=result.submissions,
+                solvedList=result.solved_list,
+                duration=result.duration,
+            )
+            if result.success
+            else None,
+            message=result.error if not result.success else None,
+        )
+
+    def to_model(self) -> CoreQueryResult:
+        crawlers = discover_crawlers()
+        crawler_info = crawlers.get(self.crawler) or NullCrawler(self.crawler)
+        if self.error or not self.data:
+            return CoreQueryResult(
+                crawler=crawler_info,
+                username=self.username,
+                success=False,
+                error=self.message or "Unknown error",
+            )
+        return CoreQueryResult(
+            crawler=crawler_info,
+            username=self.username,
+            success=True,
+            solved=self.data.solved,
+            submissions=self.data.submissions,
+            solved_list=self.data.solvedList,
+            duration=self.data.duration,
+        )
 
 
 router = APIRouter()
@@ -55,7 +105,7 @@ router = APIRouter()
     summary="List all available crawlers",
     description="Returns a list of all available OJ crawlers with their metadata.",
 )
-async def list_crawlers() -> Dict[str, Any]:
+async def list_crawlers() -> CrawlersListResponse:
     crawlers = discover_crawlers()
     data = {}
     for name, info in crawlers.items():
@@ -66,13 +116,12 @@ async def list_crawlers() -> Dict[str, Any]:
             url=meta.url,
             isVirtualJudge=meta.is_virtual_judge,
         )
-    return CrawlersListResponse(error=False, data=data).model_dump()
+    return CrawlersListResponse(error=False, data=data)
 
 
 @router.get(
     "/api/crawlers/{crawler_name}/{username}",
-    response_model=QueryResponse,
-    responses={400: {"model": ErrorResponse}},
+    response_model=CrawlerResult,
     summary="Query a crawler for user statistics",
     description="Query a specific crawler for a user's solved problems and submission count.",
 )
@@ -84,9 +133,13 @@ async def query_crawler(
     crawlers = discover_crawlers()
 
     if crawler_name not in crawlers:
-        error_msg = f"Unknown crawler '{crawler_name}'"
         return JSONResponse(
-            content=ErrorResponse(error=True, message=error_msg).model_dump(),
+            content=CrawlerResult(
+                crawler=crawler_name,
+                username=username,
+                error=True,
+                message=f"Unknown crawler '{crawler_name}'",
+            ).model_dump(),
             status_code=400,
         )
 
@@ -100,31 +153,53 @@ async def query_crawler(
             kwargs.update(login_kwargs)
         else:
             upper = crawler_name.upper()
-            error_msg = (
-                f"Login credentials not configured for '{crawler_name}'. "
-                f"Set LOGIN_USERNAME__{upper} and LOGIN_PASSWORD__{upper} environment variables."
-            )
             return JSONResponse(
-                content={"error": True, "message": error_msg}, status_code=400
+                content=CrawlerResult(
+                    crawler=crawler_name,
+                    username=username,
+                    error=True,
+                    message=(
+                        f"Login credentials not configured for '{crawler_name}'. "
+                        f"Set LOGIN_USERNAME__{upper} and LOGIN_PASSWORD__{upper} "
+                        f"environment variables."
+                    ),
+                ).model_dump(),
+                status_code=400,
             )
 
     result = await run_crawler(client, crawler, username, **kwargs)
-
-    if not result.success:
-        error_msg = result.error or "Unknown error"
-        return JSONResponse(
-            content=ErrorResponse(error=True, message=error_msg).model_dump(),
-            status_code=400,
-        )
-
+    status_code = 200 if result.success else 400
     return JSONResponse(
-        content=QueryResponse(
-            error=False,
-            data=QueryResult(
-                solved=result.solved,
-                submissions=result.submissions,
-                solvedList=result.solved_list,
-                duration=result.duration,
-            ),
-        ).model_dump()
+        content=CrawlerResult.from_model(result).model_dump(),
+        status_code=status_code,
+    )
+
+
+class MergeResponse(BaseModel):
+    uniqueSolved: int = Field(
+        ..., description="Number of unique solved problems across all crawlers"
+    )
+    totalSubmissions: int = Field(
+        ..., description="Total submissions across all crawlers"
+    )
+
+
+@router.post(
+    "/api/merge",
+    response_model=MergeResponse,
+    summary="Merge crawler results with deduplication",
+    description=(
+        "Accepts a list of CrawlerResult objects (verbatim responses from "
+        "GET /api/crawlers/{crawler}/{username}) and returns deduplicated totals. "
+        "Error results are skipped. VJudge problems are cross-referenced against "
+        "other crawlers to avoid double-counting."
+    ),
+)
+async def merge_results(results: List[CrawlerResult]) -> MergeResponse:
+    core_results = [item.to_model() for item in results]
+    solved_set = collect_solved_problems(core_results)
+    total_submissions = sum(r.submissions for r in core_results if r.success)
+    return MergeResponse(
+        uniqueSolved=len(solved_set),
+        totalSubmissions=total_submissions,
     )
