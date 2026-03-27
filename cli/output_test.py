@@ -2,9 +2,14 @@
 Unit tests for cli/output.py
 """
 
+import json
+from unittest.mock import patch
+
 from cli.models import Query
 from cli.output import (
     check_duplicate_queries,
+    print_crawler_list,
+    print_report,
     validate_crawlers,
     validate_credentials,
 )
@@ -320,3 +325,188 @@ class TestCollectSolvedProblems:
         ]
         solved = collect_solved_problems(results)
         assert solved == set()
+
+
+def make_full_result(
+    crawler_name: str,
+    success: bool,
+    solved: int = 0,
+    submissions: int = 0,
+    solved_list=None,
+    duration: float = 1.0,
+    error: str = None,
+    **meta_kwargs,
+) -> QueryResult:
+    """Helper to create QueryResult with all fields set."""
+    crawler = make_crawler(crawler_name, **meta_kwargs)
+    return QueryResult(
+        crawler=crawler,
+        username="testuser",
+        success=success,
+        solved=solved,
+        submissions=submissions,
+        solved_list=solved_list,
+        duration=duration,
+        error=error,
+    )
+
+
+class TestPrintReportJson:
+    """Tests for print_report with json_output=True."""
+
+    def test_json_goes_to_stdout(self, capsys):
+        """Test that JSON output goes to stdout."""
+        results = [make_full_result("codeforces", True, solved=10, submissions=15)]
+        print_report(results, show_problems=False, total_duration=1.0, json_output=True)
+        captured = capsys.readouterr()
+        assert captured.out.strip() != ""
+        assert captured.err == ""
+
+    def test_json_structure(self, capsys):
+        """Test top-level JSON structure has results and summary."""
+        results = [make_full_result("codeforces", True, solved=10, submissions=15)]
+        print_report(results, show_problems=False, total_duration=1.5, json_output=True)
+        data = json.loads(capsys.readouterr().out)
+        assert "results" in data
+        assert "summary" in data
+
+    def test_json_successful_result_fields(self, capsys):
+        """Test a successful result has the expected fields."""
+        results = [
+            make_full_result(
+                "codeforces",
+                True,
+                solved=5,
+                submissions=10,
+                solved_list=["1A", "2A"],
+                duration=1.23,
+                title="Codeforces",
+            )
+        ]
+        print_report(results, show_problems=False, total_duration=1.23, json_output=True)
+        entry = json.loads(capsys.readouterr().out)["results"][0]
+        assert entry["crawler"] == "codeforces"
+        assert entry["title"] == "Codeforces"
+        assert entry["username"] == "testuser"
+        assert entry["success"] is True
+        assert entry["solved"] == 5
+        assert entry["submissions"] == 10
+        assert entry["solved_list"] == ["1A", "2A"]
+        assert abs(entry["duration"] - 1.23) < 0.01
+
+    def test_json_failed_result_fields(self, capsys):
+        """Test a failed result has the expected fields."""
+        results = [
+            make_full_result("codeforces", False, error="User not found", duration=0.5)
+        ]
+        print_report(results, show_problems=False, total_duration=0.5, json_output=True)
+        entry = json.loads(capsys.readouterr().out)["results"][0]
+        assert entry["success"] is False
+        assert entry["error"] == "User not found"
+        assert "solved" not in entry
+        assert "submissions" not in entry
+
+    def test_json_null_solved_list(self, capsys):
+        """Test that None solved_list serializes to null."""
+        results = [make_full_result("codeforces", True, solved=5, solved_list=None)]
+        print_report(results, show_problems=False, total_duration=1.0, json_output=True)
+        entry = json.loads(capsys.readouterr().out)["results"][0]
+        assert entry["solved_list"] is None
+
+    def test_json_summary_fields(self, capsys):
+        """Test summary contains correct aggregated values."""
+        results = [
+            make_full_result("cf", True, solved=3, submissions=5, solved_list=["1A", "2A", "3A"]),
+            make_full_result("hdu", False, error="timeout"),
+        ]
+        print_report(results, show_problems=False, total_duration=2.5, json_output=True)
+        summary = json.loads(capsys.readouterr().out)["summary"]
+        assert summary["unique_solved"] == 3
+        assert summary["total_submissions"] == 5
+        assert summary["ok"] == 1
+        assert summary["failed"] == 1
+        assert abs(summary["duration"] - 2.5) < 0.01
+
+    def test_json_returns_0_all_success(self, capsys):
+        """Test exit code 0 when all results succeed."""
+        results = [make_full_result("codeforces", True)]
+        code = print_report(results, show_problems=False, total_duration=1.0, json_output=True)
+        capsys.readouterr()
+        assert code == 0
+
+    def test_json_returns_1_on_failure(self, capsys):
+        """Test exit code 1 when any result fails."""
+        results = [make_full_result("codeforces", False, error="err")]
+        code = print_report(results, show_problems=False, total_duration=1.0, json_output=True)
+        capsys.readouterr()
+        assert code == 1
+
+    def test_json_show_problems_ignored(self, capsys):
+        """Test that show_problems=True doesn't change JSON output."""
+        results = [make_full_result("codeforces", True, solved=2, solved_list=["1A", "2A"])]
+        print_report(results, show_problems=True, total_duration=1.0, json_output=True)
+        data = json.loads(capsys.readouterr().out)
+        # solved_list is always in JSON regardless of show_problems
+        assert data["results"][0]["solved_list"] == ["1A", "2A"]
+
+
+class TestPrintCrawlerListJson:
+    """Tests for print_crawler_list with json_output=True."""
+
+    def _make_crawlers(self):
+        return {
+            "codeforces": make_crawler("codeforces", title="Codeforces", url="https://codeforces.com"),
+            "vjudge": make_crawler("vjudge", title="VJudge", url="https://vjudge.net", requires_login=True),
+        }
+
+    def test_json_goes_to_stdout(self, capsys):
+        """Test that JSON output goes to stdout."""
+        with patch("cli.output.discover_crawlers", return_value=self._make_crawlers()):
+            print_crawler_list(json_output=True)
+        captured = capsys.readouterr()
+        assert captured.out.strip() != ""
+        assert captured.err == ""
+
+    def test_json_is_list(self, capsys):
+        """Test that JSON output is a list."""
+        with patch("cli.output.discover_crawlers", return_value=self._make_crawlers()):
+            print_crawler_list(json_output=True)
+        data = json.loads(capsys.readouterr().out)
+        assert isinstance(data, list)
+
+    def test_json_entry_fields(self, capsys):
+        """Test each entry has the expected fields."""
+        with patch("cli.output.discover_crawlers", return_value=self._make_crawlers()):
+            print_crawler_list(json_output=True)
+        data = json.loads(capsys.readouterr().out)
+        entry = next(e for e in data if e["name"] == "codeforces")
+        assert entry["title"] == "Codeforces"
+        assert entry["url"] == "https://codeforces.com"
+        assert entry["requires_login"] is False
+        assert entry["requires_password"] is False
+        assert entry["is_virtual_judge"] is False
+        assert "description" in entry
+
+    def test_json_requires_login_field(self, capsys):
+        """Test requires_login is correctly set for login crawlers."""
+        with patch("cli.output.discover_crawlers", return_value=self._make_crawlers()):
+            print_crawler_list(json_output=True)
+        data = json.loads(capsys.readouterr().out)
+        vjudge = next(e for e in data if e["name"] == "vjudge")
+        assert vjudge["requires_login"] is True
+
+    def test_json_sorted_by_name(self, capsys):
+        """Test crawlers are sorted by name."""
+        with patch("cli.output.discover_crawlers", return_value=self._make_crawlers()):
+            print_crawler_list(json_output=True)
+        data = json.loads(capsys.readouterr().out)
+        names = [e["name"] for e in data]
+        assert names == sorted(names)
+
+    def test_json_no_crawlers_goes_to_stderr(self, capsys):
+        """Test 'no crawlers' message goes to stderr in JSON mode."""
+        with patch("cli.output.discover_crawlers", return_value={}):
+            print_crawler_list(json_output=True)
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "No crawlers" in captured.err

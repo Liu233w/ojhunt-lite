@@ -110,7 +110,7 @@ async def run_queries(
     no_progress: bool = False,
 ) -> List[QueryResult]:
     """Execute all queries with live progress updates."""
-    progress = ProgressManager(is_tty=not no_progress and sys.stdout.isatty())
+    progress = ProgressManager(is_tty=not no_progress and sys.stderr.isatty())
 
     keys: List[str] = []
     for q in queries:
@@ -159,7 +159,7 @@ async def main() -> int:
     args, queries, crawler_logins = parse_args()
 
     if args.list:
-        print_crawler_list()
+        print_crawler_list(json_output=args.json)
         return 0
 
     crawlers = discover_crawlers()
@@ -187,7 +187,7 @@ async def main() -> int:
     end_time = datetime.now()
     total_duration = (end_time - start_time).total_seconds()
 
-    return print_report(results, args.show_problems, total_duration)
+    return print_report(results, args.show_problems, total_duration, json_output=args.json)
 
 
 if __name__ == "__main__":

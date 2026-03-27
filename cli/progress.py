@@ -40,9 +40,9 @@ class TaskInfo:
 class ProgressManager:
     tasks: Dict[str, TaskInfo] = field(default_factory=dict)
     task_order: List[str] = field(default_factory=list)
-    console: Console = field(default_factory=Console)
+    console: Console = field(default_factory=lambda: Console(stderr=True))
     live: Optional[Live] = None
-    is_tty: bool = field(default_factory=lambda: sys.stdout.isatty())
+    is_tty: bool = field(default_factory=lambda: sys.stderr.isatty())
 
     @staticmethod
     def _make_key(crawler: str, username: str) -> str:
@@ -65,7 +65,7 @@ class ProgressManager:
             if self.is_tty and self.live:
                 self.live.update(self._build_table())
             else:
-                print(f"Querying {self.tasks[key].title}...")
+                print(f"Querying {self.tasks[key].title}...", file=sys.stderr)
 
     def complete_task(
         self,
@@ -90,9 +90,9 @@ class ProgressManager:
 
     def _print_task_done(self, task: TaskInfo) -> None:
         if task.status == TaskStatus.SUCCESS:
-            print(f"{task.title} done ({task.solved} solved, {task.duration:.2f}s)")
+            print(f"{task.title} done ({task.solved} solved, {task.duration:.2f}s)", file=sys.stderr)
         else:
-            print(f"{task.title} ERROR: {task.error}")
+            print(f"{task.title} ERROR: {task.error}", file=sys.stderr)
 
     def _build_table(self) -> Table:
         table = Table(show_header=True, header_style="bold", expand=False)
