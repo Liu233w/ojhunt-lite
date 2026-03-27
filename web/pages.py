@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from crawlers import discover_crawlers
@@ -27,14 +27,8 @@ jinja_env = Environment(
 )
 
 
-_CLI_AGENTS = ("curl/", "wget/")
-
-
 @router.get("/", response_class=HTMLResponse)
-async def index(request: Request) -> str:
-    ua = request.headers.get("user-agent", "").lower()
-    if any(ua.startswith(prefix) for prefix in _CLI_AGENTS):
-        return RedirectResponse("/llms.txt")
+async def index() -> str:
     crawlers = discover_crawlers()
     crawler_data = {
         name: {
