@@ -3,9 +3,7 @@ Unit tests for CrawlerResult DTO (from_model / to_model conversions).
 These tests do not require a running web server.
 """
 
-import pytest
-
-from core.models import CrawlerMeta, CrawlerInfo, NullCrawler
+from core.models import CrawlerInfo, NullCrawler
 from core.models import QueryResult as CoreQueryResult
 from crawlers import discover_crawlers
 from web.api import CrawlerResult, QueryResult
