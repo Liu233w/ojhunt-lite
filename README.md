@@ -1,15 +1,12 @@
 # OJHunt Lite
 
-A lightweight async Python tool for querying Online Judge (OJ) statistics across multiple platforms. Track your accepted problems (AC) and total submissions from competitive programming platforms.
+A lightweight async Python tool for querying Online Judge (OJ) statistics across multiple platforms. Track your accepted problems and total submissions from competitive programming sites.
 
-## Features
-
-- **Self-contained crawlers**: Each crawler can be used independently with minimal dependencies
-- **Async/await support**: Built on aiohttp for efficient concurrent requests
-- **Command-line interface**: Query multiple OJ platforms simultaneously
-- **Lightweight**: Only depends on `aiohttp` and `selectolax` libraries
-- **Easy to maintain**: Simple, readable code with consistent interfaces
-- **BSD-2 Licensed**: Free to use and modify
+- Async/concurrent requests via `aiohttp`
+- CLI and web interface
+- Self-contained crawlers — each file can be used independently
+- Only depends on `aiohttp` and `selectolax`
+- BSD-2 Licensed
 
 ## Quick Example
 
@@ -33,377 +30,63 @@ Completed: 2 OK, 0 failed (2.78s total)
 
 ## Installation
 
-### Using uv (recommended)
 ```bash
 git clone https://github.com/Liu233w/ojhunt-lite
 cd ojhunt-lite
 uv sync
 ```
 
-### Using Container (Podman/Docker)
-
-Pre-built images are available at `ghcr.io/liu233w/ojhunt-lite`.
-
-**CLI mode:**
-```bash
-# Query single platform
-podman run --rm ghcr.io/liu233w/ojhunt-lite tourist@codeforces
-
-# Query multiple platforms
-podman run --rm ghcr.io/liu233w/ojhunt-lite tourist@codeforces tourist@atcoder
-
-# Use default username for multiple queries
-podman run --rm ghcr.io/liu233w/ojhunt-lite -d tourist -- codeforces atcoder
-```
-
-**Web mode:**
-```bash
-# Start web server on port 8080
-podman run -p 8080:8080 ghcr.io/liu233w/ojhunt-lite
-
-# With VJudge credentials
-podman run -p 8080:8080 -e LOGIN_USERNAME__VJUDGE=user -e LOGIN_PASSWORD__VJUDGE=pass ghcr.io/liu233w/ojhunt-lite
-```
-
-> Replace `podman` with `docker` if you prefer Docker. Both commands work identically.
+Container images are available at `ghcr.io/liu233w/ojhunt-lite` — see [docs/web.md](docs/web.md).
 
 ## Usage
 
-### Command Line Interface
+### CLI
 
-Run `ojhunt --help` to see all available options.
-
-Quick examples:
 ```bash
-# Query single crawler
-uv run ojhunt.py tourist@codeforces
-
-# Query multiple crawlers
 uv run ojhunt.py tourist@codeforces tourist@atcoder
-
-# Use default username for multiple queries
-uv run ojhunt.py -d tourist -- codeforces atcoder
-
-# Query all platforms
-uv run ojhunt.py -d tourist -a
-
-# List available crawlers with details
-uv run ojhunt.py --list
-
-# Query yourself on VJudge (login and query same user)
-uv run ojhunt.py myuser:mypass@vjudge
-
-# Query someone else on VJudge (login as you, query them)
-uv run ojhunt.py -l myuser:mypass@vjudge -- target_user@vjudge
+uv run ojhunt.py -d tourist -- codeforces atcoder   # default username
+uv run ojhunt.py --list                              # list available crawlers
 ```
 
-### Login-Required Crawlers
+Full CLI reference, login-required crawlers, and JSON output: **[docs/cli.md](docs/cli.md)**
 
-Some crawlers require authentication. There are two distinct reasons why:
-
-**Own Account — Login to see your own data:**
-The platform only shows your statistics when you are logged in. You must log in *as the target user* to query their stats.
+### Web Interface
 
 ```bash
-# Login as myuser and query myuser's own data
-uv run ojhunt.py myuser:mypass@qoj
+uv run fastapi dev web/app.py --port 8080
 ```
 
-The `-l` flag is not applicable here — there is no way to query another user's stats from this type of platform.
+Web UI, API docs, and container setup: **[docs/web.md](docs/web.md)**
 
-**Shared Account — Login as any account to query anyone:**
-The platform requires authentication, but once logged in you can view *any* user's statistics. You only need one account regardless of who you want to query.
-
-```bash
-# Login as yourself, query your own stats
-uv run ojhunt.py myuser:mypass@vjudge
-
-# Login as yourself, query someone else
-uv run ojhunt.py -l myuser:mypass@vjudge -- target_user@vjudge
-
-# Multiple login-required crawlers
-uv run ojhunt.py -l user1:pass1@vjudge -l user2:pass2@otheroj -- target1@vjudge target2@otheroj
-```
-
-Use `ojhunt --list` to see which crawlers require login and their login type.
-
-**Parsing rules for `user:pass@crawler`:**
-- First `:` separates username from password
-- Last `@` separates credentials from crawler name
-- Examples:
-  - `user:pass@vjudge` → username=`user`, password=`pass`, crawler=`vjudge`
-  - `user:p@ss:word@vjudge` → username=`user`, password=`p@ss:word`, crawler=`vjudge`
-
-**Error cases:**
-- Querying a login-required crawler without credentials → error
-- Using both embedded password and `-l` flag for same crawler → error (duplicate credentials)
-- Providing credentials for a crawler that doesn't need them → error
-
-### Using Crawlers Directly in Your Code
-
-Each crawler is self-contained and can be imported directly. All crawlers are async functions:
+### Use Crawlers in Your Code
 
 ```python
-import asyncio
+import asyncio, aiohttp
 from crawlers.codeforces import query
 
 async def main():
     async with aiohttp.ClientSession() as session:
         result = await query(session, "tourist")
-        print(f"Solved: {result['solved']}")
-        print(f"Submissions: {result['submissions']}")
-        print(f"Problems: {result['solved_list']}")
+        print(result["solved"], result["submissions"], result["solved_list"])
 
 asyncio.run(main())
-```
-
-Using with aiohttp session for better performance:
-```python
-import asyncio
-import aiohttp
-from crawlers import codeforces, atcoder, hdu
-
-async def main():
-    async with aiohttp.ClientSession() as session:
-        # Crawlers will reuse the session
-        results = await asyncio.gather(
-            codeforces.query(session, "tourist"),
-            atcoder.query(session, "tourist"),
-            hdu.query(session, "vjudge4"),
-        )
-        for result in results:
-            print(result)
-
-asyncio.run(main())
-```
-
-### Web Interface
-
-**Development server** (with auto-reload):
-```bash
-uv run fastapi dev web/app.py --port 8080
-```
-
-**Production server** (multi-worker):
-```bash
-uv run fastapi run web/app.py --port 8080 --workers 4
-```
-
-The web interface will be available at http://127.0.0.1:8080
-
-For Shared Account crawlers, set environment variables:
-
-```bash
-LOGIN_USERNAME__VJUDGE=user LOGIN_PASSWORD__VJUDGE=pass uv run fastapi dev web/app.py --port 8080
-```
-
-### API Documentation
-
-Interactive API documentation is available when the web server is running:
-
-- **Swagger UI**: http://127.0.0.1:8080/docs
-- **ReDoc**: http://127.0.0.1:8080/redoc
-
-**Example API requests:**
-
-```bash
-# List all available crawlers
-curl http://127.0.0.1:8080/api/crawlers/
-
-# Query a user on a specific platform
-curl http://127.0.0.1:8080/api/crawlers/codeforces/tourist
 ```
 
 ## Supported Platforms
 
-See [crawlers module](./crawlers)
-
-### Archived Crawlers
-
-Some crawlers have been archived due to site closures or technical issues. See [archived_crawlers](./archived_crawlers) for details.
-
-## Return Format
-
-All crawlers return a dictionary with the following structure:
-
-```python
-{
-    "solved": int,           # Number of accepted problems
-    "submissions": int,      # Total number of submissions
-    "solved_list": list|None # List of problem IDs (may be None for some platforms)
-}
-```
+See the [crawlers/](./crawlers) directory. Archived crawlers (dead sites) are in [archived_crawlers/](./archived_crawlers).
 
 ## Development
 
-### Running Tests
-
-```bash
-# Run all tests (excluding network and playwright)
-pytest -m "not network and not playwright"
-
-# Run specific crawler tests
-pytest crawlers/codeforces_test.py
-
-# Run with verbose output
-pytest -v
-
-# Exclude network-dependent tests (for CI environments)
-pytest -m "not network"
-
-# Run only network tests
-pytest -m network
-
-# Run playwright/e2e tests (requires running web server)
-pytest -m playwright web/tests/
-```
-
-#### Testing Login-Required Crawlers
-
-For crawlers that require authentication (e.g., VJudge), set environment variables before running tests:
-
-```bash
-# Set credentials for VJudge tests
-export LOGIN_USERNAME__VJUDGE=your_username
-export LOGIN_PASSWORD__VJUDGE=your_password
-
-# Run VJudge tests
-pytest crawlers/vjudge_test.py
-```
-
-Tests will be automatically skipped if the required environment variables are not set.
-
-### Adding a New Crawler
-
-1. Create `crawlers/your_crawler.py` with BSD-2 license header (year 2026)
-2. Implement the `async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> dict` function
-3. Add `__crawler_meta__` dictionary with platform metadata
-4. Create `crawlers/your_crawler_test.py` with pytest-asyncio tests
-5. The crawler will be automatically discovered by the CLI
-
-**Optional metadata fields:**
-- `description` — shown in the web UI
-- `cli_description` — shown in `--list` CLI output instead of `description` when present (useful when CLI usage differs, e.g. login instructions)
-- `requires_login` / `requires_password` — controls credential validation
-- `is_virtual_judge` — marks aggregator platforms like VJudge
-
-**For API-based crawlers:**
-```python
-"""BSD-2 License header..."""
-import aiohttp
-from typing import Dict, List, Union, Optional
-
-__crawler_meta__ = {
-    'title': 'Your OJ',
-    'description': 'Description here',
-    'url': 'https://your-oj.com/',
-    'test_username': 'known_active_user',  # Used for tests and availability checks
-}
-
-async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str], None]]:
-    if not username or not username.strip():
-        raise ValueError('Please enter username')
-
-    username = username.strip()
-
-    async with session.get(
-        f'https://your-oj.com/api/user/{username}',
-        timeout=aiohttp.ClientTimeout(total=30)
-    ) as response:
-        if response.status == 404:
-            raise ValueError('The user does not exist')
-        data = await response.json()
-
-    return {
-        'solved': data['solved'],
-        'submissions': data['submissions'],
-        'solved_list': data.get('problems', None),
-    }
-```
-
-**For login-required crawlers (e.g., VJudge):**
-```python
-__crawler_meta__ = {
-    'title': 'Your OJ',
-    'description': 'Description here',
-    'url': 'https://your-oj.com/',
-    'requires_login': True,  # Any valid account can query any user
-    'test_username': 'known_active_user',
-}
-
-async def query(
-    session: aiohttp.ClientSession,
-    username: str,
-    password: Optional[str] = None,      # Embedded: user:pass@crawler
-    login_user: Optional[str] = None,    # From -l flag
-    login_password: Optional[str] = None,
-) -> Dict[str, Union[int, List[str], None]]:
-    # Determine which credentials to use
-    if login_user and login_password:
-        # Using -l flag: login as one user, query another
-        actual_user, actual_pass = login_user, login_password
-    elif password:
-        # Using embedded password: login as target user
-        actual_user, actual_pass = username, password
-    else:
-        raise ValueError('Login credentials required')
-    # ... use actual_user and actual_pass for authentication
-```
-
-**For HTML-scraping crawlers:**
-```python
-"""BSD-2 License header..."""
-import aiohttp
-from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union, Optional
-
-__crawler_meta__ = {
-    'title': 'Your OJ',
-    'description': 'Description here',
-    'url': 'https://your-oj.com/',
-    'test_username': 'known_active_user',  # Used for tests and availability checks
-}
-
-async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str]]]:
-    if not username or not username.strip():
-        raise ValueError('Please enter username')
-
-    username = username.strip()
-
-    async with session.get(
-        f'https://your-oj.com/user/{username}',
-        timeout=aiohttp.ClientTimeout(total=30)
-    ) as response:
-        if response.status == 404:
-            raise ValueError('The user does not exist')
-        html = await response.text()
-
-    doc = LexborHTMLParser(html)
-
-    # Use PyQuery for maintainable HTML parsing
-    solved = doc.css_first('span.solved-count').text().strip()
-    submissions = doc.css_first('span.submission-count').text().strip()
-
-    # Extract problem list
-    problem_links = doc.css('.problem-list a.problem-id')
-    solved_list = [link.text().strip() for link in problem_links]
-
-    return {
-        'solved': solved,
-        'submissions': submissions,
-        'solved_list': solved_list,
-    }
-```
+Adding crawlers, running tests, templates: **[docs/development.md](docs/development.md)**
 
 ## License
 
-BSD 2-Clause License - See individual crawler files for full license text.
+BSD 2-Clause License — see individual crawler files for full license text.
 
 ## Credits
 
-This is a lightweight Python rewrite of [OJHunt (acm-statistics)](https://github.com/Liu233w/acm-statistics), 
-originally inspired by [西北工业大学ACM查询系统 (npuacm.info)](https://kidozh.com/en/) by Jiduo Zhang.
-
-OJHunt Lite provides both CLI and web interfaces for querying Online Judge statistics.
+Lightweight Python rewrite of [OJHunt (acm-statistics)](https://github.com/Liu233w/acm-statistics),
+originally inspired by [西北工业大学ACM查询系统](https://kidozh.com/en/) by Jiduo Zhang.
 
 Special thanks to test account providers: @leoloveacm, @2013300262
