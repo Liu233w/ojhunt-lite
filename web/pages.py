@@ -3,6 +3,7 @@ HTML page routes for OJHunt Lite web application.
 """
 
 import os
+import secrets
 from datetime import datetime
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from web.crawler_status import get_all_status, CrawlerAvailability, CheckStatus
 
 BUILD_TIME = os.environ.get("BUILD_TIME")
 GIT_COMMIT_SHA = os.environ.get("GIT_COMMIT_SHA")
+STATIC_VERSION = GIT_COMMIT_SHA or BUILD_TIME or secrets.token_hex(8)
 
 router = APIRouter()
 
@@ -37,7 +39,7 @@ async def index() -> str:
         for name, info in sorted(crawlers.items())
     }
     template = jinja_env.get_template("index.html")
-    return template.render(crawlers=crawler_data)
+    return template.render(crawlers=crawler_data, static_version=STATIC_VERSION)
 
 
 @router.get("/about", response_class=HTMLResponse)
