@@ -16,7 +16,7 @@ To get a user's deduplicated solved-problem totals across platforms:
 3. Collect all responses (including errors — /api/merge skips them).
 4. POST the full array of responses to /api/merge.
    Do not call /api/merge until all crawler queries have completed.
-   The merge step handles VJudge cross-platform deduplication server-side.
+   The merge step handles aggregator cross-platform deduplication server-side.
 
 ## API Reference
 
@@ -63,7 +63,7 @@ curl -sf -X POST "$BASE/api/merge" \
   platforms. Pass each crawler/username pair separately and merge them all —
   /api/merge accepts mixed usernames in the same request.
 - Results with error=true are automatically skipped by /api/merge.
-- VJudge problems (prefixed "codeforces-1A", "hdu-1000", etc.) are
+- Aggregator problems (prefixed "codeforces-1A", "hdu-1000", etc.) are
   cross-referenced against native crawlers to avoid double-counting.
 - Some crawlers (CSES, VJudge) require server-side credentials — just call
   them normally; credentials are configured on the server.
