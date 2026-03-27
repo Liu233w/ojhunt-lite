@@ -224,7 +224,7 @@ def print_crawler_list(json_output: bool = False) -> None:
                 "description": meta.description,
                 "url": meta.url,
                 "login_type": meta.login_type.value,
-                "is_virtual_judge": meta.is_virtual_judge,
+                "is_aggregator": meta.is_aggregator,
             }
         print(json.dumps(result, indent=2))
         return

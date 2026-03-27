@@ -24,7 +24,7 @@ def collect_solved_problems(results: List[QueryResult]) -> Set[str]:
     for result in results:
         if not result.success or not result.solved_list:
             continue
-        is_virtual = result.crawler.meta.is_virtual_judge
+        is_virtual = result.crawler.meta.is_aggregator
         for problem in result.solved_list:
             if is_virtual:
                 all_solved.add(problem)

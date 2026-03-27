@@ -36,7 +36,7 @@ __crawler_meta__ = {
     "title": "OurOJ (NIT)",
     "description": "",
     "url": "https://www.nitacm.com/",
-    "is_virtual_judge": True,
+    "is_aggregator": True,
     "test_username": "teito",
 }
 

@@ -13,7 +13,7 @@ import aiohttp
 
 class LoginType(Enum):
     NOT_REQUIRED = "not_required"
-    OWN_ACCOUNT = "own_account"       # Must log in as the target user
+    OWN_ACCOUNT = "own_account"  # Must log in as the target user
     SHARED_ACCOUNT = "shared_account"  # Any shared account can query any user
 
     @classmethod
@@ -39,7 +39,7 @@ class CrawlerMeta:
     description: str = ""
     cli_description: str = ""
     url: str = ""
-    is_virtual_judge: bool = False
+    is_aggregator: bool = False
     login_type: LoginType = LoginType.NOT_REQUIRED
     test_username: str = ""
 

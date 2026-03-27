@@ -161,7 +161,7 @@ There are two distinct types of login-required crawlers. Always identify which t
 | `description` | No | Shown in web UI (default: `""`) |
 | `cli_description` | No | Shown in `--list` CLI output instead of `description` when present. Use for crawlers where the CLI usage differs significantly (e.g., login instructions, ID vs. username). |
 | `login_type` | No | `"shared_account"` or `"own_account"`; omit if no login required |
-| `is_virtual_judge` | No | Whether this is a virtual judge |
+| `is_aggregator` | No | Whether this crawler aggregates problems from other platforms (e.g. VJudge, NIT). Aggregator solvedLists are already prefixed with the source platform, so `/api/merge` skips re-prefixing them. |
 
 ## Architectural Decisions
 

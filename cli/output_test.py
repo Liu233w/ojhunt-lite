@@ -176,21 +176,27 @@ class TestValidateCredentials:
     def test_requires_login_with_embedded_password(self):
         """Test requires_login crawler with embedded password."""
         queries = [Query(crawler="vjudge", username="user1", password="pass")]
-        crawlers = {"vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)}
+        crawlers = {
+            "vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)
+        }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
 
     def test_requires_login_with_flag_credentials(self):
         """Test requires_login crawler with -l flag credentials."""
         queries = [Query(crawler="vjudge", username="user1")]
-        crawlers = {"vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)}
+        crawlers = {
+            "vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)
+        }
         crawler_logins = {"vjudge": ("loginuser", "pass")}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
 
     def test_requires_login_missing_credentials(self, capsys):
         """Test requires_login crawler without any credentials."""
         queries = [Query(crawler="vjudge", username="user1")]
-        crawlers = {"vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)}
+        crawlers = {
+            "vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)
+        }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is False
         captured = capsys.readouterr()
@@ -199,7 +205,9 @@ class TestValidateCredentials:
     def test_requires_login_duplicate_credentials(self, capsys):
         """Test requires_login crawler with both embedded and flag credentials."""
         queries = [Query(crawler="vjudge", username="user1", password="pass")]
-        crawlers = {"vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)}
+        crawlers = {
+            "vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)
+        }
         crawler_logins = {"vjudge": ("loginuser", "pass2")}
         assert validate_credentials(queries, crawlers, crawler_logins) is False
         captured = capsys.readouterr()
@@ -276,11 +284,11 @@ class TestCollectSolvedProblems:
         solved = collect_solved_problems(results)
         assert solved == {"hdu-1000", "hdu-1001", "hdu-1002"}
 
-    def test_virtual_judge_no_prefix(self):
+    def test_aggregator_no_prefix(self):
         """Test that virtual judges use labels as-is."""
         results = [
             make_result(
-                "vjudge", True, ["codeforces-123A", "poj-1000"], is_virtual_judge=True
+                "vjudge", True, ["codeforces-123A", "poj-1000"], is_aggregator=True
             ),
         ]
         solved = collect_solved_problems(results)
@@ -290,7 +298,7 @@ class TestCollectSolvedProblems:
         """Test mix of normal and virtual judges."""
         results = [
             make_result("hdu", True, ["1000"]),
-            make_result("vjudge", True, ["codeforces-123A"], is_virtual_judge=True),
+            make_result("vjudge", True, ["codeforces-123A"], is_aggregator=True),
         ]
         solved = collect_solved_problems(results)
         assert solved == {"hdu-1000", "codeforces-123A"}
@@ -383,7 +391,9 @@ class TestPrintReportJson:
                 title="Codeforces",
             )
         ]
-        print_report(results, show_problems=False, total_duration=1.23, json_output=True)
+        print_report(
+            results, show_problems=False, total_duration=1.23, json_output=True
+        )
         entry = json.loads(capsys.readouterr().out)["results"][0]
         assert entry["crawler"] == "codeforces"
         assert entry["title"] == "Codeforces"
@@ -416,7 +426,9 @@ class TestPrintReportJson:
     def test_json_summary_fields(self, capsys):
         """Test summary contains correct aggregated values."""
         results = [
-            make_full_result("cf", True, solved=3, submissions=5, solved_list=["1A", "2A", "3A"]),
+            make_full_result(
+                "cf", True, solved=3, submissions=5, solved_list=["1A", "2A", "3A"]
+            ),
             make_full_result("hdu", False, error="timeout"),
         ]
         print_report(results, show_problems=False, total_duration=2.5, json_output=True)
@@ -430,20 +442,26 @@ class TestPrintReportJson:
     def test_json_returns_0_all_success(self, capsys):
         """Test exit code 0 when all results succeed."""
         results = [make_full_result("codeforces", True)]
-        code = print_report(results, show_problems=False, total_duration=1.0, json_output=True)
+        code = print_report(
+            results, show_problems=False, total_duration=1.0, json_output=True
+        )
         capsys.readouterr()
         assert code == 0
 
     def test_json_returns_1_on_failure(self, capsys):
         """Test exit code 1 when any result fails."""
         results = [make_full_result("codeforces", False, error="err")]
-        code = print_report(results, show_problems=False, total_duration=1.0, json_output=True)
+        code = print_report(
+            results, show_problems=False, total_duration=1.0, json_output=True
+        )
         capsys.readouterr()
         assert code == 1
 
     def test_json_show_problems_ignored(self, capsys):
         """Test that show_problems=True doesn't change JSON output."""
-        results = [make_full_result("codeforces", True, solved=2, solved_list=["1A", "2A"])]
+        results = [
+            make_full_result("codeforces", True, solved=2, solved_list=["1A", "2A"])
+        ]
         print_report(results, show_problems=True, total_duration=1.0, json_output=True)
         data = json.loads(capsys.readouterr().out)
         # solved_list is always in JSON regardless of show_problems
@@ -455,8 +473,15 @@ class TestPrintCrawlerListJson:
 
     def _make_crawlers(self):
         return {
-            "codeforces": make_crawler("codeforces", title="Codeforces", url="https://codeforces.com"),
-            "vjudge": make_crawler("vjudge", title="VJudge", url="https://vjudge.net", login_type=LoginType.SHARED_ACCOUNT),
+            "codeforces": make_crawler(
+                "codeforces", title="Codeforces", url="https://codeforces.com"
+            ),
+            "vjudge": make_crawler(
+                "vjudge",
+                title="VJudge",
+                url="https://vjudge.net",
+                login_type=LoginType.SHARED_ACCOUNT,
+            ),
         }
 
     def test_json_goes_to_stdout(self, capsys):
@@ -483,7 +508,7 @@ class TestPrintCrawlerListJson:
         assert entry["title"] == "Codeforces"
         assert entry["url"] == "https://codeforces.com"
         assert entry["login_type"] == "not_required"
-        assert entry["is_virtual_judge"] is False
+        assert entry["is_aggregator"] is False
         assert "description" in entry
         assert "name" not in entry
 

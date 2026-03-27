@@ -15,9 +15,10 @@ The existing `GET /api/crawlers/{crawler}/{username}` endpoint returns only:
 The response does not include `crawler` or `username`, so any client collecting results
 from multiple endpoints must annotate each response manually before processing them together.
 
-VJudge is a virtual judge that hosts problems mirrored from other platforms (Codeforces,
-AtCoder, etc.). Its `solvedList` contains tagged problem IDs like `CF_1234A`. When a user
-queries both VJudge and Codeforces, the same problem may appear in both result sets,
+Some crawlers are aggregators — platforms that host problems mirrored from other OJs
+(e.g. VJudge, NIT). Their `solvedList` contains problem IDs already tagged with the
+source platform (e.g. `codeforces-1A`, `hdu-1000`). When a user queries both an
+aggregator and the native platform, the same problem may appear in both result sets,
 inflating the total unique solved count. Deduplication logic currently lives in the
 frontend JavaScript, and is partially duplicated in Python.
 

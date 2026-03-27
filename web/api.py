@@ -22,7 +22,14 @@ class CrawlerInfo(BaseModel):
     title: str = Field(..., description="Display name of the crawler")
     description: str = Field(..., description="Description of the platform")
     url: str = Field(..., description="URL of the platform")
-    isVirtualJudge: bool = Field(False, description="Whether this is a virtual judge")
+    isAggregator: bool = Field(
+        False,
+        description="Whether this crawler aggregates problems from other platforms (e.g. VJudge, NIT)",
+    )
+    isVirtualJudge: bool = Field(
+        False,
+        description="Deprecated alias for isAggregator. Will be removed in a future version.",
+    )
 
 
 class CrawlersListResponse(BaseModel):
@@ -114,7 +121,8 @@ async def list_crawlers() -> CrawlersListResponse:
             title=meta.title,
             description=meta.description,
             url=meta.url,
-            isVirtualJudge=meta.is_virtual_judge,
+            isAggregator=meta.is_aggregator,
+            isVirtualJudge=meta.is_aggregator,
         )
     return CrawlersListResponse(error=False, data=data)
 
