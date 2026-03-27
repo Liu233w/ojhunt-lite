@@ -160,6 +160,18 @@ All crawlers return:
 }
 ```
 
+## PDF Preview
+
+Generate preview PDFs with 1, 10, 30, and 100 history entries for visual inspection:
+
+```bash
+uv run python scripts/generate_preview_pdf.py
+# Writes preview_001_entries.pdf … preview_100_entries.pdf in scripts/previews/ (gitignored)
+```
+
+All history entries are dated from 2020, so you can upload a preview PDF to the web UI
+and test the "merge with existing history" feature against today's date.
+
 ## Linting
 
 ```bash
