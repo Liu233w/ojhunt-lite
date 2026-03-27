@@ -26,8 +26,11 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+import logging
 import aiohttp
 from typing import Dict, List, Union, Optional
+
+logger = logging.getLogger(__name__)
 
 __crawler_meta__ = {
     "title": "VJudge",
@@ -101,6 +104,9 @@ async def _fetch_page(
     if max_id is not None:
         params["maxId"] = str(max_id)
 
+    logger.debug(
+        "vjudge: fetching submissions page username=%s max_id=%s", username, max_id
+    )
     async with session.get(
         f"https://{HOSTNAME}/user/submissions",
         params=params,
@@ -111,6 +117,7 @@ async def _fetch_page(
         data = await response.json()
 
     if data.get("error") and "login" in data.get("error", "").lower():
+        logger.debug("vjudge: auth required (not logged in or session expired)")
         raise _AuthRequired()
     if data.get("error") and "does not exist" in data.get("error", ""):
         raise ValueError("The user does not exist")
@@ -142,6 +149,7 @@ async def _paginate(session: aiohttp.ClientSession, username: str) -> tuple:
 async def _try_login(
     session: aiohttp.ClientSession, login_user: str, login_password: str
 ) -> None:
+    logger.debug("vjudge: logging in as %s (session id=%s)", login_user, id(session))
     try:
         async with session.post(
             f"https://{HOSTNAME}/user/login",
@@ -160,6 +168,7 @@ async def _try_login(
         raise RuntimeError(f"vjudge login failed: {str(e)}")
     if text != "success":
         raise RuntimeError(f"vjudge login failed: {text}")
+    logger.debug("vjudge: login successful as %s", login_user)
 
 
 async def query(
@@ -207,13 +216,20 @@ async def query(
     else:
         raise ValueError("VJudge requires login credentials.")
 
-    MAX_LOGIN_RETRIES = 2
+    logger.debug("vjudge: query start username=%s session_id=%s", username, id(session))
+    MAX_LOGIN_RETRIES = 1
     for attempt in range(MAX_LOGIN_RETRIES + 1):
         if attempt > 0:
+            logger.warning("vjudge: attempt %d — triggering login before retry", attempt)
             await _try_login(session, actual_login_user, actual_login_password)
+        else:
+            logger.debug(
+                "vjudge: attempt 0 — trying without login (expecting cached session cookie)"
+            )
         try:
             ac_set, total_submissions = await _paginate(session, username)
         except _AuthRequired:
+            logger.debug("vjudge: _AuthRequired on attempt %d", attempt)
             continue
         except aiohttp.ClientError as e:
             raise RuntimeError(f"Request failed: {str(e)}")
