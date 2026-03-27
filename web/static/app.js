@@ -13,6 +13,7 @@
  * @property {string[] | null} solvedList - List of solved problem IDs
  * @property {number} duration - Query duration in seconds
  * @property {string | null} error - Error message if failed
+ * @property {object | null} rawResponse - Verbatim API response, forwarded to /api/merge
  * @property {AbortController | null} abortController - For canceling requests
  */
 
@@ -42,6 +43,7 @@ function createQuery(crawler, username, id) {
         solvedList: null,
         duration: 0,
         error: null,
+        rawResponse: null,
         abortController: null,
     };
 }
@@ -160,12 +162,14 @@ function ojhunt() {
             q.status = 'loading';
             q.error = null;
             q.abortController = new AbortController();
+            this.report = { totalSolved: null, totalSubmissions: 0 };
             
             try {
                 const url = `/api/crawlers/${encodeURIComponent(q.crawler)}/${encodeURIComponent(q.username)}`;
                 const response = await fetch(url, { signal: q.abortController.signal });
                 const data = await response.json();
                 
+                q.rawResponse = data;
                 if (data.error) {
                     q.status = 'error';
                     q.error = data.message;
@@ -236,32 +240,26 @@ function ojhunt() {
         },
         
         /**
-         * Calculate report from successful queries
+         * Calculate report by sending all executed query results to /api/merge.
+         * The server handles VJudge deduplication.
          * @returns {Promise<void>}
          */
         async calculateReport() {
-            const allSolved = new Set();
-            let totalSubmissions = 0;
-            
-            for (const q of this.queries) {
-                if (q.status !== 'success') continue;
-                
-                const isVirtual = this.crawlers[q.crawler]?.isVirtualJudge || false;
-                const solvedList = q.solvedList || [];
-                
-                for (const problem of solvedList) {
-                    if (isVirtual) {
-                        allSolved.add(problem);
-                    } else {
-                        allSolved.add(`${q.crawler}-${problem}`);
-                    }
-                }
-                totalSubmissions += q.submissions;
+            if (this.queries.some(q => q.status === 'loading')) return;
+            const executed = this.queries.filter(q => q.rawResponse !== null);
+            if (executed.length === 0) {
+                this.report = { totalSolved: 0, totalSubmissions: 0 };
+                return;
             }
-            
+            const response = await fetch('/api/merge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(executed.map(q => q.rawResponse)),
+            });
+            const data = await response.json();
             this.report = {
-                totalSolved: allSolved.size,
-                totalSubmissions
+                totalSolved: data.uniqueSolved,
+                totalSubmissions: data.totalSubmissions,
             };
         },
         
