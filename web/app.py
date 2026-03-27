@@ -41,5 +41,5 @@ STATIC_DIR = Path(__file__).parent / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-app.include_router(pages_router)
+app.include_router(pages_router, include_in_schema=False)
 app.include_router(api_router)
