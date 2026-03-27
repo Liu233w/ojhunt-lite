@@ -2,6 +2,7 @@
 CLI output and validation functions for OJHunt Lite.
 """
 
+import json
 import sys
 from collections import Counter
 from typing import Dict, List, Tuple
@@ -112,6 +113,7 @@ def print_report(
     results: List[QueryResult],
     show_problems: bool,
     total_duration: float,
+    json_output: bool = False,
 ) -> int:
     """Print the final report and return exit code."""
     successful = [r for r in results if r.success]
@@ -119,6 +121,38 @@ def print_report(
 
     all_solved = collect_solved_problems(results)
     total_submissions = sum(r.submissions for r in successful)
+
+    if json_output:
+        result_list = []
+        for r in results:
+            entry: Dict = {
+                "crawler": r.crawler.name,
+                "title": r.crawler.meta.title,
+                "username": r.username,
+                "success": r.success,
+            }
+            if r.success:
+                entry["solved"] = r.solved
+                entry["submissions"] = r.submissions
+                entry["solved_list"] = r.solved_list
+                entry["duration"] = r.duration
+            else:
+                entry["error"] = r.error
+                entry["duration"] = r.duration
+            result_list.append(entry)
+
+        output = {
+            "results": result_list,
+            "summary": {
+                "unique_solved": len(all_solved),
+                "total_submissions": total_submissions,
+                "ok": len(successful),
+                "failed": len(failed),
+                "duration": total_duration,
+            },
+        }
+        print(json.dumps(output, indent=2))
+        return 0 if not failed else 1
 
     print()
     print(f"Total: {len(all_solved)} solved / {total_submissions} submissions")
@@ -171,12 +205,32 @@ def print_report(
     return 0 if not failed else 1
 
 
-def print_crawler_list() -> None:
+def print_crawler_list(json_output: bool = False) -> None:
     """Print list of available crawlers in a table format."""
     crawlers = discover_crawlers()
 
     if not crawlers:
-        print("\nNo crawlers found. Make sure aiohttp is installed.\n")
+        msg = "\nNo crawlers found. Make sure aiohttp is installed.\n"
+        if json_output:
+            print(msg, file=sys.stderr)
+        else:
+            print(msg)
+        return
+
+    if json_output:
+        result = []
+        for name in sorted(crawlers.keys()):
+            meta = crawlers[name].meta
+            result.append({
+                "name": name,
+                "title": meta.title,
+                "description": meta.description,
+                "url": meta.url,
+                "requires_login": meta.requires_login,
+                "requires_password": meta.requires_password,
+                "is_virtual_judge": meta.is_virtual_judge,
+            })
+        print(json.dumps(result, indent=2))
         return
 
     console = Console()

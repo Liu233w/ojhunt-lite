@@ -145,6 +145,12 @@ Examples:
     )
 
     parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output results as JSON to stdout (progress still on stderr)",
+    )
+
+    parser.add_argument(
         "queries",
         nargs="*",
         help="Queries in format: user@crawler or user:pass@crawler or crawler (uses default username)",

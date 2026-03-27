@@ -307,3 +307,23 @@ class TestParseCrawlerLogin:
         """Test error when username is empty."""
         with pytest.raises(ValueError, match="Empty username"):
             parse_crawler_login([":pass@vjudge"])
+
+
+class TestJsonFlag:
+    """Tests for --json flag parsing."""
+
+    def test_json_flag_default_false(self):
+        """Test --json defaults to False."""
+        args, _, _ = parse_args(["--", "tourist@codeforces"])
+        assert args.json is False
+
+    def test_json_flag_set(self):
+        """Test --json flag is parsed."""
+        args, _, _ = parse_args(["--json", "--", "tourist@codeforces"])
+        assert args.json is True
+
+    def test_json_with_list(self):
+        """Test --json combined with --list."""
+        args, _, _ = parse_args(["--list", "--json"])
+        assert args.list is True
+        assert args.json is True
