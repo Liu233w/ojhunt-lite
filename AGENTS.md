@@ -38,6 +38,7 @@ pytest crawlers/codeforces_test.py::test_valid_user  # Run single test
 uv run ojhunt.py tourist@codeforces                       # Run CLI
 uv run fastapi dev web/app.py --port 8080 # Run web dev server
 uv run fastapi run web/app.py --port 8080 # Run web prod server
+uv run ruff format .                       # Run formatter (required after edits)
 uv run ruff check .                        # Run linter (required after edits)
 ```
 
