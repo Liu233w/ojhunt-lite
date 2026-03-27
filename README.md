@@ -101,7 +101,7 @@ uv run ojhunt.py -l myuser:mypass@vjudge -- target_user@vjudge
 
 Some crawlers require authentication. There are two distinct reasons why:
 
-**Type A — Login to see your own data:**
+**Own Account — Login to see your own data:**
 The platform only shows your statistics when you are logged in. You must log in *as the target user* to query their stats.
 
 ```bash
@@ -111,7 +111,7 @@ uv run ojhunt.py myuser:mypass@qoj
 
 The `-l` flag is not applicable here — there is no way to query another user's stats from this type of platform.
 
-**Type B — Login as any account to query anyone:**
+**Shared Account — Login as any account to query anyone:**
 The platform requires authentication, but once logged in you can view *any* user's statistics. You only need one account regardless of who you want to query.
 
 ```bash
@@ -191,7 +191,7 @@ uv run fastapi run web/app.py --port 8080 --workers 4
 
 The web interface will be available at http://127.0.0.1:8080
 
-For Type B crawlers, set environment variables:
+For Shared Account crawlers, set environment variables:
 
 ```bash
 LOGIN_USERNAME__VJUDGE=user LOGIN_PASSWORD__VJUDGE=pass uv run fastapi dev web/app.py --port 8080

@@ -5,9 +5,30 @@ These types are used across CLI, web, and crawler modules.
 """
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Awaitable, Callable, List, Optional
 
 import aiohttp
+
+
+class LoginType(Enum):
+    NOT_REQUIRED = "not_required"
+    OWN_ACCOUNT = "own_account"       # Must log in as the target user
+    SHARED_ACCOUNT = "shared_account"  # Any shared account can query any user
+
+    @classmethod
+    def from_meta(cls, value: Optional[str]) -> "LoginType":
+        if not value:
+            return cls.NOT_REQUIRED
+        return cls(value)
+
+    @property
+    def label(self) -> str:
+        return {
+            LoginType.NOT_REQUIRED: "-",
+            LoginType.OWN_ACCOUNT: "Own Account",
+            LoginType.SHARED_ACCOUNT: "Shared Account",
+        }[self]
 
 
 @dataclass
@@ -19,17 +40,8 @@ class CrawlerMeta:
     cli_description: str = ""
     url: str = ""
     is_virtual_judge: bool = False
-    requires_login: bool = False
-    requires_password: bool = False
+    login_type: LoginType = LoginType.NOT_REQUIRED
     test_username: str = ""
-
-    @property
-    def login_type(self) -> str:
-        if self.requires_login:
-            return "Type B"
-        if self.requires_password:
-            return "Type A"
-        return "-"
 
 
 @dataclass

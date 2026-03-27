@@ -12,7 +12,7 @@ from functools import cache
 from pathlib import Path
 from typing import Dict
 
-from core.models import CrawlerInfo, CrawlerMeta
+from core.models import CrawlerInfo, CrawlerMeta, LoginType
 
 __all__ = ["discover_crawlers"]
 
@@ -48,8 +48,7 @@ def discover_crawlers() -> Dict[str, CrawlerInfo]:
                     cli_description=meta_dict.get("cli_description", ""),
                     url=meta_dict.get("url", ""),
                     is_virtual_judge=meta_dict.get("is_virtual_judge", False),
-                    requires_login=meta_dict.get("requires_login", False),
-                    requires_password=meta_dict.get("requires_password", False),
+                    login_type=LoginType.from_meta(meta_dict.get("login_type")),
                     test_username=meta_dict.get("test_username", ""),
                 )
                 crawlers[module_name] = CrawlerInfo(
