@@ -141,6 +141,11 @@ There are two distinct types of login-required crawlers. Always identify which t
 **Reference implementations:**
 - Type B: `crawlers/vjudge.py`, `crawlers/cses.py`
 
+**`CrawlerMeta` field mapping:**
+- `requires_login=True` → Type B (supports `-l` flag; any account can query any user)
+- `requires_password=True` → Type A (must log in as the target user)
+- Neither → no login required
+
 ## Crawler Metadata Fields (`__crawler_meta__`)
 
 | Field | Required | Description |

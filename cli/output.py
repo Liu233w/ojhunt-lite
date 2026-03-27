@@ -179,38 +179,21 @@ def print_crawler_list() -> None:
         print("\nNo crawlers found. Make sure aiohttp is installed.\n")
         return
 
-    print(f"\nAvailable crawlers ({len(crawlers)}):\n")
+    console = Console()
 
-    headers = ["Name", "Description", "URL", "Login"]
-    rows = []
+    table = Table(title=f"Available crawlers ({len(crawlers)})")
+    table.add_column("Name")
+    table.add_column("Description")
+    table.add_column("URL")
+    table.add_column("Login")
 
     for name in sorted(crawlers.keys()):
         meta = crawlers[name].meta
         description = meta.cli_description or meta.description
-        url = meta.url
-        if meta.requires_login:
-            auth_status = "Yes"
-        elif meta.requires_password:
-            auth_status = "Password"
-        else:
-            auth_status = "No"
-        rows.append([name, description, url, auth_status])
+        table.add_row(name, description, meta.url, meta.login_type)
 
-    col_widths = [len(headers[0]), len(headers[1]), len(headers[2]), len(headers[3])]
-    for row in rows:
-        for i, cell in enumerate(row):
-            col_widths[i] = max(col_widths[i], len(cell))
-
-    separator = "  ".join("-" * w for w in col_widths)
-
-    header_line = "  ".join(h.ljust(w) for h, w in zip(headers, col_widths))
-    print(f"  {header_line}")
-    print(f"  {separator}")
-
-    for row in rows:
-        line = "  ".join(cell.ljust(w) for cell, w in zip(row, col_widths))
-        print(f"  {line}")
-
+    print()
+    console.print(table)
     print()
 
 

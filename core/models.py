@@ -23,6 +23,14 @@ class CrawlerMeta:
     requires_password: bool = False
     test_username: str = ""
 
+    @property
+    def login_type(self) -> str:
+        if self.requires_login:
+            return "Type B"
+        if self.requires_password:
+            return "Type A"
+        return "-"
+
 
 @dataclass
 class CrawlerInfo:
