@@ -1,5 +1,10 @@
 # AGENTS.md - Guidelines for AI Agents
 
+## Working with Claude Code (Claude-specific notes)
+
+- **Always edit `AGENTS.md` directly**, not `CLAUDE.md` — `CLAUDE.md` is a symlink to `AGENTS.md` and some tools may not follow it correctly.
+- **Git commands require sandbox bypass** — the sandbox blocks writes to `.git/`. Always use `dangerouslyDisableSandbox: true` for any git write operation (add, commit, push, etc.).
+
 ## Project Overview
 
 OJHunt Lite is an async Python tool for querying Online Judge statistics across 28 competitive programming platforms.
