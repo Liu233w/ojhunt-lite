@@ -243,28 +243,29 @@ The web application accepts the following environment variables:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `LOGIN_USERNAME__VJUDGE` | For VJudge | Username for VJudge authentication |
-| `LOGIN_PASSWORD__VJUDGE` | For VJudge | Password for VJudge authentication |
-| `LOGIN_USERNAME__CSES` | For CSES | Username for CSES authentication |
-| `LOGIN_PASSWORD__CSES` | For CSES | Password for CSES authentication |
-| `VJUDGE_USERNAME` | Legacy | Backwards-compat alias for `LOGIN_USERNAME__VJUDGE` |
-| `VJUDGE_PASSWORD` | Legacy | Backwards-compat alias for `LOGIN_PASSWORD__VJUDGE` |
+| `LOGIN_USERNAME__<CRAWLER>` | For shared-account crawlers | Username for crawler authentication (uppercase crawler name) |
+| `LOGIN_PASSWORD__<CRAWLER>` | For shared-account crawlers | Password for crawler authentication (uppercase crawler name) |
 | `BUILD_TIME` | No | Build timestamp (Unix epoch or ISO format), shown on About page |
 | `GIT_COMMIT_SHA` | No | Git commit hash, used to generate source code link on About page |
 
-**Credentials** are stored in `.env` (gitignored) — loaded automatically by `load_dotenv()` in `web/app.py`, no need to `source .env` manually:
+To discover which crawlers require login, run:
+```bash
+uv run ojhunt.py --list --json | jq 'with_entries(select(.value.login_type | contains("account")))'
 ```
-LOGIN_USERNAME__VJUDGE=...
-LOGIN_PASSWORD__VJUDGE=...
-LOGIN_USERNAME__CSES=...
-LOGIN_PASSWORD__CSES=...
+
+**Credentials** are stored in `.env` (gitignored) — loaded automatically by `load_dotenv()` in `web/app.py`, no need to `source .env` manually. Create `.env` if it doesn't exist and add entries for each login-required crawler:
+```
+LOGIN_USERNAME__<CRAWLER>=...
+LOGIN_PASSWORD__<CRAWLER>=...
 ```
 
 The user will need to fill the fields.
 
-### Testing CLI with VJudge
+### Testing CLI with Login-Required Crawlers
 
-For CLI testing with VJudge, read credentials from `.env` and construct the command:
+For `shared_account` crawlers, tests read credentials from `.env` automatically — no need to extract them manually. If `.env` doesn't exist, create it first with the relevant credentials.
+
+The CLI test pattern for shared-account crawlers:
 ```bash
-uv run ojhunt.py -l username:password@vjudge -- target_user@vjudge
+uv run ojhunt.py -l username:password@<crawler> -- target_user@<crawler>
 ```
