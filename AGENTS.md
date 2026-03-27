@@ -1,4 +1,4 @@
-# CLAUDE.md - Guidelines for AI Agents
+# AGENTS.md - Guidelines for AI Agents
 
 ## Project Overview
 
@@ -68,7 +68,7 @@ Then use `curl` or Playwright skills to test the frontend.
 - **Never specify version numbers** when adding dependencies. Use `uv add <package>` and let uv resolve the version.
 - This applies to all dependencies including FastAPI, uvicorn, etc.
 
-## Updating CLAUDE.md
+## Updating AGENTS.md
 
 When the user provides guidance about practices or conventions during a conversation (e.g., "use uv add without version numbers"), add those rules to this file automatically.
 
