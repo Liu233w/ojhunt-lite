@@ -467,40 +467,40 @@ class TestPrintCrawlerListJson:
         assert captured.out.strip() != ""
         assert captured.err == ""
 
-    def test_json_is_list(self, capsys):
-        """Test that JSON output is a list."""
+    def test_json_is_dict(self, capsys):
+        """Test that JSON output is a dict keyed by crawler name."""
         with patch("cli.output.discover_crawlers", return_value=self._make_crawlers()):
             print_crawler_list(json_output=True)
         data = json.loads(capsys.readouterr().out)
-        assert isinstance(data, list)
+        assert isinstance(data, dict)
 
     def test_json_entry_fields(self, capsys):
         """Test each entry has the expected fields."""
         with patch("cli.output.discover_crawlers", return_value=self._make_crawlers()):
             print_crawler_list(json_output=True)
         data = json.loads(capsys.readouterr().out)
-        entry = next(e for e in data if e["name"] == "codeforces")
+        entry = data["codeforces"]
         assert entry["title"] == "Codeforces"
         assert entry["url"] == "https://codeforces.com"
         assert entry["login_type"] == "not_required"
         assert entry["is_virtual_judge"] is False
         assert "description" in entry
+        assert "name" not in entry
 
     def test_json_requires_login_field(self, capsys):
         """Test requires_login is correctly set for login crawlers."""
         with patch("cli.output.discover_crawlers", return_value=self._make_crawlers()):
             print_crawler_list(json_output=True)
         data = json.loads(capsys.readouterr().out)
-        vjudge = next(e for e in data if e["name"] == "vjudge")
-        assert vjudge["login_type"] == "shared_account"
+        assert data["vjudge"]["login_type"] == "shared_account"
 
     def test_json_sorted_by_name(self, capsys):
         """Test crawlers are sorted by name."""
         with patch("cli.output.discover_crawlers", return_value=self._make_crawlers()):
             print_crawler_list(json_output=True)
         data = json.loads(capsys.readouterr().out)
-        names = [e["name"] for e in data]
-        assert names == sorted(names)
+        keys = list(data.keys())
+        assert keys == sorted(keys)
 
     def test_json_no_crawlers_goes_to_stderr(self, capsys):
         """Test 'no crawlers' message goes to stderr in JSON mode."""

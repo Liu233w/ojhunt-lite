@@ -216,17 +216,16 @@ def print_crawler_list(json_output: bool = False) -> None:
         return
 
     if json_output:
-        result = []
+        result = {}
         for name in sorted(crawlers.keys()):
             meta = crawlers[name].meta
-            result.append({
-                "name": name,
+            result[name] = {
                 "title": meta.title,
                 "description": meta.description,
                 "url": meta.url,
                 "login_type": meta.login_type.value,
                 "is_virtual_judge": meta.is_virtual_judge,
-            })
+            }
         print(json.dumps(result, indent=2))
         return
 
