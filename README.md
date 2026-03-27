@@ -125,7 +125,7 @@ uv run ojhunt.py -l myuser:mypass@vjudge -- target_user@vjudge
 uv run ojhunt.py -l user1:pass1@vjudge -l user2:pass2@otheroj -- target1@vjudge target2@otheroj
 ```
 
-Currently, VJudge is the only Type B crawler in this project.
+Use `ojhunt --list` to see which crawlers require login and their login type.
 
 **Parsing rules for `user:pass@crawler`:**
 - First `:` separates username from password
@@ -191,7 +191,7 @@ uv run fastapi run web/app.py --port 8080 --workers 4
 
 The web interface will be available at http://127.0.0.1:8080
 
-For login-required crawlers (VJudge, CSES), set environment variables:
+For Type B crawlers, set environment variables:
 
 ```bash
 LOGIN_USERNAME__VJUDGE=user LOGIN_PASSWORD__VJUDGE=pass uv run fastapi dev web/app.py --port 8080
