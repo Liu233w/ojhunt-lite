@@ -122,29 +122,29 @@ BSD-2 Clause license header (copy from existing crawler, use current year for ne
 
 There are two distinct types of login-required crawlers. Always identify which type before implementing:
 
-**Type A — Login to see your own data only:**
+**Own Account (`own_account`) — Login to see your own data only:**
 - The platform only exposes a user's own stats when they are logged in.
 - The crawler must log in *as the target user* to retrieve their data.
 - `login_user` and `login_password` equal `username` and `password`.
 - CLI usage: `user:pass@crawler` (the `-l` flag is redundant/inapplicable).
 - Example platforms: QOJ, LightOJ, Jisuanke (if implemented).
 
-**Type B — Any account can query any user:**
+**Shared Account (`shared_account`) — Any account can query any user:**
 - The platform requires login, but once authenticated any user's stats are visible.
 - A single shared account can query arbitrary target users.
 - `login_user`/`login_password` (from `-l` flag) may differ from `username`.
 - CLI usage: `-l mylogin:mypass@crawler -- target@crawler`.
 - Example platforms (implemented): CSES, VJudge.
 
-**How to identify the type:** Visit the site as a guest and try to access another user's profile. If it's blocked (login wall on all profiles), it's Type B. If profiles are public for others but not for yourself, it's Type A.
+**How to identify the type:** Visit the site as a guest and try to access another user's profile. If it's blocked (login wall on all profiles), it's Shared Account. If profiles are public for others but not for yourself, it's Own Account.
 
 **Reference implementations:**
-- Type B: `crawlers/vjudge.py`, `crawlers/cses.py`
+- Shared Account: `crawlers/vjudge.py`, `crawlers/cses.py`
 
 **`CrawlerMeta` field mapping:**
-- `requires_login=True` → Type B (supports `-l` flag; any account can query any user)
-- `requires_password=True` → Type A (must log in as the target user)
-- Neither → no login required
+- `"login_type": "shared_account"` → Shared Account (supports `-l` flag; any account can query any user)
+- `"login_type": "own_account"` → Own Account (must log in as the target user)
+- key omitted → no login required
 
 ## Crawler Metadata Fields (`__crawler_meta__`)
 
@@ -155,8 +155,7 @@ There are two distinct types of login-required crawlers. Always identify which t
 | `test_username` | Yes | Used for tests and `/crawlers` availability checks |
 | `description` | No | Shown in web UI (default: `""`) |
 | `cli_description` | No | Shown in `--list` CLI output instead of `description` when present. Use for crawlers where the CLI usage differs significantly (e.g., login instructions, ID vs. username). |
-| `requires_login` | No | Requires credentials via `user:pass@crawler` or `-l` flag |
-| `requires_password` | No | Requires password embedded in query |
+| `login_type` | No | `"shared_account"` or `"own_account"`; omit if no login required |
 | `is_virtual_judge` | No | Whether this is a virtual judge |
 
 ## Design Principles
@@ -195,7 +194,7 @@ Each test must assert all three fields: `solved`, `submissions`, `solved_list`:
 | Crawler metadata model | `core/models.py` |
 | CLI entry point | `ojhunt.py` |
 | Archived crawlers | `archived_crawlers/` |
-| Type B login crawler | `crawlers/vjudge.py` |
+| Shared Account login crawler | `crawlers/vjudge.py` |
 | Numeric ID crawler | `crawlers/luogu.py`, `crawlers/nod.py` |
 | Crawler analysis guide | `.claude/skills/analyze-crawler.md` |
 

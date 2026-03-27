@@ -119,17 +119,19 @@ Visit the profile page as a guest (in Playwright without cookies). Look for:
 
 ### Determine the login TYPE
 
-**Type A — Login to see your own data only:**
+**Own Account (`own_account`) — Login to see your own data only:**
 - Guest access: Other users' profiles are visible; only your own profile is hidden
 - OR: All profiles are hidden, but each user can only see their own
 - Implementation: The crawler logs in as the target user
 - CLI: `user:pass@crawler`
+- `__crawler_meta__`: `"login_type": "own_account"`
 
-**Type B — Any account can query anyone:**
+**Shared Account (`shared_account`) — Any account can query anyone:**
 - Guest access: All user profiles are hidden regardless of whose they are
 - Once logged in: You can view any user's profile
 - Implementation: One account is enough to query any user
 - CLI: `-l mylogin:mypass@crawler -- target@crawler`
+- `__crawler_meta__`: `"login_type": "shared_account"`
 - Reference: `crawlers/vjudge.py`
 
 ### Registration

@@ -34,7 +34,7 @@ __crawler_meta__ = {
     "description": "virtual judge，这个OJ的题量是单独计算的",
     "url": "https://vjudge.net/",
     "is_virtual_judge": True,
-    "requires_login": True,
+    "login_type": "shared_account",
     "test_username": "leoloveacm",
 }
 

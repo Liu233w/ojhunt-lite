@@ -36,7 +36,7 @@ __crawler_meta__ = {
     "description": "Enter your numeric user ID.",
     "cli_description": "Login required. Use username:password@cses to query yourself, or -l login:pass@cses -- id@cses to query another user by numeric ID.",
     "url": "https://cses.fi/",
-    "requires_login": True,
+    "login_type": "shared_account",
     "test_username": "3",
 }
 

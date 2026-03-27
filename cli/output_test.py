@@ -14,7 +14,7 @@ from cli.output import (
     validate_credentials,
 )
 from cli.parser import build_all_queries
-from core.models import CrawlerInfo, CrawlerMeta, QueryResult
+from core.models import CrawlerInfo, CrawlerMeta, LoginType, QueryResult
 from core.stats import collect_solved_problems
 
 
@@ -176,21 +176,21 @@ class TestValidateCredentials:
     def test_requires_login_with_embedded_password(self):
         """Test requires_login crawler with embedded password."""
         queries = [Query(crawler="vjudge", username="user1", password="pass")]
-        crawlers = {"vjudge": make_crawler("vjudge", requires_login=True)}
+        crawlers = {"vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)}
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
 
     def test_requires_login_with_flag_credentials(self):
         """Test requires_login crawler with -l flag credentials."""
         queries = [Query(crawler="vjudge", username="user1")]
-        crawlers = {"vjudge": make_crawler("vjudge", requires_login=True)}
+        crawlers = {"vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)}
         crawler_logins = {"vjudge": ("loginuser", "pass")}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
 
     def test_requires_login_missing_credentials(self, capsys):
         """Test requires_login crawler without any credentials."""
         queries = [Query(crawler="vjudge", username="user1")]
-        crawlers = {"vjudge": make_crawler("vjudge", requires_login=True)}
+        crawlers = {"vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)}
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is False
         captured = capsys.readouterr()
@@ -199,7 +199,7 @@ class TestValidateCredentials:
     def test_requires_login_duplicate_credentials(self, capsys):
         """Test requires_login crawler with both embedded and flag credentials."""
         queries = [Query(crawler="vjudge", username="user1", password="pass")]
-        crawlers = {"vjudge": make_crawler("vjudge", requires_login=True)}
+        crawlers = {"vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT)}
         crawler_logins = {"vjudge": ("loginuser", "pass2")}
         assert validate_credentials(queries, crawlers, crawler_logins) is False
         captured = capsys.readouterr()
@@ -208,14 +208,14 @@ class TestValidateCredentials:
     def test_requires_password_provided(self):
         """Test requires_password crawler with password provided."""
         queries = [Query(crawler="someoj", username="user1", password="pass")]
-        crawlers = {"someoj": make_crawler("someoj", requires_password=True)}
+        crawlers = {"someoj": make_crawler("someoj", login_type=LoginType.OWN_ACCOUNT)}
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
 
     def test_requires_password_missing(self, capsys):
         """Test requires_password crawler without password."""
         queries = [Query(crawler="someoj", username="user1")]
-        crawlers = {"someoj": make_crawler("someoj", requires_password=True)}
+        crawlers = {"someoj": make_crawler("someoj", login_type=LoginType.OWN_ACCOUNT)}
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is False
         captured = capsys.readouterr()
@@ -244,7 +244,7 @@ class TestValidateCredentials:
         ]
         crawlers = {
             "codeforces": make_crawler("codeforces"),
-            "vjudge": make_crawler("vjudge", requires_login=True),
+            "vjudge": make_crawler("vjudge", login_type=LoginType.SHARED_ACCOUNT),
         }
         crawler_logins = {}
         assert validate_credentials(queries, crawlers, crawler_logins) is True
@@ -456,7 +456,7 @@ class TestPrintCrawlerListJson:
     def _make_crawlers(self):
         return {
             "codeforces": make_crawler("codeforces", title="Codeforces", url="https://codeforces.com"),
-            "vjudge": make_crawler("vjudge", title="VJudge", url="https://vjudge.net", requires_login=True),
+            "vjudge": make_crawler("vjudge", title="VJudge", url="https://vjudge.net", login_type=LoginType.SHARED_ACCOUNT),
         }
 
     def test_json_goes_to_stdout(self, capsys):
@@ -482,8 +482,7 @@ class TestPrintCrawlerListJson:
         entry = next(e for e in data if e["name"] == "codeforces")
         assert entry["title"] == "Codeforces"
         assert entry["url"] == "https://codeforces.com"
-        assert entry["requires_login"] is False
-        assert entry["requires_password"] is False
+        assert entry["login_type"] == "not_required"
         assert entry["is_virtual_judge"] is False
         assert "description" in entry
 
@@ -493,7 +492,7 @@ class TestPrintCrawlerListJson:
             print_crawler_list(json_output=True)
         data = json.loads(capsys.readouterr().out)
         vjudge = next(e for e in data if e["name"] == "vjudge")
-        assert vjudge["requires_login"] is True
+        assert vjudge["login_type"] == "shared_account"
 
     def test_json_sorted_by_name(self, capsys):
         """Test crawlers are sorted by name."""

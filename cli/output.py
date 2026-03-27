@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.table import Table
 
 from cli.models import Query
-from core.models import CrawlerInfo, QueryResult
+from core.models import CrawlerInfo, LoginType, QueryResult
 from core.stats import collect_solved_problems
 from crawlers import discover_crawlers
 
@@ -48,12 +48,12 @@ def validate_credentials(
     """
     Validate that credential requirements are met for each query.
 
-    For requires_login crawlers (e.g., VJudge):
+    For shared_account crawlers (e.g., VJudge):
         - If query has password: login as that user, query that user
         - If query has no password but -l flag provided: use flag credentials
         - If neither: error
 
-    For requires_password crawlers:
+    For own_account crawlers:
         - Password must be provided in query
 
     Args:
@@ -66,10 +66,8 @@ def validate_credentials(
     """
     for q in queries:
         meta = crawlers[q.crawler].meta
-        requires_login = meta.requires_login
-        requires_password = meta.requires_password
 
-        if requires_login:
+        if meta.login_type == LoginType.SHARED_ACCOUNT:
             has_query_creds = q.password is not None
             has_flag_creds = q.crawler in crawler_logins
 
@@ -89,7 +87,7 @@ def validate_credentials(
                 )
                 return False
 
-        elif requires_password:
+        elif meta.login_type == LoginType.OWN_ACCOUNT:
             if q.password is None:
                 print(
                     f"Error: crawler '{q.crawler}' requires a password. "
@@ -226,8 +224,7 @@ def print_crawler_list(json_output: bool = False) -> None:
                 "title": meta.title,
                 "description": meta.description,
                 "url": meta.url,
-                "requires_login": meta.requires_login,
-                "requires_password": meta.requires_password,
+                "login_type": meta.login_type.value,
                 "is_virtual_judge": meta.is_virtual_judge,
             })
         print(json.dumps(result, indent=2))
@@ -244,7 +241,7 @@ def print_crawler_list(json_output: bool = False) -> None:
     for name in sorted(crawlers.keys()):
         meta = crawlers[name].meta
         description = meta.cli_description or meta.description
-        table.add_row(name, description, meta.url, meta.login_type)
+        table.add_row(name, description, meta.url, meta.login_type.label)
 
     print()
     console.print(table)

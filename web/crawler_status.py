@@ -12,7 +12,7 @@ from enum import Enum
 import aiohttp
 
 from core.credentials import get_login_kwargs
-from core.models import CrawlerInfo
+from core.models import CrawlerInfo, LoginType
 from core.runner import run_crawler
 from crawlers import discover_crawlers
 
@@ -46,7 +46,7 @@ def get_all_status() -> dict[str, CrawlerAvailability]:
 
 async def _check_one(client: aiohttp.ClientSession, name: str, crawler: CrawlerInfo) -> CrawlerAvailability:
     """Check a single crawler's availability."""
-    if crawler.meta.requires_login:
+    if crawler.meta.login_type == LoginType.SHARED_ACCOUNT:
         kwargs = get_login_kwargs(name)
         if kwargs is None:
             upper = name.upper()

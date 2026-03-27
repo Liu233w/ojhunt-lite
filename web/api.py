@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from core.credentials import get_login_kwargs
+from core.models import LoginType
 from core.runner import run_crawler
 from crawlers import discover_crawlers
 from web.http_client import HttpClientDep
@@ -93,7 +94,7 @@ async def query_crawler(
 
     kwargs: Dict[str, str] = {}
 
-    if crawler.meta.requires_login:
+    if crawler.meta.login_type == LoginType.SHARED_ACCOUNT:
         login_kwargs = get_login_kwargs(crawler_name)
         if login_kwargs:
             kwargs.update(login_kwargs)
