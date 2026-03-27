@@ -6,8 +6,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from crawlers import discover_crawlers
@@ -56,18 +56,35 @@ async def about() -> str:
     )
 
 
+@router.get("/llms.txt", response_class=PlainTextResponse)
+async def llms_txt(request: Request) -> str:
+    base = str(request.base_url).rstrip("/")
+    crawlers = discover_crawlers()
+    crawler_names = sorted(crawlers.keys())
+    template = jinja_env.get_template("llms.txt")
+    return template.render(
+        base=base,
+        crawler_count=len(crawler_names),
+        crawler_names=", ".join(crawler_names),
+    )
+
+
 @router.get("/crawlers", response_class=HTMLResponse)
 async def crawlers_page() -> str:
     crawlers = discover_crawlers()
     availability = get_all_status()
     crawler_list = []
     for name, info in sorted(crawlers.items()):
-        crawler_list.append({
-            "name": name,
-            "title": info.meta.title,
-            "description": info.meta.description,
-            "url": info.meta.url,
-            "availability": availability.get(name, CrawlerAvailability(CheckStatus.WAITING)),
-        })
+        crawler_list.append(
+            {
+                "name": name,
+                "title": info.meta.title,
+                "description": info.meta.description,
+                "url": info.meta.url,
+                "availability": availability.get(
+                    name, CrawlerAvailability(CheckStatus.WAITING)
+                ),
+            }
+        )
     template = jinja_env.get_template("crawlers.html")
     return template.render(crawlers=crawler_list)
