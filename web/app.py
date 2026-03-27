@@ -9,8 +9,10 @@ from pathlib import Path
 from typing import AsyncGenerator
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from web.http_client import close_http_client, get_http_client, init_http_client
 from web.api import router as api_router
@@ -30,12 +32,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await close_http_client()
 
 
+class LLMsDiscoverabilityMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next) -> Response:
+        response = await call_next(request)
+        response.headers["Link"] = '</llms.txt>; rel="describedby"; type="text/plain"'
+        return response
+
+
 app = FastAPI(
     title="OJHunt Lite",
     description="Query Online Judge statistics across multiple platforms",
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.add_middleware(LLMsDiscoverabilityMiddleware)
 
 STATIC_DIR = Path(__file__).parent / "static"
 if STATIC_DIR.exists():
