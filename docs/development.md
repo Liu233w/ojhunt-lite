@@ -167,3 +167,8 @@ uv run ruff check .
 ```
 
 Run after every edit.
+
+## Architecture Decisions
+
+Significant architectural decisions and their rationale are recorded in [`docs/adr/`](./adr/).
+See those files to understand *why* things are shaped the way they are before proposing changes.

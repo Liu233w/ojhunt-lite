@@ -162,6 +162,28 @@ There are two distinct types of login-required crawlers. Always identify which t
 | `login_type` | No | `"shared_account"` or `"own_account"`; omit if no login required |
 | `is_virtual_judge` | No | Whether this is a virtual judge |
 
+## Architectural Decisions
+
+### When to write an ADR
+
+The user works in two modes:
+
+- **Plan mode** — the user arrives with a concrete plan; refine and implement it directly. No ADR needed unless the plan itself involves a significant design decision.
+- **Normal mode discussion** — the user is exploring options and is unsure what to do. When a decision crystallizes from that discussion, write the ADR *before* implementing.
+
+A discussion-mode conversation is the signal. If you find yourself in open-ended back-and-forth about trade-offs, that's the right moment to propose creating an ADR once alignment is reached.
+
+A decision warrants an ADR if:
+- Multiple approaches were considered and one was rejected
+- The decision won't be obvious from reading the code
+- Future contributors might be tempted to reverse it without understanding the context
+
+### How to write an ADR
+
+Create `docs/adr/NNNN-short-title.md` (see https://adr.github.io/) and add a one-line pointer to `docs/development.md`. Status should be one of: `Proposed`, `Accepted`, `Deprecated`, `Superseded`.
+
+Write the ADR before starting implementation. If implementation reveals the decision needs to change, update the ADR first — don't silently deviate from it.
+
 ## Design Principles
 
 - **Easy to add new crawlers.** Adding a new crawler should only require creating one crawler file + one test file. All crawler-specific data (metadata, test username) lives in `__crawler_meta__`. Avoid centralizing crawler-specific data elsewhere — if adding a crawler requires editing unrelated files, that's a design smell.
