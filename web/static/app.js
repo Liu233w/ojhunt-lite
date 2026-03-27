@@ -50,7 +50,7 @@ function createQuery(crawler, username, id) {
 
 function ojhunt() {
     return {
-        /** @type {Object<string, {title: string, description: string, isVirtualJudge: boolean}>} */
+        /** @type {Object<string, {title: string, description: string, isAggregator: boolean}>} */
         crawlers: window.__CRAWLERS__,
         
         /** @type {Query[]} */

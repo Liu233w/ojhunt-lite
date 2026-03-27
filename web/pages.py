@@ -40,7 +40,7 @@ async def index(request: Request) -> str:
         name: {
             "title": info.meta.title,
             "description": info.meta.description,
-            "isVirtualJudge": info.meta.is_virtual_judge,
+            "isAggregator": info.meta.is_aggregator,
         }
         for name, info in sorted(crawlers.items())
     }

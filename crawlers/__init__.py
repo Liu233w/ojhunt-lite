@@ -47,7 +47,7 @@ def discover_crawlers() -> Dict[str, CrawlerInfo]:
                     description=meta_dict.get("description", ""),
                     cli_description=meta_dict.get("cli_description", ""),
                     url=meta_dict.get("url", ""),
-                    is_virtual_judge=meta_dict.get("is_virtual_judge", False),
+                    is_aggregator=meta_dict.get("is_aggregator", False),
                     login_type=LoginType.from_meta(meta_dict.get("login_type")),
                     test_username=meta_dict.get("test_username", ""),
                 )
