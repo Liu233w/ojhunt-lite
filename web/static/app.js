@@ -24,6 +24,8 @@
  */
 
 const STORAGE_KEY = 'ojhunt-queries';
+const PDF_CACHE_KEY = 'ojhunt-report-pdf';
+const PDF_CACHE_DATE_KEY = 'ojhunt-report-date';
 
 /**
  * Creates a new Query object with default values
@@ -73,7 +75,10 @@ function ojhunt() {
         
         /** @type {boolean} */
         _initialized: false,
-        
+
+        /** @type {string|null} Date (YYYY-MM-DD) of the cached previous report, or null */
+        cachedPdfDate: localStorage.getItem(PDF_CACHE_DATE_KEY),
+
         /**
          * Check if a query with given crawler/username already exists
          * @param {string} crawler
@@ -319,6 +324,128 @@ function ojhunt() {
             if (dialog) dialog.close();
         },
         
+        /**
+         * Upload a previous OJHunt PDF report.
+         * Always saves settings to localStorage. Populates the live UI if the query
+         * table is empty; otherwise prompts to refresh.
+         * @param {File} file
+         * @returns {Promise<void>}
+         */
+        async uploadReport(file) {
+            // Read file as base64
+            let b64;
+            try {
+                b64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            } catch (e) {
+                alert('Failed to read file: ' + e.message);
+                return;
+            }
+
+            let data;
+            try {
+                const response = await fetch('/api/pdf/extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pdf_b64: b64 }),
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert(err.detail || 'Failed to read PDF');
+                    return;
+                }
+                data = await response.json();
+            } catch (e) {
+                alert('Failed to read PDF: ' + e.message);
+                return;
+            }
+
+            // Always update localStorage settings from PDF
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    username: data.settings.username,
+                    queries: data.settings.queries,
+                }));
+                localStorage.setItem(PDF_CACHE_KEY, b64);
+                if (data.report_date) {
+                    localStorage.setItem(PDF_CACHE_DATE_KEY, data.report_date);
+                    this.cachedPdfDate = data.report_date;
+                }
+            } catch (_) { /* quota exceeded — skip cache */ }
+
+            // Populate live UI if table is empty; otherwise inform user to refresh
+            if (this.queries.length === 0) {
+                this.username = data.settings.username;
+                for (const q of data.settings.queries) {
+                    if (q.crawler && q.username && this.crawlers[q.crawler] && !this.queryExists(q.crawler, q.username)) {
+                        this.queries.push(createQuery(q.crawler, q.username, this.queryIdCounter++));
+                    }
+                }
+                this.saveQueries();
+            } else if (confirm('Settings from the uploaded report have been saved. Refresh now to apply?')) {
+                location.reload();
+            }
+        },
+
+        /**
+         * Download a progress report PDF, merging current results with cached history.
+         * Updates the localStorage cache with the newly generated PDF.
+         * @returns {Promise<void>}
+         */
+        async downloadReport() {
+            const request = {
+                snapshot: {
+                    totalSolved: this.report.totalSolved,
+                    totalSubmissions: this.report.totalSubmissions,
+                    username: this.username,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    results: this.queries
+                        .filter(q => q.status === 'success')
+                        .map(q => ({ crawler: q.crawler, username: q.username, solved: q.solved, submissions: q.submissions })),
+                },
+                settings: {
+                    username: this.username,
+                    queries: this.queries.map(q => ({ crawler: q.crawler, username: q.username })),
+                },
+                previous_pdf_b64: localStorage.getItem(PDF_CACHE_KEY) || null,
+            };
+
+            let data;
+            try {
+                const response = await fetch('/api/pdf/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request),
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    alert(err.detail || 'Failed to generate PDF');
+                    return;
+                }
+                data = await response.json();
+            } catch (e) {
+                alert('Failed to generate PDF: ' + e.message);
+                return;
+            }
+
+            // Update localStorage cache directly from base64 — no FileReader needed
+            try {
+                localStorage.setItem(PDF_CACHE_KEY, data.pdf_b64);
+                localStorage.setItem(PDF_CACHE_DATE_KEY, data.date);
+            } catch (_) { /* quota exceeded — skip cache */ }
+            this.cachedPdfDate = data.date;
+
+            // Download via data URL — no Blob/createObjectURL needed
+            const a = document.createElement('a');
+            a.href = 'data:application/pdf;base64,' + data.pdf_b64;
+            a.download = `ojhunt-report-${data.date}.pdf`;
+            a.click();
+        },
+
         /**
          * Initialize the component
          * @returns {void}
