@@ -32,7 +32,7 @@ cheap merge step. Chosen.
 
 ## Decision
 
-1. **Expose `GET /llms.txt`** (or serve a static file at that path) documenting:
+1. **Expose `GET /llms.txt` as a dynamic FastAPI route** documenting:
    - The existing per-crawler endpoints
    - The `POST /api/merge` endpoint (from ADR 0001)
    - A shell script template agents can adapt: parallel `curl` calls followed by a merge request
@@ -55,5 +55,6 @@ cheap merge step. Chosen.
   using the web UI.
 - Login-required crawlers (VJudge, CSES) work transparently for agents: the server holds
   shared credentials, so no credential management is needed on the agent side.
-- `llms.txt` must be kept in sync with actual endpoint signatures. Changes to `QueryResult`
-  or the merge endpoint should trigger an update to `llms.txt`.
+- The crawler list and base URL in `llms.txt` are rendered dynamically from live server
+  state, so they never go stale. The prose (endpoint descriptions, shell template) must
+  be kept in sync manually if endpoint signatures change.

@@ -23,20 +23,22 @@ frontend JavaScript, and is partially duplicated in Python.
 
 ## Decision
 
-1. **Add `crawler` and `username` fields to `QueryResult`** (the per-crawler API response).
-   This is a non-breaking additive change — existing clients that ignore unknown fields are
-   unaffected.
+1. **Introduce a `CrawlerResult` top-level envelope** for the per-crawler API response,
+   adding `crawler`, `username`, `error`, and `message` fields alongside the existing
+   `data` object (which is unchanged). This is a non-breaking additive change — existing
+   clients that ignore unknown fields are unaffected.
 
-2. **Add `POST /api/merge`** that accepts `List[QueryResult]` (the enriched schema above)
-   and returns a deduplicated summary across all supplied results. The merge logic handles
-   VJudge cross-platform deduplication server-side.
+2. **Add `POST /api/merge`** that accepts `List[CrawlerResult]` (verbatim responses from
+   the query endpoint) and returns a deduplicated summary across all supplied results.
+   The merge logic handles VJudge cross-platform deduplication server-side.
 
 3. **Update the frontend** to use `POST /api/merge` for the final total instead of running
    merge logic in JavaScript. Per-crawler requests still fire in parallel for progressive
-   display; the merge call happens once all results are collected.
+   display. The report is recalculated after each individual query completes; while any
+   query is still loading, `calculateReport` returns early to avoid races.
 
-Reusing `QueryResult` as the merge input means no separate input schema is needed.
-The client collects per-crawler responses verbatim and POSTs them as an array.
+Using `CrawlerResult` as both the query response and the merge input means no separate
+input schema is needed. The client forwards per-crawler responses verbatim as an array.
 
 ## Consequences
 
