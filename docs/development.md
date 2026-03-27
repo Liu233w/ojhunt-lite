@@ -172,3 +172,7 @@ Run after every edit.
 
 Significant architectural decisions and their rationale are recorded in [`docs/adr/`](./adr/).
 See those files to understand *why* things are shaped the way they are before proposing changes.
+
+- [ADR 0001](./adr/0001-enrich-query-response-schema.md) — Enrich query response schema and add `/api/merge`
+- [ADR 0002](./adr/0002-agent-support-via-llmstxt.md) — Agent support via `/llms.txt`
+- [ADR 0003](./adr/0003-rename-is-virtual-judge-to-is-aggregator.md) — Rename `isVirtualJudge` to `isAggregator`
