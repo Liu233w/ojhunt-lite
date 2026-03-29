@@ -5,13 +5,22 @@ A lightweight async Python tool for querying Online Judge (OJ) statistics across
 - Async/concurrent requests via `aiohttp`
 - CLI and web interface
 - Self-contained crawlers — each file can be used independently
-- Only depends on `aiohttp` and `selectolax`
 - BSD-2 Licensed
 
-## Quick Example
+## CLI
+
+Install once, use anywhere:
 
 ```bash
-$ uv run ojhunt.py tourist@codeforces tourist@atcoder
+pipx install ojhunt
+# or: uv tool install ojhunt
+# or: pip install ojhunt
+```
+
+Then run:
+
+```bash
+$ ojhunt tourist@codeforces tourist@atcoder
 Querying CodeForces...
 Querying AtCoder...
 AtCoder done (1051 solved, 1.25s)
@@ -19,46 +28,40 @@ CodeForces done (2962 solved, 2.78s)
 
 Total: 2962 solved / 6437 submissions
 
-================================================================================
-Crawler              Username             Solved     Submissions  Status
-================================================================================
-CodeForces           tourist              2962       5386         OK (2.78s)
-AtCoder              tourist              1051       1051         OK (1.25s)
-================================================================================
+┏━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ Crawler    ┃ Username ┃ Solved ┃ Submissions ┃ Status     ┃
+┡━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+│ CodeForces │ tourist  │   2962 │        5386 │ OK (2.78s) │
+│ AtCoder    │ tourist  │   1051 │        1051 │ OK (1.25s) │
+└────────────┴──────────┴────────┴─────────────┴────────────┘
 Completed: 2 OK, 0 failed (2.78s total)
 ```
 
-## Installation
+Full CLI reference, login-required crawlers, and JSON output: **[docs/cli.md](docs/cli.md)**
+
+## Web Interface
+
+The web interface is designed to be self-hosted. Clone the repo and deploy:
 
 ```bash
 git clone https://github.com/Liu233w/ojhunt-lite
 cd ojhunt-lite
 uv sync
+uv run fastapi run web/app.py --port 8080
 ```
 
 Container images are available at `ghcr.io/liu233w/ojhunt-lite` — see [docs/web.md](docs/web.md).
 
-## Usage
+## Use Crawlers in Your Code
 
-### CLI
-
-```bash
-uv run ojhunt.py tourist@codeforces tourist@atcoder
-uv run ojhunt.py -d tourist -- codeforces atcoder   # default username
-uv run ojhunt.py --list                              # list available crawlers
-```
-
-Full CLI reference, login-required crawlers, and JSON output: **[docs/cli.md](docs/cli.md)**
-
-### Web Interface
+Add `ojhunt` as a project dependency:
 
 ```bash
-uv run fastapi dev web/app.py --port 8080
+uv add ojhunt
+# or: pip install ojhunt
 ```
 
-Web UI, API docs, and container setup: **[docs/web.md](docs/web.md)**
-
-### Use Crawlers in Your Code
+Then import crawlers directly:
 
 ```python
 import asyncio, aiohttp
