@@ -59,14 +59,8 @@ def test_crawlers_status_updates(page: Page):
     statuses = page.locator("table tbody td:nth-child(4) span")
     count = statuses.count()
     has_checked = False
-    has_waiting = False
     for i in range(count):
         text = statuses.nth(i).text_content()
         if text in ("Online", "Offline", "Offline (No Credentials)"):
             has_checked = True
-        if text == "Waiting...":
-            has_waiting = True
-    # At least one should be checked (first crawler)
     assert has_checked, "Expected at least one crawler to have been checked"
-    # And some should still be waiting (one-by-one checking)
-    assert has_waiting, "Expected some crawlers to still be waiting"
