@@ -9,11 +9,15 @@ and test the 'merge with existing history' feature against today's date (~2026).
 
 import math
 import os
-import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-from web.pdf import HistoryEntry, PdfCrawlerResult, PdfQueryItem, PdfSettings, PdfSnapshot, generate_pdf
+from ojhunt.web.pdf import (
+    HistoryEntry,
+    PdfCrawlerResult,
+    PdfQueryItem,
+    PdfSettings,
+    PdfSnapshot,
+    generate_pdf,
+)
 
 ROOT = os.path.join(os.path.dirname(__file__), "previews")
 os.makedirs(ROOT, exist_ok=True)
@@ -51,9 +55,15 @@ def _make_history(n: int) -> list[HistoryEntry]:
 
 
 RESULTS = [
-    PdfCrawlerResult(crawler="codeforces", username="tourist", solved=1200, submissions=3600),
-    PdfCrawlerResult(crawler="atcoder", username="tourist", solved=300, submissions=500),
-    PdfCrawlerResult(crawler="leetcode", username="tourist", solved=250, submissions=400),
+    PdfCrawlerResult(
+        crawler="codeforces", username="tourist", solved=1200, submissions=3600
+    ),
+    PdfCrawlerResult(
+        crawler="atcoder", username="tourist", solved=300, submissions=500
+    ),
+    PdfCrawlerResult(
+        crawler="leetcode", username="tourist", solved=250, submissions=400
+    ),
 ]
 
 for count in [1, 10, 30, 100, 1825]:
