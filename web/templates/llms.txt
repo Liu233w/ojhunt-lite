@@ -18,10 +18,24 @@ To get a user's deduplicated solved-problem totals across platforms:
    Do not call /api/merge until all crawler queries have completed.
    The merge step handles aggregator cross-platform deduplication server-side.
 
+## Tracking progress over time
+
+To generate a PDF progress report with accumulated history, use the web UI at
+{{ base }}/ rather than the API directly. The UI handles PDF caching, history
+merging, and download automatically:
+
+1. Add crawlers and usernames, then click "Query All".
+2. Once all queries complete, click "Download Report".
+   If a previous report was uploaded, its history is merged into the new PDF.
+3. Save the downloaded PDF — upload it on the next run to carry history forward.
+
+If you need to restore settings from a previous PDF (e.g. to re-run the same
+crawlers), upload it via the "Upload previous report" button before querying.
+
 ## API Reference
 
-Full OpenAPI schema (all request/response shapes): {{ base }}/openapi.json
-Interactive docs: {{ base }}/docs
+- [OpenAPI schema (all request/response shapes)]({{ base }}/openapi.json)
+- [Interactive docs]({{ base }}/docs)
 
 ## Key endpoints
 
@@ -29,34 +43,18 @@ GET  {{ base }}/api/crawlers/
   List all available crawlers.
 
 GET  {{ base }}/api/crawlers/{crawler}/{username}
-  Query a single crawler for a user's statistics.
-  Returns a CrawlerResult object — pass it verbatim to POST /api/merge.
+  Query a single crawler. Returns a CrawlerResult — pass it verbatim to /api/merge.
 
 POST {{ base }}/api/merge
-  Body: JSON array of CrawlerResult objects (verbatim GET responses above).
-  Returns deduplicated totals: uniqueSolved and totalSubmissions.
-  Handles VJudge cross-reference deduplication server-side.
+  Merge an array of CrawlerResults into deduplicated totals.
 
 POST {{ base }}/api/pdf/extract
-  Body: JSON {"pdf_b64": "<base64-encoded PDF>"}
-  Extracts embedded settings from a previously generated OJHunt PDF report.
-  Returns JSON: {"settings": {"username": "...", "queries": [{"crawler": "...", "username": "..."}]},
-                 "report_date": "YYYY-MM-DD or null"}
-  Returns 422 if the input is invalid base64, not a valid PDF, or contains no embedded OJHunt data.
-  Note: only settings and the most recent history date are returned; full history stays in the PDF.
+  Extract embedded settings and history date from a previously generated OJHunt PDF.
 
 POST {{ base }}/api/pdf/generate
-  Body: JSON {
-    "snapshot": {"totalSolved": N, "totalSubmissions": N, "username": "...", "timezone": "<IANA tz>"},
-    "settings": {"username": "...", "queries": [{"crawler": "...", "username": "..."}]},
-    "previous_pdf_b64": "<base64 or null>"
-  }
-  The backend computes the current day key (YYYY-MM-DD) using the supplied IANA timezone
-  with a 4am reset boundary. If previous_pdf_b64 is provided and contains embedded OJHunt
-  data, its history is merged with the new snapshot.
-  Returns JSON: {"pdf_b64": "<base64-encoded PDF>", "date": "YYYY-MM-DD"}
-  The PDF contains a progress report with summary, tracked platforms, bar chart of the last
-  30 history entries, and embedded JSON for future restore.
+  Generate a PDF progress report. Optionally merges history from a previous PDF.
+  Pass per-crawler results in snapshot.results to populate the platform breakdown table.
+  Returns the PDF as base64 — save it locally to preserve history for the next run.
 
 ## Available crawlers ({{ crawler_count }} total)
 
