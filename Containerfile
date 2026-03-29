@@ -7,11 +7,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
-COPY crawlers ./crawlers
-COPY cli ./cli
-COPY web ./web
-COPY core ./core
-COPY ojhunt.py ./
+COPY src/ojhunt ./ojhunt
 
 ARG GIT_COMMIT_SHA
 ARG BUILD_TIME
