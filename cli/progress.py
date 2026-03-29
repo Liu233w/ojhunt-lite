@@ -90,7 +90,10 @@ class ProgressManager:
 
     def _print_task_done(self, task: TaskInfo) -> None:
         if task.status == TaskStatus.SUCCESS:
-            print(f"{task.title} done ({task.solved} solved, {task.duration:.2f}s)", file=sys.stderr)
+            print(
+                f"{task.title} done ({task.solved} solved, {task.duration:.2f}s)",
+                file=sys.stderr,
+            )
         else:
             print(f"{task.title} ERROR: {task.error}", file=sys.stderr)
 

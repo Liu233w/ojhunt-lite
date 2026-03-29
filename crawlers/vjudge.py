@@ -220,7 +220,9 @@ async def query(
     MAX_LOGIN_RETRIES = 1
     for attempt in range(MAX_LOGIN_RETRIES + 1):
         if attempt > 0:
-            logger.warning("vjudge: attempt %d — triggering login before retry", attempt)
+            logger.warning(
+                "vjudge: attempt %d — triggering login before retry", attempt
+            )
             await _try_login(session, actual_login_user, actual_login_password)
         else:
             logger.debug(
