@@ -307,6 +307,15 @@ function ojhunt() {
         },
 
         /**
+         * Clear the cached previous PDF report
+         * @returns {void}
+         */
+        clearCachedPdf() {
+            localStorage.removeItem(PDF_CACHE_KEY);
+            this.cachedPdfDate = null; // $watch handles PDF_CACHE_DATE_KEY removal
+        },
+
+        /**
          * Show dialog for solved problems
          * @param {Query} q
          * @returns {void}

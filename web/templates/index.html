@@ -110,6 +110,10 @@
                         @click="$refs.pdfUploadInput.click()"
                         x-text="cachedPdfDate ? 'Upload different report' : 'Upload previous report'"></button>
             </label>
+            <button type="button" class="danger"
+                    style="font-size:0.8rem;padding:0.25rem 0.75rem"
+                    x-show="cachedPdfDate"
+                    @click="clearCachedPdf()">Delete report</button>
         </div>
 
         <div class="query-builder">
