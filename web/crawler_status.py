@@ -44,20 +44,26 @@ def get_all_status() -> dict[str, CrawlerAvailability]:
     return dict(_status)
 
 
-async def _check_one(client: aiohttp.ClientSession, name: str, crawler: CrawlerInfo) -> CrawlerAvailability:
+async def _check_one(
+    client: aiohttp.ClientSession, name: str, crawler: CrawlerInfo
+) -> CrawlerAvailability:
     """Check a single crawler's availability."""
     if crawler.meta.login_type == LoginType.SHARED_ACCOUNT:
         kwargs = get_login_kwargs(name)
         if kwargs is None:
             upper = name.upper()
-            return CrawlerAvailability(CheckStatus.OFFLINE,
-                error=f"Login credentials not configured (set LOGIN_USERNAME__{upper} / LOGIN_PASSWORD__{upper})")
+            return CrawlerAvailability(
+                CheckStatus.OFFLINE,
+                error=f"Login credentials not configured (set LOGIN_USERNAME__{upper} / LOGIN_PASSWORD__{upper})",
+            )
     else:
         kwargs = {}
 
     test_user = crawler.meta.test_username
     if not test_user:
-        return CrawlerAvailability(CheckStatus.OFFLINE, error="No test_username configured")
+        return CrawlerAvailability(
+            CheckStatus.OFFLINE, error="No test_username configured"
+        )
 
     try:
         result = await run_crawler(client, crawler, test_user, **kwargs)
@@ -66,7 +72,9 @@ async def _check_one(client: aiohttp.ClientSession, name: str, crawler: CrawlerI
         return CrawlerAvailability(CheckStatus.OFFLINE, error=result.error)
     except Exception:
         logger.exception("Error checking crawler %s", name)
-        return CrawlerAvailability(CheckStatus.OFFLINE, error="Unexpected error during check")
+        return CrawlerAvailability(
+            CheckStatus.OFFLINE, error="Unexpected error during check"
+        )
 
 
 async def _checker_loop(client: aiohttp.ClientSession) -> None:
@@ -86,7 +94,9 @@ async def _checker_loop(client: aiohttp.ClientSession) -> None:
                 raise
             except Exception:
                 logger.exception("Unexpected error in checker loop for %s", name)
-                _status[name] = CrawlerAvailability(CheckStatus.OFFLINE, error="Unexpected error in checker loop")
+                _status[name] = CrawlerAvailability(
+                    CheckStatus.OFFLINE, error="Unexpected error in checker loop"
+                )
             await asyncio.sleep(CHECK_INTERVAL)
 
         await asyncio.sleep(FULL_PASS_INTERVAL)
