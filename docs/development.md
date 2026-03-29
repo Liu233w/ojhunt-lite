@@ -22,7 +22,7 @@ pytest -m "not network"
 pytest -m network
 
 # Run playwright/e2e tests (requires running web server)
-pytest -m playwright web/tests/
+pytest -m playwright web/e2e_tests/
 ```
 
 ### Testing Login-Required Crawlers
@@ -171,6 +171,16 @@ uv run python scripts/generate_preview_pdf.py
 
 All history entries are dated from 2020, so you can upload a preview PDF to the web UI
 and test the "merge with existing history" feature against today's date.
+
+## Test File Locations
+
+| Type | Location | Convention | Requires server |
+|------|----------|-----------|-----------------|
+| Crawler unit tests | `crawlers/<name>_test.py` | `*_test.py` | No |
+| Web unit tests | `web/<module>_test.py` | `*_test.py` | No |
+| Web e2e tests | `web/e2e_tests/test_*.py` | `test_*.py` | Yes (`localhost:8080`) |
+
+Do not add unit tests to `web/e2e_tests/` — that folder is exclusively for Playwright tests.
 
 ## Linting
 
