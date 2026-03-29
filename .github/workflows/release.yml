@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -12,9 +12,18 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v7
+      - name: Compute version
+        id: version
+        run: |
+          VERSION=$(date -u +'%Y.%-m.%-d.%H%M%S')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Set version
+        run: uv version ${{ steps.version.outputs.version }}
       - name: Build wheel and sdist
         run: uv build
       - name: Upload dist artifacts
@@ -27,13 +36,19 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
+      - name: Create version tag
+        run: |
+          git tag v${{ needs.build.outputs.version }}
+          git push origin v${{ needs.build.outputs.version }}
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ needs.build.outputs.version }}
           files: dist/*
 
   pypi-publish:
