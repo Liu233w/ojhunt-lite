@@ -42,10 +42,12 @@ Repository = "https://github.com/Liu233w/ojhunt-lite"
 [tool.hatch.build.targets.wheel]
 packages = ["cli", "core", "crawlers", "web"]
 include = [
-    "ojhunt.py",
     "web/templates/**",
     "web/static/**",
 ]
+
+[tool.hatch.build.targets.wheel.force-include]
+"ojhunt.py" = "ojhunt.py"
 
 [tool.ruff]
 exclude = ["archived_crawlers"]
