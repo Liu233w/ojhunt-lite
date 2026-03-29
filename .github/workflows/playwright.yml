@@ -28,4 +28,4 @@ jobs:
           VJUDGE_USERNAME: ${{ secrets.VJUDGE_USERNAME }}
           VJUDGE_PASSWORD: ${{ secrets.VJUDGE_PASSWORD }}
       - name: Run Playwright tests
-        run: uv run pytest -m playwright web/tests/
+        run: uv run pytest -m playwright web/e2e_tests/

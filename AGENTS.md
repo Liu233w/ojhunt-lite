@@ -194,9 +194,9 @@ Write the ADR before starting implementation. If implementation reveals the deci
 
 - **Crawler tests**: `crawlers/<name>_test.py` — unit tests for individual crawlers
 - **Web unit tests**: `web/<module>_test.py` (e.g. `web/api_test.py`) — pure Python, no server needed
-- **Web e2e tests**: `web/tests/test_*.py` — Playwright only, require a running server at `localhost:8080`
+- **Web e2e tests**: `web/e2e_tests/test_*.py` — Playwright only, require a running server at `localhost:8080`
 
-Do not put unit tests in `web/tests/` — that folder is exclusively for Playwright e2e tests.
+Do not put unit tests in `web/e2e_tests/` — that folder is exclusively for Playwright e2e tests.
 
 - Use `pytest_asyncio.fixture` for aiohttp session
 - Standard test cases: `test_user_not_exist`, `test_username_with_space`, `test_valid_user`
