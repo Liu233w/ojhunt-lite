@@ -22,10 +22,10 @@ jobs:
         run: uv run playwright install --with-deps chromium
       - name: Start server
         run: |
-          uv run fastapi run web/app.py --port 8080 &
+          uv run fastapi run src/ojhunt/web/app.py --port 8080 &
           sleep 5
         env:
-          VJUDGE_USERNAME: ${{ secrets.VJUDGE_USERNAME }}
-          VJUDGE_PASSWORD: ${{ secrets.VJUDGE_PASSWORD }}
+          LOGIN_USERNAME__VJUDGE: ${{ secrets.VJUDGE_USERNAME }}
+          LOGIN_PASSWORD__VJUDGE: ${{ secrets.VJUDGE_PASSWORD }}
       - name: Run Playwright tests
-        run: uv run pytest -m playwright web/e2e_tests/
+        run: uv run pytest -m playwright tests/e2e/

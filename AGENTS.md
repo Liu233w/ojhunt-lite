@@ -14,10 +14,17 @@ OJHunt Lite is an async Python tool for querying Online Judge statistics across 
 ## Directory Structure
 
 ```
-crawlers/          # Active crawlers (auto-discovered via __init__.py)
-core/              # Shared models and runner
-web/               # FastAPI web app
+src/ojhunt/        # Installable package (pip install ojhunt)
+    crawlers/      # Active crawlers (auto-discovered via __init__.py)
+    core/          # Shared models and runner
+    web/           # FastAPI web app
+tests/             # Test suite (mirrors src/ojhunt/ layout)
+    crawlers/      # Crawler unit tests
+    cli/           # CLI unit tests
+    web/           # Web unit tests
+    e2e/           # Playwright e2e tests (require running server)
 archived_crawlers/ # Dead/broken crawlers (not a package, not tested)
+scripts/           # Developer utilities (not packaged)
 ```
 
 ## Parallel Execution
@@ -30,16 +37,16 @@ When editing multiple crawlers or performing independent tasks, spawn sub-agents
 ## Build & Test Commands
 
 ```bash
-uv sync                                    # Install dependencies
-uv add <package>                           # Add a new dependency (don't specify version, let uv resolve)
-pytest                                     # Run all tests
-pytest crawlers/codeforces_test.py         # Run single test file
-pytest crawlers/codeforces_test.py::test_valid_user  # Run single test
-uv run ojhunt.py tourist@codeforces                       # Run CLI
-uv run fastapi dev web/app.py --port 8080 # Run web dev server
-uv run fastapi run web/app.py --port 8080 # Run web prod server
-uv run ruff format .                       # Run formatter (required after edits)
-uv run ruff check .                        # Run linter (required after edits)
+uv sync                                                   # Install dependencies
+uv add <package>                                          # Add a new dependency (don't specify version, let uv resolve)
+uv run pytest                                                    # Run all tests
+uv run pytest tests/crawlers/codeforces_test.py                  # Run single test file
+uv run pytest tests/crawlers/codeforces_test.py::test_valid_user # Run single test
+uv run ojhunt tourist@codeforces                          # Run CLI
+uv run fastapi dev src/ojhunt/web/app.py --port 8080      # Run web dev server
+uv run fastapi run src/ojhunt/web/app.py --port 8080      # Run web prod server
+uv run ruff format .                                      # Run formatter (required after edits)
+uv run ruff check .                                       # Run linter (required after edits)
 ```
 
 To test web services, use tmux to manage the background server:
@@ -51,7 +58,7 @@ To test web services, use tmux to manage the background server:
 tmux has-session -t ojhunt-web 2>/dev/null && echo "Running" || echo "Not running"
 
 # Start server (if not running)
-tmux new-session -d -s ojhunt-web -c <project folder> "uv run fastapi dev web/app.py --port 8080"
+tmux new-session -d -s ojhunt-web -c <project folder> "uv run fastapi dev src/ojhunt/web/app.py --port 8080"
 
 # View logs
 tmux capture-pane -t ojhunt-web -p
@@ -115,7 +122,7 @@ Reserve `re` for strings that are not structured HTML — e.g. extracting a nume
 
 ### License Header
 BSD-2 Clause license header (copy from existing crawler, use current year for new files).
-- **Only add license headers to files in `crawlers/` folder** - users can copy individual crawler files.
+- **Only add license headers to files in `src/ojhunt/crawlers/` folder** - users can copy individual crawler files.
 - **Do NOT add license headers** to CLI, web, or other internal code.
 
 ## Error Handling
@@ -144,7 +151,7 @@ There are two distinct types of login-required crawlers. Always identify which t
 **How to identify the type:** Visit the site as a guest and try to access another user's profile. If it's blocked (login wall on all profiles), it's Shared Account. If profiles are public for others but not for yourself, it's Own Account.
 
 **Reference implementations:**
-- Shared Account: `crawlers/vjudge.py`, `crawlers/cses.py`
+- Shared Account: `src/ojhunt/crawlers/vjudge.py`, `src/ojhunt/crawlers/cses.py`
 
 **`CrawlerMeta` field mapping:**
 - `"login_type": "shared_account"` → Shared Account (supports `-l` flag; any account can query any user)
@@ -192,11 +199,11 @@ Write the ADR before starting implementation. If implementation reveals the deci
 
 ## Test Structure
 
-- **Crawler tests**: `crawlers/<name>_test.py` — unit tests for individual crawlers
-- **Web unit tests**: `web/<module>_test.py` (e.g. `web/api_test.py`) — pure Python, no server needed
-- **Web e2e tests**: `web/e2e_tests/test_*.py` — Playwright only, require a running server at `localhost:8080`
+- **Crawler tests**: `tests/crawlers/<name>_test.py` — unit tests for individual crawlers
+- **Web unit tests**: `tests/web/<module>_test.py` (e.g. `tests/web/api_test.py`) — pure Python, no server needed
+- **Web e2e tests**: `tests/e2e/test_*.py` — Playwright only, require a running server at `localhost:8080`
 
-Do not put unit tests in `web/e2e_tests/` — that folder is exclusively for Playwright e2e tests.
+Do not put unit tests in `tests/e2e/` — that folder is exclusively for Playwright e2e tests.
 
 - Use `pytest_asyncio.fixture` for aiohttp session
 - Standard test cases: `test_user_not_exist`, `test_username_with_space`, `test_valid_user`
@@ -220,14 +227,14 @@ Each test must assert all three fields: `solved`, `submissions`, `solved_list`:
 
 | Purpose | File |
 |---------|------|
-| API-based crawler | `crawlers/codeforces.py` |
-| HTML-scraping crawler | `crawlers/hdu.py` |
-| Test example | `crawlers/codeforces_test.py` |
-| Crawler metadata model | `core/models.py` |
-| CLI entry point | `ojhunt.py` |
+| API-based crawler | `src/ojhunt/crawlers/codeforces.py` |
+| HTML-scraping crawler | `src/ojhunt/crawlers/hdu.py` |
+| Test example | `tests/crawlers/codeforces_test.py` |
+| Crawler metadata model | `src/ojhunt/core/models.py` |
+| CLI entry point | `src/ojhunt/__main__.py` |
 | Archived crawlers | `archived_crawlers/` |
-| Shared Account login crawler | `crawlers/vjudge.py` |
-| Numeric ID crawler | `crawlers/luogu.py`, `crawlers/nod.py` |
+| Shared Account login crawler | `src/ojhunt/crawlers/vjudge.py` |
+| Numeric ID crawler | `src/ojhunt/crawlers/luogu.py`, `src/ojhunt/crawlers/nod.py` |
 | Crawler analysis guide | `.claude/skills/analyze-crawler.md` |
 
 ## Archived Crawlers
@@ -241,7 +248,7 @@ Crawlers for dead sites or sites with unfixable issues are moved to `archived_cr
 
 ## Containerfile
 
-When adding new Python packages/modules, update `Containerfile` to COPY the new directory. The container builds by copying each package individually (not a full `COPY . .`).
+The container copies the entire `src/ojhunt/` directory as a single unit (`COPY src/ojhunt ./ojhunt`). No changes to `Containerfile` are needed when adding new crawlers or modules within the package.
 
 ## Environment Variables
 
@@ -256,10 +263,10 @@ The web application accepts the following environment variables:
 
 To discover which crawlers require login, run:
 ```bash
-uv run ojhunt.py --list --json | jq 'with_entries(select(.value.login_type | contains("account")))'
+uv run ojhunt --list --json | jq 'with_entries(select(.value.login_type | contains("account")))'
 ```
 
-**Credentials** are stored in `.env` (gitignored) — loaded automatically by `load_dotenv()` in `web/app.py`, no need to `source .env` manually. Create `.env` if it doesn't exist and add entries for each login-required crawler:
+**Credentials** are stored in `.env` (gitignored) — loaded automatically by `load_dotenv()` in `src/ojhunt/web/app.py`, no need to `source .env` manually. Create `.env` if it doesn't exist and add entries for each login-required crawler:
 ```
 LOGIN_USERNAME__<CRAWLER>=...
 LOGIN_PASSWORD__<CRAWLER>=...
@@ -273,5 +280,5 @@ For `shared_account` crawlers, tests read credentials from `.env` automatically 
 
 The CLI test pattern for shared-account crawlers:
 ```bash
-uv run ojhunt.py -l username:password@<crawler> -- target_user@<crawler>
+uv run ojhunt -l username:password@<crawler> -- target_user@<crawler>
 ```

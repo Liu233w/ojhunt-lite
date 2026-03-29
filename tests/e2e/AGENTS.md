@@ -4,7 +4,7 @@
 
 - Tests use `test_*.py` naming convention (crawlers use `*_test.py`)
 - Marked with `@pytest.mark.playwright` and excluded from regular CI
-- Require running web server: `uv run pytest -m playwright web/e2e_tests/`
+- Require running web server: `uv run pytest -m playwright tests/e2e/`
 - Install browsers first: `uv run playwright install --with-deps chromium`
 
 ## Test Quirks

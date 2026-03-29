@@ -4,12 +4,12 @@
 
 **Development** (with auto-reload):
 ```bash
-uv run fastapi dev web/app.py --port 8080
+uv run fastapi dev src/ojhunt/web/app.py --port 8080
 ```
 
 **Production** (multi-worker):
 ```bash
-uv run fastapi run web/app.py --port 8080 --workers 4
+uv run fastapi run src/ojhunt/web/app.py --port 8080 --workers 4
 ```
 
 The web interface is available at http://127.0.0.1:8080
@@ -19,7 +19,7 @@ The web interface is available at http://127.0.0.1:8080
 Set environment variables before starting the server:
 
 ```bash
-LOGIN_USERNAME__VJUDGE=user LOGIN_PASSWORD__VJUDGE=pass uv run fastapi dev web/app.py --port 8080
+LOGIN_USERNAME__VJUDGE=user LOGIN_PASSWORD__VJUDGE=pass uv run fastapi dev src/ojhunt/web/app.py --port 8080
 ```
 
 Or use a `.env` file (loaded automatically):

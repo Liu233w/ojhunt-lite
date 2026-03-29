@@ -104,7 +104,7 @@ If the site uses numeric IDs instead of usernames:
    ```python
    "description": "Please use your numeric user ID (visible in profile URL)"
    ```
-   See: `crawlers/nod.py` (51Nod), `crawlers/luogu.py` (Luogu)
+   See: `src/ojhunt/crawlers/nod.py` (51Nod), `src/ojhunt/crawlers/luogu.py` (Luogu)
 
 ---
 
@@ -132,7 +132,7 @@ Visit the profile page as a guest (in Playwright without cookies). Look for:
 - Implementation: One account is enough to query any user
 - CLI: `-l mylogin:mypass@crawler -- target@crawler`
 - `__crawler_meta__`: `"login_type": "shared_account"`
-- Reference: `crawlers/vjudge.py`
+- Reference: `src/ojhunt/crawlers/vjudge.py`
 
 ### Registration
 
@@ -186,7 +186,7 @@ async def query(session, username):
 ### Test template
 ```python
 import pytest, pytest_asyncio, aiohttp
-from crawlers.example import query, __crawler_meta__
+from ojhunt.crawlers.example import query, __crawler_meta__
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu_notexist"
@@ -219,10 +219,10 @@ async def test_valid_user(session):
 
 ## Step 7: Verification Checklist
 
-- [ ] `uv run pytest crawlers/<name>_test.py` — all 3 standard tests pass
+- [ ] `uv run pytest tests/crawlers/<name>_test.py` — all 3 standard tests pass
 - [ ] `uv run ruff check .` — no lint errors
 - [ ] `__crawler_meta__` has all required fields: `title`, `url`, `test_username`
-- [ ] BSD-2 license header present (only in `crawlers/` files, not tests)
+- [ ] BSD-2 license header present (only in `src/ojhunt/crawlers/` files, not tests)
 - [ ] `solved_list` is `None` (not `[]`) when unavailable
 - [ ] Error messages match: "Please enter username", "The user does not exist"
 - [ ] If crawler was previously archived: remove its files from `archived_crawlers/` and remove its entry from `archived_crawlers/README.md`
