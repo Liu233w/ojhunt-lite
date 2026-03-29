@@ -37,6 +37,27 @@ POST {{ base }}/api/merge
   Returns deduplicated totals: uniqueSolved and totalSubmissions.
   Handles VJudge cross-reference deduplication server-side.
 
+POST {{ base }}/api/pdf/extract
+  Body: JSON {"pdf_b64": "<base64-encoded PDF>"}
+  Extracts embedded settings from a previously generated OJHunt PDF report.
+  Returns JSON: {"settings": {"username": "...", "queries": [{"crawler": "...", "username": "..."}]},
+                 "report_date": "YYYY-MM-DD or null"}
+  Returns 422 if the input is invalid base64, not a valid PDF, or contains no embedded OJHunt data.
+  Note: only settings and the most recent history date are returned; full history stays in the PDF.
+
+POST {{ base }}/api/pdf/generate
+  Body: JSON {
+    "snapshot": {"totalSolved": N, "totalSubmissions": N, "username": "...", "timezone": "<IANA tz>"},
+    "settings": {"username": "...", "queries": [{"crawler": "...", "username": "..."}]},
+    "previous_pdf_b64": "<base64 or null>"
+  }
+  The backend computes the current day key (YYYY-MM-DD) using the supplied IANA timezone
+  with a 4am reset boundary. If previous_pdf_b64 is provided and contains embedded OJHunt
+  data, its history is merged with the new snapshot.
+  Returns JSON: {"pdf_b64": "<base64-encoded PDF>", "date": "YYYY-MM-DD"}
+  The PDF contains a progress report with summary, tracked platforms, bar chart of the last
+  30 history entries, and embedded JSON for future restore.
+
 ## Available crawlers ({{ crawler_count }} total)
 
 {{ crawler_names }}
