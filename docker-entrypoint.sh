@@ -4,7 +4,7 @@ set -e
 cd /app
 
 if [ $# -eq 0 ]; then
-    exec uv run --no-sync fastapi run web/app.py --host 0.0.0.0 --port 8080
+    exec uv run --no-sync fastapi run ojhunt/web/app.py --host 0.0.0.0 --port 8080
 else
-    exec uv run --no-sync ojhunt.py "$@"
+    exec uv run --no-sync python -m ojhunt "$@"
 fi
