@@ -152,7 +152,9 @@ async def query(
         except aiohttp.ClientError as e:
             raise RuntimeError(f"Request failed: {str(e)}")
 
-        session_expired = LexborHTMLParser(problemset_text).css_first('.content:lexbor-contains("Please login")')
+        session_expired = LexborHTMLParser(problemset_text).css_first(
+            '.content:lexbor-contains("Please login")'
+        )
         if session_expired:
             continue
 

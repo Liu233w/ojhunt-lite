@@ -187,7 +187,9 @@ async def main() -> int:
     end_time = datetime.now()
     total_duration = (end_time - start_time).total_seconds()
 
-    return print_report(results, args.show_problems, total_duration, json_output=args.json)
+    return print_report(
+        results, args.show_problems, total_duration, json_output=args.json
+    )
 
 
 if __name__ == "__main__":
