@@ -189,3 +189,4 @@ See those files to understand *why* things are shaped the way they are before pr
 - [ADR 0002](./adr/0002-agent-support-via-llmstxt.md) — Agent support via `/llms.txt`
 - [ADR 0003](./adr/0003-rename-is-virtual-judge-to-is-aggregator.md) — Rename `isVirtualJudge` to `isAggregator`
 - [ADR 0004](./adr/0004-history-pdf-backup.md) — History tracking via PDF backup/restore (no database)
+- [ADR 0005](./adr/0005-localstorage-watch-config-only.md) — localStorage sync via $watch (config-only persistence)
