@@ -33,28 +33,22 @@ dependencies = [
 ]
 
 [project.scripts]
-ojhunt = "ojhunt:main"
+ojhunt = "ojhunt.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/Liu233w/ojhunt-lite"
 Repository = "https://github.com/Liu233w/ojhunt-lite"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cli", "core", "crawlers", "web"]
-include = [
-    "web/templates/**",
-    "web/static/**",
-]
-
-[tool.hatch.build.targets.wheel.force-include]
-"ojhunt.py" = "ojhunt.py"
+packages = ["src/ojhunt"]
 
 [tool.ruff]
 exclude = ["archived_crawlers"]
 
 [tool.pytest.ini_options]
 python_files = ["*_test.py", "test_*.py"]
-testpaths = ["crawlers", "cli", "web"]
+testpaths = ["tests"]
+pythonpath = ["src"]
 markers = [
     "network: tests that make real HTTP requests",
     "playwright: tests that require a running web server",
