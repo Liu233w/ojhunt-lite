@@ -154,7 +154,7 @@ async def run_queries(
     return [results[key] for key in keys]
 
 
-async def main() -> int:
+async def _async_main() -> int:
     """Main CLI entry point."""
     args, queries, crawler_logins = parse_args()
 
@@ -192,9 +192,14 @@ async def main() -> int:
     )
 
 
-if __name__ == "__main__":
+def main():
+    """Sync entry point for console_scripts."""
     try:
-        sys.exit(asyncio.run(main()))
+        sys.exit(asyncio.run(_async_main()))
     except KeyboardInterrupt:
         print("\n\nInterrupted by user", file=sys.stderr)
         sys.exit(130)
+
+
+if __name__ == "__main__":
+    main()
