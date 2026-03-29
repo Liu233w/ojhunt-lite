@@ -10,19 +10,19 @@ uv sync
 
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run specific crawler tests
-pytest crawlers/codeforces_test.py
+uv run pytest tests/crawlers/codeforces_test.py
 
 # Exclude network-dependent tests (for CI)
-pytest -m "not network"
+uv run pytest -m "not network"
 
 # Run only network tests
-pytest -m network
+uv run pytest -m network
 
 # Run playwright/e2e tests (requires running web server)
-pytest -m playwright web/e2e_tests/
+uv run pytest -m playwright tests/e2e/
 ```
 
 ### Testing Login-Required Crawlers
@@ -32,16 +32,16 @@ Set environment variables before running tests:
 ```bash
 export LOGIN_USERNAME__VJUDGE=your_username
 export LOGIN_PASSWORD__VJUDGE=your_password
-pytest crawlers/vjudge_test.py
+uv run pytest tests/crawlers/vjudge_test.py
 ```
 
 Tests are automatically skipped if required environment variables are not set.
 
 ## Adding a New Crawler
 
-1. Create `crawlers/your_crawler.py` with a BSD-2 license header
+1. Create `src/ojhunt/crawlers/your_crawler.py` with a BSD-2 license header
 2. Implement `async def query(...)` and add `__crawler_meta__`
-3. Create `crawlers/your_crawler_test.py`
+3. Create `tests/crawlers/your_crawler_test.py`
 4. The crawler is auto-discovered — no other files need editing
 
 ### API-based crawler template
@@ -146,7 +146,7 @@ async def query(
     # ... use actual_user and actual_pass for authentication
 ```
 
-See [`crawlers/vjudge.py`](../crawlers/vjudge.py) and [`crawlers/cses.py`](../crawlers/cses.py) for complete reference implementations.
+See [`src/ojhunt/crawlers/vjudge.py`](../src/ojhunt/crawlers/vjudge.py) and [`src/ojhunt/crawlers/cses.py`](../src/ojhunt/crawlers/cses.py) for complete reference implementations.
 
 ## Return Format
 
@@ -176,11 +176,11 @@ and test the "merge with existing history" feature against today's date.
 
 | Type | Location | Convention | Requires server |
 |------|----------|-----------|-----------------|
-| Crawler unit tests | `crawlers/<name>_test.py` | `*_test.py` | No |
-| Web unit tests | `web/<module>_test.py` | `*_test.py` | No |
-| Web e2e tests | `web/e2e_tests/test_*.py` | `test_*.py` | Yes (`localhost:8080`) |
+| Crawler unit tests | `tests/crawlers/<name>_test.py` | `*_test.py` | No |
+| Web unit tests | `tests/web/<module>_test.py` | `*_test.py` | No |
+| Web e2e tests | `tests/e2e/test_*.py` | `test_*.py` | Yes (`localhost:8080`) |
 
-Do not add unit tests to `web/e2e_tests/` — that folder is exclusively for Playwright tests.
+Do not add unit tests to `tests/e2e/` — that folder is exclusively for Playwright tests.
 
 ## Linting
 

@@ -47,7 +47,7 @@ The web interface is designed to be self-hosted. Clone the repo and deploy:
 git clone https://github.com/Liu233w/ojhunt-lite
 cd ojhunt-lite
 uv sync
-uv run fastapi run web/app.py --port 8080
+uv run fastapi run src/ojhunt/web/app.py --port 8080
 ```
 
 Container images are available at `ghcr.io/liu233w/ojhunt-lite` — see [docs/web.md](docs/web.md).
@@ -65,7 +65,7 @@ Then import crawlers directly:
 
 ```python
 import asyncio, aiohttp
-from crawlers.codeforces import query
+from ojhunt.crawlers.codeforces import query
 
 async def main():
     async with aiohttp.ClientSession() as session:
@@ -77,7 +77,7 @@ asyncio.run(main())
 
 ## Supported Platforms
 
-See the [crawlers/](./crawlers) directory. Archived crawlers (dead sites) are in [archived_crawlers/](./archived_crawlers).
+See the [src/ojhunt/crawlers/](./src/ojhunt/crawlers) directory. Archived crawlers (dead sites) are in [archived_crawlers/](./archived_crawlers).
 
 ## Development
 
