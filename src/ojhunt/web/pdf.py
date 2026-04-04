@@ -4,6 +4,7 @@ import io
 import json
 import re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import List
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -18,6 +19,52 @@ matplotlib.use("Agg")  # non-interactive backend, safe for server use
 
 DATA_BEGIN = "OJHUNT_DATA_v1_BEGIN"
 DATA_END = "OJHUNT_DATA_v1_END"
+
+# ---------------------------------------------------------------------------
+# Font setup — use a Unicode font instead of the built-in Helvetica (which
+# only covers latin-1).  We use NotoSans as the primary font (covers Latin,
+# Greek, Cyrillic, Arabic, Hebrew, Thai, …) and NotoSansCJK as a fallback
+# (Chinese, Japanese, Korean) via fpdf2's set_fallback_fonts().
+#
+# On macOS, Arial Unicode covers all scripts in a single file, so no fallback
+# is needed.  On Linux/Docker, install both font packages:
+#   apt-get install fonts-noto fonts-noto-cjk-core
+# ---------------------------------------------------------------------------
+
+# Each entry: (regular_path, bold_path | None)
+# bold_path=None → reuse the regular file (no visual weight difference, but
+# at least the characters render).
+_PRIMARY_CANDIDATES = [
+    # Linux — from fonts-noto
+    ("/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+     "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf"),
+    # macOS — Arial Unicode covers all scripts; no CJK fallback needed
+    ("/Library/Fonts/Arial Unicode.ttf", None),
+    ("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", None),
+]
+
+_CJK_FALLBACK_CANDIDATES = [
+    ("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+     "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"),
+    ("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+     "/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc"),
+]
+
+
+def _first_existing(candidates: list[tuple[str, str | None]]) -> tuple[str, str] | None:
+    for regular, bold in candidates:
+        if Path(regular).exists():
+            bold_resolved = bold if bold and Path(bold).exists() else regular
+            return regular, bold_resolved
+    return None
+
+
+_PRIMARY_FONT = _first_existing(_PRIMARY_CANDIDATES)
+_CJK_FONT = _first_existing(_CJK_FALLBACK_CANDIDATES)
+
+# Font name constant used in all set_font() calls
+_FONT = "UniFont" if _PRIMARY_FONT else "Helvetica"
+_CJK_FONT_NAME = "UniCJK"
 
 
 class PdfQueryItem(BaseModel):
@@ -132,8 +179,15 @@ _TEXT = (34, 34, 34)
 
 
 class _Report(FPDF):
+    # Set to True before writing invisible embedded data so that any
+    # page-break header/footer text is not injected into the text layer
+    # (which would corrupt JSON extraction by pypdf).
+    suppress_decorations: bool = False
+
     def header(self) -> None:
-        self.set_font("Helvetica", "B", 14)
+        if self.suppress_decorations:
+            return
+        self.set_font(_FONT, "B", 14)
         self.set_text_color(*_TEXT)
         self.cell(
             0, 8, "OJHunt Lite - Progress Report", new_x=XPos.LMARGIN, new_y=YPos.NEXT
@@ -146,14 +200,16 @@ class _Report(FPDF):
         self.ln(4)
 
     def footer(self) -> None:
+        if self.suppress_decorations:
+            return
         self.set_y(-12)
-        self.set_font("Helvetica", "", 8)
+        self.set_font(_FONT, "", 8)
         self.set_text_color(*_GRAY)
         self.cell(0, 5, f"Page {self.page_no()}", align="C")
 
 
 def _section(pdf: _Report, title: str) -> None:
-    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_font(_FONT, "B", 10)
     pdf.set_text_color(*_TEXT)
     pdf.set_fill_color(245, 245, 245)
     pdf.cell(0, 6, title, fill=True, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
@@ -195,9 +251,18 @@ def generate_pdf(
     pdf = _Report(orientation="P", unit="mm", format="A4")
     pdf.set_margins(_MARGIN, 18, _MARGIN)
     pdf.set_auto_page_break(auto=True, margin=15)
+    if _PRIMARY_FONT:
+        regular, bold = _PRIMARY_FONT
+        pdf.add_font(_FONT, style="", fname=regular)
+        pdf.add_font(_FONT, style="B", fname=bold)
+        if _CJK_FONT:
+            cjk_regular, cjk_bold = _CJK_FONT
+            pdf.add_font(_CJK_FONT_NAME, style="", fname=cjk_regular)
+            pdf.add_font(_CJK_FONT_NAME, style="B", fname=cjk_bold)
+            pdf.set_fallback_fonts([_CJK_FONT_NAME])
     pdf.add_page()
 
-    pdf.set_font("Helvetica", "", 9)
+    pdf.set_font(_FONT, "", 9)
     pdf.set_text_color(100, 100, 100)
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
     pdf.cell(
@@ -210,7 +275,7 @@ def generate_pdf(
     pdf.ln(3)
 
     _section(pdf, "Current Results")
-    pdf.set_font("Helvetica", "B", 22)
+    pdf.set_font(_FONT, "B", 22)
     pdf.set_text_color(*_BLUE)
     pdf.cell(_CONTENT_W / 2, 12, str(snapshot.totalSolved), align="C")
     pdf.cell(
@@ -221,7 +286,7 @@ def generate_pdf(
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
     )
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font(_FONT, "", 8)
     pdf.set_text_color(100, 100, 100)
     pdf.cell(_CONTENT_W / 2, 5, "unique problems solved", align="C")
     pdf.cell(
@@ -247,7 +312,7 @@ def generate_pdf(
         )
         row_h = 5
 
-        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_font(_FONT, "B", 8)
         pdf.set_text_color(*_TEXT)
         headers = (
             ["Platform", "Username", "Solved", "Submissions"]
@@ -265,7 +330,7 @@ def generate_pdf(
                 new_y=YPos.NEXT if is_last else YPos.TOP,
             )
 
-        pdf.set_font("Helvetica", "", 8)
+        pdf.set_font(_FONT, "", 8)
         for i, q in enumerate(settings.queries):
             fill = i % 2 == 0
             pdf.set_fill_color(238, 238, 238)
@@ -285,7 +350,7 @@ def generate_pdf(
                 )
 
         if has_results:
-            pdf.set_font("Helvetica", "B", 8)
+            pdf.set_font(_FONT, "B", 8)
             pdf.set_fill_color(*_LIGHT_BLUE)
             pdf.cell(cw[0] + cw[1], row_h, "Total (deduplicated)", fill=True)
             pdf.cell(cw[2], row_h, str(snapshot.totalSolved), fill=True)
@@ -305,7 +370,10 @@ def generate_pdf(
         pdf.image(io.BytesIO(chart_png), x=_MARGIN, w=_CONTENT_W)
         pdf.ln(3)
 
-    # Embedded data — white text on white background, invisible to readers
+    # Embedded data — white text on white background, invisible to readers.
+    # suppress_decorations prevents the page header/footer from being written
+    # into the PDF text layer on overflow pages, which would otherwise corrupt
+    # JSON extraction by pypdf (it injects visible text at page boundaries).
     embedded = PdfEmbeddedData(
         version=1,
         exportedAt=datetime.now(timezone.utc).isoformat(),
@@ -314,7 +382,8 @@ def generate_pdf(
     ).model_dump_json()
     payload = f"{DATA_BEGIN}\n{embedded}\n{DATA_END}"
 
-    pdf.set_font("Courier", "", 1)
+    pdf.suppress_decorations = True
+    pdf.set_font(_FONT, "", 1)
     pdf.set_text_color(255, 255, 255)  # white — invisible, but in text layer
     pdf.multi_cell(0, 1, payload)
 

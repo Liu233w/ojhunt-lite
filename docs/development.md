@@ -160,6 +160,26 @@ All crawlers return:
 }
 ```
 
+## System Fonts for PDF Generation
+
+PDF generation uses Unicode fonts to support non-latin usernames (CJK, Arabic, Hebrew, etc.).
+The font is discovered at startup from the host system — no font files are bundled with the project.
+
+**Linux / Docker** — install both packages:
+
+```bash
+apt-get install fonts-noto fonts-noto-cjk-core
+```
+
+The `Containerfile` already includes this step, so production builds work out of the box.
+For local Linux development, install the packages once and restart the server.
+
+**macOS** — Arial Unicode (`/Library/Fonts/Arial Unicode.ttf`) is used automatically; no
+extra steps needed.
+
+**Neither font found** — the PDF generator falls back to Helvetica (latin-1 only). Non-latin
+characters will raise an error. Check that one of the above font packages is installed.
+
 ## PDF Preview
 
 Generate preview PDFs with 1, 10, 30, and 100 history entries for visual inspection:
