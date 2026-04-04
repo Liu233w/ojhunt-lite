@@ -94,7 +94,7 @@ class PdfSnapshot(BaseModel):
     totalSolved: int
     totalSubmissions: int
     username: str
-    timezone: str  # IANA name
+    timezone: str = "UTC"  # IANA name; only used by compute_day_key() at query time
     results: List[PdfCrawlerResult] = []
 
 

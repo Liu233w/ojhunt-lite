@@ -165,8 +165,6 @@ async def pdf_merge_post(
             totalSolved=last.totalSolved if last else 0,
             totalSubmissions=last.totalSubmissions if last else 0,
             username=data_a.settings.username,
-            timezone="UTC",
-            results=[],
         )
         pdf_bytes = generate_pdf(data_a.settings, history, snapshot)
     except ValueError as e:
