@@ -100,7 +100,10 @@
             <span class="prev-label" x-show="cachedPdfDate">
                 Previous report: <span class="prev-date" x-text="cachedPdfDate"></span>
             </span>
-            <span class="prev-label" x-show="!cachedPdfDate">No previous report loaded</span>
+            <span class="prev-label" x-show="!cachedPdfDate">
+                No report loaded
+                <span style="font-size:0.8rem;color:#666;display:block;margin-top:0.2rem">Upload a previous report to restore your crawler list and track progress over time.</span>
+            </span>
             <label style="cursor:pointer">
                 <input type="file" accept=".pdf" x-ref="pdfUploadInput"
                        @change="uploadReport($event.target.files[0]); $event.target.value=''"
@@ -108,7 +111,7 @@
                 <button type="button" class="secondary"
                         style="font-size:0.8rem;padding:0.25rem 0.75rem"
                         @click="$refs.pdfUploadInput.click()"
-                        x-text="cachedPdfDate ? 'Upload different report' : 'Upload previous report'"></button>
+                        x-text="cachedPdfDate ? 'Load different report' : 'Load report'"></button>
             </label>
             <button type="button" class="danger"
                     style="font-size:0.8rem;padding:0.25rem 0.75rem"
@@ -196,8 +199,8 @@
             <strong>Total: <span x-text="report.totalSolved"></span> solved / <span x-text="report.totalSubmissions"></span> submissions</strong>
             <div class="report-actions">
                 <button type="button" class="primary" @click="downloadReport()">Download Report</button>
-                <span style="font-size:0.8rem;color:#555" x-show="cachedPdfDate">
-                    History from <span x-text="cachedPdfDate"></span> will be merged
+                <span style="font-size:0.8rem;color:#555">
+                    Saves your crawler list and progress history<span x-show="cachedPdfDate"> — history from <span x-text="cachedPdfDate"></span> will be included</span>
                 </span>
             </div>
         </div>
