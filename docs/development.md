@@ -15,8 +15,8 @@ uv run pytest
 # Run specific crawler tests
 uv run pytest tests/crawlers/codeforces_test.py
 
-# Exclude network-dependent tests (for CI)
-uv run pytest -m "not network"
+# Exclude network-dependent tests and playwright (for CI)
+uv run pytest -m "not network and not playwright"
 
 # Run only network tests
 uv run pytest -m network
