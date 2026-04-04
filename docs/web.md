@@ -32,7 +32,7 @@ LOGIN_PASSWORD__CSES=...
 
 ## Container
 
-Pre-built images are available at `ghcr.io/liu233w/ojhunt-lite`.
+Pre-built images are available at `ghcr.io/liu233w/ojhunt-lite`. The same image also supports CLI mode — see [docs/cli.md](cli.md) for details.
 
 ```bash
 # Start web server on port 8080

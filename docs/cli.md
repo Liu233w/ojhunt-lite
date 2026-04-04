@@ -1,5 +1,39 @@
 # CLI Reference
 
+## Installation
+
+**Install once, use anywhere:**
+
+```bash
+pipx install ojhunt          # recommended: isolated environment, always on PATH
+uv tool install ojhunt       # same, uv-native
+pip install ojhunt           # global install
+```
+
+**Run directly from a clone** (useful for development or trying it out):
+
+```bash
+git clone https://github.com/Liu233w/ojhunt-lite
+cd ojhunt-lite
+uv sync
+uv run ojhunt tourist@codeforces
+```
+
+**Run via container** (no Python install required; `docker` and `podman` are interchangeable):
+
+```bash
+# Basic query
+docker run --rm ghcr.io/liu233w/ojhunt-lite tourist@codeforces
+
+# Login-required crawlers — use -l flag, same as local CLI
+docker run --rm ghcr.io/liu233w/ojhunt-lite -l myuser:mypass@vjudge -- target@vjudge
+
+# JSON output
+docker run --rm ghcr.io/liu233w/ojhunt-lite --json tourist@codeforces
+```
+
+---
+
 ## Basic Usage
 
 ```bash

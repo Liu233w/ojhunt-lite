@@ -9,7 +9,7 @@ A lightweight async Python tool for querying Online Judge (OJ) statistics across
 
 ## CLI
 
-Install once, use anywhere:
+**Install once, use anywhere** (pipx, uv tool, or pip):
 
 ```bash
 pipx install ojhunt
@@ -17,7 +17,21 @@ pipx install ojhunt
 # or: pip install ojhunt
 ```
 
-Then run:
+**Run directly from a clone** (no install needed):
+
+```bash
+git clone https://github.com/Liu233w/ojhunt-lite
+cd ojhunt-lite
+uv run ojhunt tourist@codeforces
+```
+
+**Run via container** (no Python needed):
+
+```bash
+docker run --rm ghcr.io/liu233w/ojhunt-lite tourist@codeforces
+```
+
+Example output:
 
 ```bash
 $ ojhunt tourist@codeforces tourist@atcoder
