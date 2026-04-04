@@ -1,27 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OJHunt Lite</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <link rel="describedby" href="/llms.txt" type="text/plain">
+{% extends "base.html" %}
+
+{% block title %}OJHunt Lite{% endblock %}
+
+{% block extra_head %}
     <style>
         * { box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; min-height: calc(100vh - 40px); display: flex; flex-direction: column; }
-        
+
         .header { text-align: center; margin-bottom: 2rem; }
         .header .logo { height: 80px; margin-bottom: 0.5rem; }
         .header h1 { margin: 0; font-size: 1.75rem; }
         .header .org-title { color: #666; margin: 0.25rem 0 0.5rem 0; }
         .header .subtitle { color: #888; margin: 0; font-size: 0.95rem; }
-        
+
         .query-builder { background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }
         .query-builder-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
         .query-builder-row select, .query-builder-row input { padding: 0.5rem; font-size: 1rem; }
         .query-builder-row select { min-width: 150px; }
         .query-builder-row input { flex: 1; min-width: 150px; }
-        
+
         button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
         button.primary { background: #0066cc; color: white; border: none; border-radius: 4px; }
         button.primary:hover { background: #0055aa; }
@@ -32,12 +28,12 @@
         button.cancel-btn { background: #cc4444; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
         button.retry-btn { background: #ff9800; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
         button.remove-btn { background: #e0e0e0; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
-        
+
         .actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-        
+
         .results-section { margin-top: 1.5rem; flex: 1; }
         .results-section h3 { margin-bottom: 0.5rem; }
-        
+
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; }
         th { background: #f5f5f5; font-weight: 600; }
@@ -50,22 +46,22 @@
         .result-row.error { background: #ffeef0; }
         .result-row.loading { background: #fffde7; }
         .result-row.pending { background: #fafafa; }
-        
+
         .solved-count { cursor: pointer; text-decoration: underline; color: #0066cc; }
         .solved-count:hover { color: #0055aa; }
-        
+
         .report { background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
         .report strong { font-size: 1.1rem; }
         .report-note { font-size: 0.8rem; color: #555; }
-        
+
         .loading-spinner { color: #666; }
-        
+
         dialog { padding: 1.5rem; border-radius: 8px; border: 1px solid #ccc; max-width: 600px; max-height: 80vh; }
         dialog::backdrop { background: rgba(0,0,0,0.3); }
         dialog h3 { margin-top: 0; margin-bottom: 1rem; }
         dialog .dialog-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
         dialog .problems-list { max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.875rem; line-height: 1.5; word-break: break-all; }
-        
+
         .empty-state { color: #666; font-style: italic; padding: 1rem; text-align: center; }
 
         .report-restore { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.6rem 0.75rem; background: #f0f4ff; border-radius: 6px; border: 1px solid #d0d8f0; font-size: 0.875rem; }
@@ -74,16 +70,15 @@
         .report-restore .help { font-size: 0.8rem; color: #666; display: block; margin-top: 0.2rem; }
         .report-restore label { cursor: pointer; }
         .report-restore button { font-size: 0.8rem; padding: 0.25rem 0.75rem; }
-.report-actions { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; }
-        
+        .report-actions { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; }
+
         .footer { margin-top: auto; padding-top: 2rem; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 0.875rem; line-height: 1.6; }
         .footer a { color: #0066cc; text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
-        .footer .footer-links { margin-top: 0.75rem; }
-        .footer .footer-links a { margin: 0 0.75rem; }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div style="display: none" aria-hidden="true">
         AI agent notice: This page is a human web interface rendered with JavaScript — do not attempt to scrape it.
         If you are an AI agent or automated tool, fetch /llms.txt instead. It contains the full API reference,
@@ -96,7 +91,7 @@
         <h1>OJHunt Lite</h1>
         <p class="subtitle">Query Online Judge statistics across multiple platforms</p>
     </div>
-    
+
     <div x-data="ojhunt()" x-init="init()">
 
         <!-- Previous report restore banner -->
@@ -138,7 +133,7 @@
                 <button type="button" class="secondary" @click="clearAll()">Clear All</button>
             </div>
         </div>
-        
+
         <div class="results-section">
             <h3>Queries</h3>
             <table>
@@ -196,7 +191,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <div class="report" x-show="report.totalSolved !== null">
             <strong>Total: <span x-text="report.totalSolved"></span> solved / <span x-text="report.totalSubmissions"></span> submissions</strong>
             <div class="report-actions">
@@ -206,12 +201,12 @@
                 </span>
             </div>
         </div>
-        
+
         <template x-for="q in queries" :key="q.id">
             <dialog :id="'dialog-' + q.id" x-show="q.status === 'success'">
                 <h3>
                     <span x-text="crawlers[q.crawler]?.title || q.crawler"></span>
-                    (<span x-text="q.username"></span>): 
+                    (<span x-text="q.username"></span>):
                     <span x-text="q.solvedList?.length || 0"></span> problems
                 </h3>
                 <div class="problems-list" x-text="q.solvedList?.sort().join(', ') || ''"></div>
@@ -221,26 +216,19 @@
             </dialog>
         </template>
     </div>
-    
-    <script>window.__CRAWLERS__ = {{ crawlers | tojson }};</script>
-    <script src="/static/app.js?v={{ static_version }}"></script>
-    <script defer src="/static/alpinejs-3.14.1.min.js"></script>
-    
+
     <footer class="footer">
         <p>
             This project is the remake of <a href="https://github.com/Liu233w/acm-statistics" target="_blank" rel="noopener noreferrer">西北工业大学ACM查询系统 (npuacm.info)</a>.
             The original version and idea are from <a href="https://kidozh.com/en/" target="_blank" rel="noopener noreferrer">Jiduo Zhang</a>.
         </p>
         <p>
-            OJHunt Lite is developed by the same author of <a href="https://github.com/Liu233w/acm-statistics" target="_blank" rel="noopener noreferrer">OJHunt</a>, 
+            OJHunt Lite is developed by the same author of <a href="https://github.com/Liu233w/acm-statistics" target="_blank" rel="noopener noreferrer">OJHunt</a>,
             providing a lightweight Python implementation with both web and CLI interfaces.
         </p>
-        <div class="footer-links">
-            <a href="https://github.com/Liu233w/ojhunt-lite" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a href="/crawlers">Crawlers</a>
-            <a href="/about">About</a>
-            <a href="/docs">API Docs</a>
-        </div>
     </footer>
-</body>
-</html>
+
+    <script>window.__CRAWLERS__ = {{ crawlers | tojson }};</script>
+    <script src="/static/app.js?v={{ static_version }}"></script>
+    <script defer src="/static/alpinejs-3.14.1.min.js"></script>
+{% endblock %}

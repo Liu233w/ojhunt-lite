@@ -1,20 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crawlers - OJHunt Lite</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+{% extends "base.html" %}
+
+{% block title %}Supported Crawlers - OJHunt Lite{% endblock %}
+
+{% block page_max_width %}900px{% endblock %}
+
+{% block extra_head %}
     <style>
         * { box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
 
         .header { text-align: center; margin-bottom: 2rem; }
         .header .logo { height: 60px; margin-bottom: 0.5rem; }
         .header h1 { margin: 0; font-size: 1.5rem; }
-
-        .back-link { display: inline-block; margin-bottom: 1rem; color: #0066cc; text-decoration: none; }
-        .back-link:hover { text-decoration: underline; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         th, td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid #ddd; }
@@ -30,13 +26,12 @@
         .status-waiting { color: #999; }
         .status-has-error { cursor: help; }
     </style>
-</head>
-<body>
-    <a href="/" class="back-link">&larr; Back to Home</a>
+{% endblock %}
 
+{% block content %}
     <div class="header">
         <img src="/static/logo.png" alt="OJHunt Logo" class="logo">
-        <h1>Crawlers</h1>
+        <h1>Supported Crawlers</h1>
     </div>
 
     <table>
@@ -74,5 +69,4 @@
             {% endfor %}
         </tbody>
     </table>
-</body>
-</html>
+{% endblock %}
