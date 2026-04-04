@@ -52,5 +52,9 @@ STATIC_DIR = Path(__file__).parent / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
+WELL_KNOWN_DIR = Path(__file__).parent / "well_known"
+if WELL_KNOWN_DIR.exists():
+    app.mount("/.well-known", StaticFiles(directory=WELL_KNOWN_DIR), name="well-known")
+
 app.include_router(pages_router, include_in_schema=False)
 app.include_router(api_router)
