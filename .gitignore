@@ -276,3 +276,8 @@ problem_labels.db
 /.claude/settings.local.json
 archived_crawlers/test_accounts.md
 /scripts/previews/
+
+# Legacy database (contains personal data - never commit)
+legacy-db.sql
+legacy.db
+*_legacy.pdf
