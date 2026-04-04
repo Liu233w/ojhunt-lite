@@ -75,6 +75,57 @@
         .footer { margin-top: auto; padding-top: 2rem; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 0.875rem; line-height: 1.6; }
         .footer a { color: #0066cc; text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
+
+        /* ── Mobile ── */
+        @media (max-width: 600px) {
+            /* Query builder: stack select + input vertically */
+            .query-builder-row { flex-direction: column; align-items: stretch; }
+            .query-builder-row select,
+            .query-builder-row input { width: 100%; min-width: 0; }
+
+            /* Results table: card layout */
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { display: none; }
+            .result-row {
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                margin-bottom: 0.75rem;
+                padding: 0.25rem 0;
+                background: #fff;
+            }
+            .result-row.success { background: #f0fff4; }
+            .result-row.error   { background: #ffeef0; }
+            .result-row.loading { background: #fffde7; }
+            .result-row.pending { background: #fafafa; }
+            .result-row td {
+                border-bottom: none;
+                padding: 0.3rem 0.75rem;
+                display: flex;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .result-row td::before {
+                font-weight: 600;
+                color: #555;
+                font-size: 0.8rem;
+                min-width: 90px;
+                flex-shrink: 0;
+            }
+            .result-row td:nth-child(1)::before { content: "Crawler"; }
+            .result-row td:nth-child(2)::before { content: "Username"; }
+            .result-row td:nth-child(3)::before { content: "Solved"; }
+            .result-row td:nth-child(4)::before { content: "Submissions"; }
+            .result-row td:nth-child(5)::before { content: "Status"; }
+            .result-row td:nth-child(6)::before { content: "Actions"; }
+            /* Empty state row */
+            tr:not(.result-row) td { padding: 0.5rem 0.75rem; }
+
+            /* Status: allow wrapping */
+            .status { max-width: none; white-space: normal; }
+
+            /* Dialog: fit viewport */
+            dialog { max-width: calc(100vw - 2rem); width: 100%; }
+        }
     </style>
 {% endblock %}
 
