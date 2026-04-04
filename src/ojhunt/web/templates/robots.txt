@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /api/
+Disallow: /docs
+Disallow: /redoc
+Disallow: /openapi.json
+Allow: /
+
+Sitemap: {{ base }}/sitemap.xml

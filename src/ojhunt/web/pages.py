@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ojhunt.crawlers import discover_crawlers
@@ -69,6 +69,21 @@ async def llms_txt(request: Request) -> str:
         crawler_count=len(crawler_names),
         crawler_names=", ".join(crawler_names),
     )
+
+
+@router.get("/robots.txt", response_class=PlainTextResponse)
+async def robots_txt(request: Request) -> str:
+    base = str(request.base_url).rstrip("/")
+    template = jinja_env.get_template("robots.txt")
+    return template.render(base=base)
+
+
+@router.get("/sitemap.xml")
+async def sitemap_xml(request: Request):
+    base = str(request.base_url).rstrip("/")
+    template = jinja_env.get_template("sitemap.xml")
+    content = template.render(base=base)
+    return Response(content=content, media_type="application/xml")
 
 
 @router.get("/crawlers", response_class=HTMLResponse)
