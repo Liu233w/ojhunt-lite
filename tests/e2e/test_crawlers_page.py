@@ -7,7 +7,7 @@ BASE_URL = "http://localhost:8080"
 @pytest.mark.playwright
 def test_crawlers_page_loads(page: Page):
     page.goto(f"{BASE_URL}/crawlers")
-    expect(page).to_have_title("Crawlers - OJHunt Lite")
+    expect(page).to_have_title("Supported Crawlers - OJHunt Lite")
     rows = page.locator("table tbody tr")
     assert rows.count() > 0
 
@@ -42,9 +42,9 @@ def test_crawlers_page_has_links(page: Page):
 
 
 @pytest.mark.playwright
-def test_crawlers_page_back_link(page: Page):
+def test_crawlers_page_home_link(page: Page):
     page.goto(f"{BASE_URL}/crawlers")
-    page.click("a.back-link")
+    page.click("a.topnav-brand")
     expect(page).to_have_url(f"{BASE_URL}/")
 
 

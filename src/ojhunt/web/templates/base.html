@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OJHunt Lite{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="describedby" href="/llms.txt" type="text/plain">
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; margin: 0; }
+
+        /* ── Top nav bar ── */
+        .topnav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.25rem;
+            height: 52px;
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .topnav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: inherit;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .topnav-brand img { height: 28px; }
+        .topnav-links {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+        .topnav-links a {
+            padding: 0.35rem 0.6rem;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #444;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .topnav-links a:hover { background: #f3f4f6; color: #111; }
+        .topnav-links .github-star {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.35rem 0.75rem;
+            border: 1.5px solid #e3b341;
+            border-radius: 5px;
+            color: #7d4f00;
+            background: #fffbf0;
+            font-weight: 600;
+        }
+        .topnav-links .github-star:hover {
+            background: #fef3c7;
+            border-color: #d4a017;
+        }
+
+        /* ── Page wrapper ── */
+        .page-wrapper {
+            max-width: {% block page_max_width %}1200px{% endblock %};
+            margin: 0 auto;
+            padding: 20px;
+            min-height: calc(100vh - 52px);
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="topnav">
+        <a href="/" class="topnav-brand">
+            <img src="/static/logo.png" alt="OJHunt Logo">
+            OJHunt Lite
+        </a>
+        <div class="topnav-links">
+            <a href="/crawlers">Crawlers</a>
+            <a href="/about">About</a>
+            <a href="/docs">API Docs</a>
+            <a href="https://github.com/Liu233w/ojhunt-lite" target="_blank" rel="noopener noreferrer" class="github-star">
+                ★ Star on GitHub
+            </a>
+        </div>
+    </nav>
+    <div class="page-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
