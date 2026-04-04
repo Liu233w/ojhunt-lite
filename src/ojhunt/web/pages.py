@@ -7,8 +7,16 @@ import secrets
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, Response
+from fastapi import APIRouter, File, Form, Request, UploadFile
+from fastapi.responses import (
+    HTMLResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    Response,
+)
+
+from ojhunt.web.legacy_db import export_user_pdf
+from ojhunt.web.pdf import PdfSnapshot, extract_data, generate_pdf, merge_history
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ojhunt.crawlers import discover_crawlers
@@ -84,6 +92,90 @@ async def sitemap_xml(request: Request):
     template = jinja_env.get_template("sitemap.xml")
     content = template.render(base=base)
     return Response(content=content, media_type="application/xml")
+
+
+@router.get("/pdf")
+async def pdf_root():
+    return RedirectResponse("/pdf/legacy", status_code=302)
+
+
+@router.get("/pdf/legacy", response_class=HTMLResponse)
+async def pdf_legacy_get() -> str:
+    template = jinja_env.get_template("pdf_legacy.html")
+    return template.render(
+        active_page="legacy",
+        legacy_available=Path("legacy.db").exists(),
+    )
+
+
+@router.post("/pdf/legacy")
+async def pdf_legacy_post(username: str = Form(...)):
+    template = jinja_env.get_template("pdf_legacy.html")
+    try:
+        pdf_bytes = export_user_pdf(username.strip())
+    except FileNotFoundError:
+        return HTMLResponse(
+            template.render(
+                active_page="legacy",
+                legacy_available=False,
+                prefill_username=username,
+            )
+        )
+    except ValueError as e:
+        return HTMLResponse(
+            template.render(
+                active_page="legacy",
+                legacy_available=True,
+                error=str(e),
+                prefill_username=username,
+            )
+        )
+    safe_name = username.strip().replace(" ", "_") or "legacy"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{safe_name}_legacy.pdf"'
+        },
+    )
+
+
+@router.get("/pdf/merge", response_class=HTMLResponse)
+async def pdf_merge_get() -> str:
+    template = jinja_env.get_template("pdf_merge.html")
+    return template.render(active_page="merge")
+
+
+@router.post("/pdf/merge")
+async def pdf_merge_post(
+    pdf_a: UploadFile = File(...),
+    pdf_b: UploadFile = File(...),
+):
+    template = jinja_env.get_template("pdf_merge.html")
+    try:
+        bytes_a = await pdf_a.read()
+        bytes_b = await pdf_b.read()
+        data_a = extract_data(bytes_a)
+        data_b = extract_data(bytes_b)
+        history = data_a.history
+        for entry in data_b.history:
+            history = merge_history(history, entry)
+        last = history[-1] if history else None
+        snapshot = PdfSnapshot(
+            totalSolved=last.totalSolved if last else 0,
+            totalSubmissions=last.totalSubmissions if last else 0,
+            username=data_a.settings.username,
+            timezone="UTC",
+            results=[],
+        )
+        pdf_bytes = generate_pdf(data_a.settings, history, snapshot)
+    except ValueError as e:
+        return HTMLResponse(template.render(active_page="merge", error=str(e)))
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="merged.pdf"'},
+    )
 
 
 @router.get("/crawlers", response_class=HTMLResponse)

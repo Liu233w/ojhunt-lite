@@ -1,0 +1,64 @@
+{% extends "pdf_base.html" %}
+
+{% block title %}Legacy Data Export - OJHunt Lite{% endblock %}
+
+{% block pdf_content %}
+    <h1>Download Your acm-statistics (OJHunt Heavy) History</h1>
+    <p class="subtitle">Recover your competitive programming history from the old site</p>
+
+    <div class="info-box">
+        <strong>What happened to the old site?</strong><br>
+        <em>acm-statistics</em> was my college side project — a great excuse to throw every exciting
+        new technology into one codebase: .NET Core, Vue.js + Nuxt.js, microservices, a multi-image
+        Docker build system, docker-compose… The kind of over-engineering only a student with too
+        much enthusiasm and too little maintenance budget can produce.<br><br>
+        As years passed, .NET upgrades arrived annually and JS frameworks hit major breaking changes
+        every few months. Even with Renovate automating dependency PRs, keeping everything working
+        demanded constant manual intervention. Then in October 2025 the VPS provider (CloudCone) was
+        compromised, and all data after <strong>2025-10-22</strong> was lost in the incident.<br><br>
+        That was the final push to start over. OJHunt Lite was rewritten from scratch with the
+        opposite philosophy: as few dependencies as possible, no stored user data — you hold your own
+        history in a PDF. One server incident can no longer erase your records.
+    </div>
+
+    {% if error %}
+        <div class="error-box">{{ error }}</div>
+    {% endif %}
+
+    {% if legacy_available %}
+        <form method="POST" action="/pdf/legacy">
+            <div class="form-group">
+                <label for="username">
+                    Your old username
+                    <span class="hint">(the username you used on acm-statistics for logging-in)</span>
+                </label>
+                <input type="text" id="username" name="username"
+                       value="{{ prefill_username or '' }}"
+                       placeholder="Enter username" required autofocus>
+            </div>
+            <button type="submit" class="btn-primary">Download History PDF</button>
+        </form>
+
+        <div class="help-text">
+            <strong>What you'll get:</strong> A PDF containing your daily solve-count history up to
+            2025-10-22, in the same format as OJHunt Lite reports. You can upload it on the
+            <a href="/">home page</a> to restore your crawler list, or
+            <a href="/pdf/merge">merge it</a> with a more recent OJHunt Lite report to combine histories.
+            <br><br>
+            <strong>Store the PDF on your own device</strong> — don't rely on browser storage,
+            which can be cleared at any time.
+        </div>
+    {% else %}
+        <div class="notice-box">
+            Legacy data is not currently available on this server. If you are running OJHunt Lite
+            locally, place <code>legacy.db</code> in the working directory and restart the server.
+            For Docker deployments, mount the file at <code>/app/legacy.db</code>.
+        </div>
+    {% endif %}
+
+    <div class="help-text" style="margin-top: 2rem;">
+        Questions or issues?
+        <a href="https://github.com/Liu233w/ojhunt-lite/issues" target="_blank" rel="noopener noreferrer">Open an issue on GitHub</a>
+        or <a href="/about">see the About page</a> for contact details.
+    </div>
+{% endblock %}

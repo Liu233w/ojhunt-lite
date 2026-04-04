@@ -32,6 +32,23 @@ merging, and download automatically:
 If you need to restore settings from a previous PDF (e.g. to re-run the same
 crawlers), upload it via the "Upload previous report" button before querying.
 
+## PDF tools (form endpoints)
+
+These endpoints accept standard HTML form submissions and return application/pdf directly.
+They are usable by agents via curl or HTTP clients.
+
+POST {{ base }}/pdf/legacy
+  Download a historical PDF for a user from the legacy acm-statistics database.
+  Body (application/x-www-form-urlencoded): username=<username>
+  Returns: application/pdf on success (Content-Disposition: attachment)
+  Returns: text/html with error message if username not found or legacy data unavailable
+
+POST {{ base }}/pdf/merge
+  Merge two OJHunt Lite PDFs. Crawler settings and username come from PDF A.
+  Body (multipart/form-data): pdf_a=<file>, pdf_b=<file>
+  Returns: application/pdf on success (Content-Disposition: attachment; filename="merged.pdf")
+  Returns: text/html with error message on invalid input
+
 ## API Reference
 
 - [OpenAPI schema (all request/response shapes)]({{ base }}/openapi.json)

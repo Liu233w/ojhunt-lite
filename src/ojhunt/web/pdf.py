@@ -36,18 +36,24 @@ DATA_END = "OJHUNT_DATA_v1_END"
 # at least the characters render).
 _PRIMARY_CANDIDATES = [
     # Linux — from fonts-noto
-    ("/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
-     "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf"),
+    (
+        "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf",
+    ),
     # macOS — Arial Unicode covers all scripts; no CJK fallback needed
     ("/Library/Fonts/Arial Unicode.ttf", None),
     ("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", None),
 ]
 
 _CJK_FALLBACK_CANDIDATES = [
-    ("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-     "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"),
-    ("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-     "/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc"),
+    (
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+    ),
+    (
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc",
+    ),
 ]
 
 

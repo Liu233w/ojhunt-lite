@@ -180,6 +180,25 @@ extra steps needed.
 **Neither font found** — the PDF generator falls back to Helvetica (latin-1 only). Non-latin
 characters will raise an error. Check that one of the above font packages is installed.
 
+## Deploying legacy.db
+
+The `/pdf/legacy` page reads `legacy.db` from the current working directory at runtime.
+The app works normally if the file is absent — the export form is simply disabled.
+
+**Local**: place `legacy.db` in the project root (the same directory where you run the server
+or `export_legacy.py`).
+
+**Docker**: mount the file at `/app/legacy.db`:
+```bash
+docker run -v ./legacy.db:/app/legacy.db <image>
+```
+
+The `legacy.db` file is gitignored — it contains personal data and must never be committed.
+Generate it from the MySQL dump with:
+```bash
+uv run python scripts/import_legacy.py
+```
+
 ## PDF Preview
 
 Generate preview PDFs with 1, 10, 30, and 100 history entries for visual inspection:

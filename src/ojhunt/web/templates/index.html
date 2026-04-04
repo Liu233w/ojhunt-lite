@@ -248,7 +248,8 @@
             <div class="report-actions">
                 <button type="button" class="primary" @click="downloadReport()">Download Report</button>
                 <span class="report-note">
-                    Saves your crawler list and progress history<span x-show="cachedPdfDate"> — history from <span x-text="cachedPdfDate"></span> will be included</span>
+                    Saves your crawler list and progress history<span x-show="cachedPdfDate"> — history from <span x-text="cachedPdfDate"></span> will be included</span>.
+                    Store this PDF on your own device — browser storage can be cleared at any time.
                 </span>
             </div>
         </div>
@@ -278,13 +279,8 @@
             providing a lightweight Python implementation with both web and CLI interfaces.
         </p>
         <p>
-            <strong>Legacy data from the old site (npuacm.info):</strong>
-            The old site was migrated here after our VPS provider (CloudCone) was compromised.
-            We have query history up to <strong>2025-10-22</strong> — data after that date was lost in the incident.
-            If you were a user of the old site and would like your history as a PDF,
-            please open an issue or contact us on
-            <a href="https://github.com/Liu233w/acm-statistics" target="_blank" rel="noopener noreferrer">GitHub</a>
-            with your old username.
+            Were you a user of the old acm-statistics site?
+            <a href="/pdf/legacy">Download your progress history →</a>
         </p>
     </footer>
 
