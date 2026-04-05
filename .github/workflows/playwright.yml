@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   playwright:
+    name: E2E Tests
     runs-on: ubuntu-latest
 
     steps:
