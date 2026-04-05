@@ -1,7 +1,9 @@
 pull_request_rules:
-  - name: automatic merge dependabot
+  - name: automatic merge
     conditions:
-      - label=dependencies
+      - or:
+        - label=dependencies
+        - label=automerge
       - check-success=validate
     actions:
       queue:
