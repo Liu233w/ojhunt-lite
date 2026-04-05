@@ -34,7 +34,6 @@ These crawlers have been archived due to:
 | zoj | Migrated to pintia.cn, requires authentication |
 | ztrening | Site dead (connection refused) |
 | hackerrank | Akamai WAF blocks all non-browser automated requests (403 Forbidden); API is accessible via real browser but not aiohttp |
-| nbut | SSL certificate expired on ac.2333.moe, site neglected |
 | uestc (CDOJ) | Migrated from Lutece to Hydro at cdoj.site; old oj.uestc.edu.cn is dead; Cerberus JS PoW challenge likely protects API endpoints |
 
 These crawlers are kept for reference and may be restored if the issues are resolved.

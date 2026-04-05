@@ -5,7 +5,7 @@ Tests for NBUT crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.nbut import __crawler_meta__, query
+from ojhunt.crawlers.nbut import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
