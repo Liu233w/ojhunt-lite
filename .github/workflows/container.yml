@@ -1,9 +1,10 @@
 name: Build and Push Container Image
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Validate"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
@@ -11,11 +12,14 @@ permissions:
 
 jobs:
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Get build metadata
         id: meta
@@ -48,5 +52,5 @@ jobs:
             ghcr.io/${{ steps.meta.outputs.owner }}/ojhunt-lite:latest
             ghcr.io/${{ steps.meta.outputs.owner }}/ojhunt-lite:sha-${{ steps.meta.outputs.short }}
           build-args: |
-            GIT_COMMIT_SHA=${{ github.sha }}
+            GIT_COMMIT_SHA=${{ github.event.workflow_run.head_sha }}
             BUILD_TIME=${{ steps.meta.outputs.build_time }}
