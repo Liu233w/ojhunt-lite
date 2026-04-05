@@ -165,6 +165,11 @@ function ojhunt() {
             try {
                 const url = `/api/crawlers/${encodeURIComponent(q.crawler)}/${encodeURIComponent(q.username)}`;
                 const response = await fetch(url, { signal: q.abortController.signal });
+                if (response.status === 429) {
+                    q.status = 'error';
+                    q.error = 'Rate limit exceeded. Please wait a moment and try again.';
+                    return;
+                }
                 const data = await response.json();
 
                 q.rawResponse = data;
@@ -255,6 +260,10 @@ function ojhunt() {
                     body: JSON.stringify(executed.map(q => q.rawResponse)),
                     signal: this._mergeController.signal,
                 });
+                if (response.status === 429) {
+                    alert('Rate limit exceeded. Please wait a moment and try again.');
+                    return;
+                }
                 const data = await response.json();
                 this.report = {
                     totalSolved: data.uniqueSolved,
