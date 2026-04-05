@@ -52,6 +52,10 @@ There are two distinct types of login-required crawlers. Always identify which t
 - `"login_type": "own_account"` → Own Account (must log in as the target user)
 - key omitted → no login required
 
+## SSL
+
+`ssl=False` is acceptable in crawler `session.get()` calls for sites with expired or self-signed certs **when no login is involved** — public stats queries have nothing sensitive in transit. Never bypass SSL for authenticated sessions (login crawlers, cookie-based auth).
+
 ## Crawler Metadata Fields (`__crawler_meta__`)
 
 | Field | Required | Description |
