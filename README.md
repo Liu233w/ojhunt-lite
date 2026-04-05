@@ -104,6 +104,6 @@ BSD 2-Clause License — see individual crawler files for full license text.
 ## Credits
 
 Lightweight Python rewrite of [OJHunt (acm-statistics)](https://github.com/Liu233w/acm-statistics),
-originally inspired by [西北工业大学ACM查询系统](https://kidozh.com/en/) by Jiduo Zhang.
+originally inspired by 西北工业大学ACM查询系统 (npuacm.info) by [Jiduo Zhang](https://kidozh.com).
 
 Special thanks to test account providers: @leoloveacm, @2013300262
