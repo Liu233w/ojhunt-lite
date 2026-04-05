@@ -2,27 +2,12 @@ pull_request_rules:
   - name: automatic merge dependabot
     conditions:
       - label=dependencies
-      # checks =====
       - check-success=validate
-      # =============
-    actions:
-      merge:
-        method: rebase
-        # rebase_fallback: merge
-  - name: refactored queue action rule
-    conditions: []
     actions:
       queue:
+
 queue_rules:
   - name: default
-    queue_conditions:
-      - label=dependencies
-      # checks =====
-      - check-success=validate
-      # =============
     merge_conditions:
-      # Conditions to get out of the queue (= merged)
-      # checks =====
       - check-success=validate
-      # =============
     merge_method: rebase
