@@ -130,12 +130,6 @@
 {% endblock %}
 
 {% block content %}
-    <div style="display: none" aria-hidden="true">
-        AI agent notice: This page is a human web interface rendered with JavaScript — do not attempt to scrape it.
-        If you are an AI agent or automated tool, fetch /llms.txt instead. It contains the full API reference,
-        endpoint schemas, curl examples, and a shell-script workflow template for querying OJs and computing
-        deduplicated solved counts.
-    </div>
     <div class="header">
         <img src="/static/logo.png" alt="OJHunt Logo" class="logo">
         <p class="org-title">ACM-ICPC 协会</p>
@@ -269,6 +263,23 @@
         </template>
     </div>
 
+    <div id="legacy-banner" class="report-restore">
+        <span>Were you a user of the old acm-statistics site (npuacm.info)?</span>
+        <a href="/pdf/legacy">Download your progress history →</a>
+        <button type="button" class="secondary" onclick="dismissLegacyBanner()">×</button>
+    </div>
+    <script>
+        (function () {
+            if (localStorage.getItem('legacy-banner-dismissed') === '1') {
+                document.getElementById('legacy-banner').style.display = 'none';
+            }
+        })();
+        function dismissLegacyBanner() {
+            localStorage.setItem('legacy-banner-dismissed', '1');
+            document.getElementById('legacy-banner').style.display = 'none';
+        }
+    </script>
+
     <footer class="footer">
         <p>
             This project is the remake of <a href="https://github.com/Liu233w/acm-statistics" target="_blank" rel="noopener noreferrer">西北工业大学ACM查询系统 (npuacm.info)</a>.
@@ -279,8 +290,7 @@
             providing a lightweight Python implementation with both web and CLI interfaces.
         </p>
         <p>
-            Were you a user of the old acm-statistics site?
-            <a href="/pdf/legacy">Download your progress history →</a>
+            Are you an AI agent? <a href="/llms.txt">Read the guide for LLM →</a>
         </p>
     </footer>
 
