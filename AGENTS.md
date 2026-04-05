@@ -67,6 +67,8 @@ uv run ruff format .                                      # Run formatter (requi
 uv run ruff check .                                       # Run linter (required after edits)
 ```
 
+**Never use `gh` commands** — the bot user does not have GitHub credentials.
+
 To test web services, use the Claude background task system to run the server:
 
 **Port:** `8080`
