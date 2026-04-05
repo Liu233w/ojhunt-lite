@@ -14,6 +14,14 @@ Load these when working in specific areas:
 - `tests/AGENTS.md` — test structure, assertion conventions
 - `tests/e2e/AGENTS.md` — Playwright quirks
 
+## Project History
+
+- **npuacm.info** — built by others (Jiduo Zhang); credited in the footer as inspiration. Never stored user data. Unrelated to this codebase.
+- **github.com/Liu233w/acm-statistics** — the author's rewrite with history storage; deployed as a web service. Known at various times as *ACM Statistics*, *OJ Analyzer*, and *OJHunt*. Hit by a CloudCone VPS compromise in October 2025 — data after 2025-10-22 was lost. `legacy.db` preserves part of its data (history and crawler settings).
+- **github.com/Liu233w/ojhunt-lite** (this repo) — complete rewrite from scratch as *OJHunt Lite*; no server-side user data storage.
+
+When writing UI copy or docs referring to "the old site", it means the acm-statistics deployment — not npuacm.info.
+
 ## Project Overview
 
 OJHunt Lite is an async Python tool for querying Online Judge statistics across 28 competitive programming platforms.
