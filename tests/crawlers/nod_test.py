@@ -17,6 +17,7 @@ async def session():
         yield s
 
 
+@pytest.mark.network
 @pytest.mark.asyncio
 async def test_user_not_exist(session):
     with pytest.raises(ValueError, match="The user does not exist"):
@@ -35,6 +36,7 @@ async def test_non_numeric_id(session):
         await query(session, "tourist")
 
 
+@pytest.mark.network
 @pytest.mark.asyncio
 async def test_valid_user(session):
     result = await query(session, TEST_USERNAME)

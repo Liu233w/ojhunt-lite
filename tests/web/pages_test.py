@@ -67,7 +67,8 @@ def test_pdf_root_redirects_to_legacy():
 # ---------------------------------------------------------------------------
 
 
-def test_pdf_legacy_get_renders_form():
+def test_pdf_legacy_get_renders_form(monkeypatch):
+    monkeypatch.setattr("ojhunt.web.pages.Path.exists", lambda self: True)
     response = client.get("/pdf/legacy")
     assert response.status_code == 200
     assert b'name="username"' in response.content
