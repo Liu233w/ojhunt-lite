@@ -67,29 +67,15 @@ uv run ruff format .                                      # Run formatter (requi
 uv run ruff check .                                       # Run linter (required after edits)
 ```
 
-To test web services, use tmux to manage the background server:
+To test web services, use the Claude background task system to run the server:
 
-**Session name:** `ojhunt-web` | **Port:** `8080`
-
-```bash
-# Check if service is running
-tmux has-session -t ojhunt-web 2>/dev/null && echo "Running" || echo "Not running"
-
-# Start server (if not running)
-tmux new-session -d -s ojhunt-web -c <project folder> "uv run fastapi dev src/ojhunt/web/app.py --port 8080"
-
-# View logs
-tmux capture-pane -t ojhunt-web -p
-
-# Stop server
-tmux kill-session -t ojhunt-web
-```
+**Port:** `8080`
 
 **Workflow:**
-1. Check if `ojhunt-web` session exists before starting
+1. Run `uv run fastapi dev src/ojhunt/web/app.py --port 8080` in the background; for Claude Code, disable the sandbox (the file watcher and loopback networking are sandbox-blocked)
 2. Keep the server running after testing (don't stop it)
-3. User can ask to stop the service
-4. If tmux is not installed, inform user it works best with tmux
+3. The user can ask to stop the service; to free port 8080: `lsof -ti :8080 | xargs kill -9`
+4. Note: background tasks do not persist between conversations — restart at the beginning of each new session if needed
 
 Then use `curl` or Playwright skills to test the frontend.
 
