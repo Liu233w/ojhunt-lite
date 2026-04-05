@@ -5,10 +5,12 @@ Tests for POJ crawler
 import pytest
 import pytest_asyncio
 import aiohttp
-from crawlers.poj import query
+from ojhunt.crawlers.poj import __crawler_meta__, query
+
+pytestmark = pytest.mark.network
 
 # Test username
-TEST_USERNAME = "vjudge5"
+TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 
 

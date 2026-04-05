@@ -23,7 +23,6 @@ These crawlers have been archived due to:
 | jisuanke | Alibaba Cloud WAF blocks all automated requests (HTTP 405 for all paths) |
 | leetcode_cn | Cloudflare bot protection |
 | openjudge | Requires authentication; user data is group-scoped with no global stats (group-based OJ) |
-| poj | Site dead (connection refused) |
 | qoj | Cloudflare bot protection (JS challenge); profile page is public but requires browser rendering (UOJ-based) |
 | scu | Temporary system maintenance shutdown (server alive but OJ intentionally offline) |
 | spoj | Cloudflare bot protection |

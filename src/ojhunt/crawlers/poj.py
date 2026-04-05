@@ -35,6 +35,7 @@ __crawler_meta__ = {
     "title": "POJ",
     "description": "",
     "url": "http://poj.org/",
+    "test_username": "vjudge5",
 }
 
 
@@ -75,7 +76,6 @@ async def query(
     except aiohttp.ClientError as e:
         raise RuntimeError(f"Request failed: {str(e)}")
 
-    # Check if user exists
     if "<title>Error -- no user found</title>" in html:
         raise ValueError("The user does not exist")
     if "Sorry," in html and "doesn't exist" in html:
@@ -95,7 +95,7 @@ async def query(
             if "status?result=0" in href and f"user_id={username}" in href:
                 try:
                     solved = int(a.text(strip=True))
-                except:
+                except ValueError:
                     pass
             elif (
                 "status?user_id=" in href
@@ -104,7 +104,7 @@ async def query(
             ):
                 try:
                     submissions = int(a.text(strip=True))
-                except:
+                except ValueError:
                     pass
 
         # Extract solved list from JavaScript: p(1000)\np(1001)\n...
@@ -118,5 +118,5 @@ async def query(
             "submissions": submissions,
             "solved_list": solved_list,
         }
-    except Exception as e:
+    except Exception:
         raise RuntimeError("Error while parsing")
