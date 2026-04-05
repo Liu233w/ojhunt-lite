@@ -13,6 +13,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from ojhunt.web.http_client import close_http_client, get_http_client, init_http_client
 from ojhunt.web.api import router as api_router
@@ -47,6 +48,7 @@ app = FastAPI(
 )
 
 app.add_middleware(LLMsDiscoverabilityMiddleware)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 STATIC_DIR = Path(__file__).parent / "static"
 if STATIC_DIR.exists():
