@@ -205,6 +205,8 @@ Write the ADR before starting implementation. If implementation reveals the deci
 
 Do not put unit tests in `tests/e2e/` — that folder is exclusively for Playwright e2e tests.
 
+New page routes must have a corresponding unit test. Use `TestClient(app, follow_redirects=False)` and `monkeypatch` to mock functions in `pages.py`. File upload testing: `files={"field": ("name.pdf", bytes, "application/pdf")}`.
+
 - Use `pytest_asyncio.fixture` for aiohttp session
 - Standard test cases: `test_user_not_exist`, `test_username_with_space`, `test_valid_user`
 - `TEST_USERNAME` comes from the crawler's `__crawler_meta__["test_username"]` — import it, don't hardcode
@@ -236,6 +238,8 @@ Each test must assert all three fields: `solved`, `submissions`, `solved_list`:
 | Shared Account login crawler | `src/ojhunt/crawlers/vjudge.py` |
 | Numeric ID crawler | `src/ojhunt/crawlers/luogu.py`, `src/ojhunt/crawlers/nod.py` |
 | Crawler analysis guide | `.claude/skills/analyze-crawler.md` |
+| Legacy DB query functions (web) | `src/ojhunt/web/legacy_db.py` |
+| Page route tests example | `tests/web/pages_test.py` |
 
 ## Archived Crawlers
 
@@ -245,6 +249,12 @@ Crawlers for dead sites or sites with unfixable issues are moved to `archived_cr
 - `archived_crawlers/` does NOT have an `__init__.py` - it's for archival only, not a package
 - Tests in `archived_crawlers/` are NOT run by pytest
 - Do not create stub crawlers that just raise exceptions - add them to `archived_crawlers/README.md` instead
+
+## PDF internals
+
+- `extract_data(pdf_bytes)` returns `PdfEmbeddedData` — has `settings` and `history` only. It does **not** have a `snapshot`; the snapshot is never embedded in the PDF. Build one manually from history if needed.
+- For page routes returning `application/pdf` on success and HTML on error: return explicit `Response(content=..., media_type="application/pdf")` or `HTMLResponse(...)` — do not use `response_class=HTMLResponse` on the decorator.
+- When adding form-based page endpoints accessible to agents, document them in `llms.txt`.
 
 ## Containerfile
 
