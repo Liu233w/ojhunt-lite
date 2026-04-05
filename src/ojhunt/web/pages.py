@@ -46,13 +46,13 @@ async def index() -> str:
         }
         for name, info in sorted(crawlers.items())
     }
-    template = jinja_env.get_template("index.html")
+    template = jinja_env.get_template("index.html.jinja")
     return template.render(crawlers=crawler_data, static_version=STATIC_VERSION)
 
 
 @router.get("/about", response_class=HTMLResponse)
 async def about() -> str:
-    template = jinja_env.get_template("about.html")
+    template = jinja_env.get_template("about.html.jinja")
     build_time_str = None
     if BUILD_TIME:
         try:
@@ -71,7 +71,7 @@ async def llms_txt(request: Request) -> str:
     base = str(request.base_url).rstrip("/")
     crawlers = discover_crawlers()
     crawler_names = sorted(crawlers.keys())
-    template = jinja_env.get_template("llms.txt")
+    template = jinja_env.get_template("llms.txt.jinja")
     return template.render(
         base=base,
         crawler_count=len(crawler_names),
@@ -82,14 +82,14 @@ async def llms_txt(request: Request) -> str:
 @router.get("/robots.txt", response_class=PlainTextResponse)
 async def robots_txt(request: Request) -> str:
     base = str(request.base_url).rstrip("/")
-    template = jinja_env.get_template("robots.txt")
+    template = jinja_env.get_template("robots.txt.jinja")
     return template.render(base=base)
 
 
 @router.get("/sitemap.xml")
 async def sitemap_xml(request: Request):
     base = str(request.base_url).rstrip("/")
-    template = jinja_env.get_template("sitemap.xml")
+    template = jinja_env.get_template("sitemap.xml.jinja")
     content = template.render(base=base)
     return Response(content=content, media_type="application/xml")
 
@@ -101,7 +101,7 @@ async def pdf_root():
 
 @router.get("/pdf/legacy", response_class=HTMLResponse)
 async def pdf_legacy_get() -> str:
-    template = jinja_env.get_template("pdf_legacy.html")
+    template = jinja_env.get_template("pdf_legacy.html.jinja")
     return template.render(
         active_page="legacy",
         legacy_available=Path("legacy.db").exists(),
@@ -110,7 +110,7 @@ async def pdf_legacy_get() -> str:
 
 @router.post("/pdf/legacy")
 async def pdf_legacy_post(username: str = Form(...)):
-    template = jinja_env.get_template("pdf_legacy.html")
+    template = jinja_env.get_template("pdf_legacy.html.jinja")
     try:
         pdf_bytes = export_user_pdf(username.strip())
     except FileNotFoundError:
@@ -142,7 +142,7 @@ async def pdf_legacy_post(username: str = Form(...)):
 
 @router.get("/pdf/merge", response_class=HTMLResponse)
 async def pdf_merge_get() -> str:
-    template = jinja_env.get_template("pdf_merge.html")
+    template = jinja_env.get_template("pdf_merge.html.jinja")
     return template.render(active_page="merge")
 
 
@@ -151,7 +151,7 @@ async def pdf_merge_post(
     pdf_a: UploadFile = File(...),
     pdf_b: UploadFile = File(...),
 ):
-    template = jinja_env.get_template("pdf_merge.html")
+    template = jinja_env.get_template("pdf_merge.html.jinja")
     try:
         bytes_a = await pdf_a.read()
         bytes_b = await pdf_b.read()
@@ -193,5 +193,5 @@ async def crawlers_page() -> str:
                 ),
             }
         )
-    template = jinja_env.get_template("crawlers.html")
+    template = jinja_env.get_template("crawlers.html.jinja")
     return template.render(crawlers=crawler_list)
