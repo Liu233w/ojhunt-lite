@@ -2,8 +2,8 @@ pull_request_rules:
   - name: automatic merge
     conditions:
       - or:
-        - label=dependencies
-        - label=automerge
+          - label=dependencies
+          - label=automerge
       - check-success=validate
     actions:
       queue:
@@ -13,3 +13,5 @@ queue_rules:
     merge_conditions:
       - check-success=validate
     merge_method: rebase
+merge_protections_settings:
+  reporting_method: check-runs
