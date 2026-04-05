@@ -30,8 +30,6 @@ jobs:
           podman run -d \
             --name ojhunt-server \
             -p 8080:8080 \
-            -e LOGIN_USERNAME__VJUDGE=${{ secrets.VJUDGE_USERNAME }} \
-            -e LOGIN_PASSWORD__VJUDGE=${{ secrets.VJUDGE_PASSWORD }} \
             ojhunt-lite
           for i in $(seq 1 30); do
             curl -sf http://localhost:8080/ && break || sleep 1
