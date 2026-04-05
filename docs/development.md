@@ -188,9 +188,12 @@ The app works normally if the file is absent — the export form is simply disab
 **Local**: place `legacy.db` in the project root (the same directory where you run the server
 or `export_legacy.py`).
 
-**Docker**: mount the file at `/app/legacy.db`:
+**Docker / Podman**: mount the file at `/app/legacy.db` using an **absolute path**
+(relative paths create a named volume instead of a bind mount):
 ```bash
-docker run -v ./legacy.db:/app/legacy.db <image>
+docker run -v $(pwd)/legacy.db:/app/legacy.db:ro <image>
+# or with podman:
+podman run -v $(pwd)/legacy.db:/app/legacy.db:ro <image>
 ```
 
 The `legacy.db` file is gitignored — it contains personal data and must never be committed.
