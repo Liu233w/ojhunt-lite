@@ -23,12 +23,18 @@ jobs:
         run: uv run pytest -m "not network and not playwright"
       - name: Install Playwright browsers
         run: uv run playwright install --with-deps chromium
-      - name: Start server
+      - name: Build container
+        run: podman build -f Containerfile -t ojhunt-lite .
+      - name: Start server (container)
         run: |
-          uv run fastapi run src/ojhunt/web/app.py --port 8080 &
-          sleep 5
-        env:
-          LOGIN_USERNAME__VJUDGE: ${{ secrets.VJUDGE_USERNAME }}
-          LOGIN_PASSWORD__VJUDGE: ${{ secrets.VJUDGE_PASSWORD }}
+          podman run -d \
+            --name ojhunt-server \
+            -p 8080:8080 \
+            -e LOGIN_USERNAME__VJUDGE=${{ secrets.VJUDGE_USERNAME }} \
+            -e LOGIN_PASSWORD__VJUDGE=${{ secrets.VJUDGE_PASSWORD }} \
+            ojhunt-lite
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/ && break || sleep 1
+          done
       - name: E2E tests
         run: uv run pytest -m playwright tests/e2e/
