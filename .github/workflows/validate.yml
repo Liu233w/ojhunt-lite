@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Validate
 
 on:
   push:
@@ -10,15 +10,17 @@ permissions:
   contents: read
 
 jobs:
-  playwright:
-    name: E2E Tests
+  validate:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7.3.0
       - name: Install dependencies
         run: uv sync
+      - name: Lint
+        run: uv run ruff check .
+      - name: Unit tests
+        run: uv run pytest -m "not network and not playwright"
       - name: Install Playwright browsers
         run: uv run playwright install --with-deps chromium
       - name: Start server
@@ -28,5 +30,5 @@ jobs:
         env:
           LOGIN_USERNAME__VJUDGE: ${{ secrets.VJUDGE_USERNAME }}
           LOGIN_PASSWORD__VJUDGE: ${{ secrets.VJUDGE_PASSWORD }}
-      - name: Run Playwright tests
+      - name: E2E tests
         run: uv run pytest -m playwright tests/e2e/

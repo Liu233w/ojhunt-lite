@@ -3,8 +3,7 @@ pull_request_rules:
     conditions:
       - label=dependencies
       # checks =====
-      - check-success=Unit Tests
-      - check-success=E2E Tests
+      - check-success=validate
       # =============
     actions:
       merge:
@@ -19,13 +18,11 @@ queue_rules:
     queue_conditions:
       - label=dependencies
       # checks =====
-      - check-success=Unit Tests
-      - check-success=E2E Tests
+      - check-success=validate
       # =============
     merge_conditions:
       # Conditions to get out of the queue (= merged)
       # checks =====
-      - check-success=Unit Tests
-      - check-success=E2E Tests
+      - check-success=validate
       # =============
     merge_method: rebase
