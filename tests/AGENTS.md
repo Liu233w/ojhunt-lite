@@ -1,5 +1,14 @@
 # AGENTS.md - Tests
 
+## E2e test rules
+
+- Always run e2e tests after writing them — don't mark done until they pass.
+
+## localStorage in e2e tests
+
+To test dismiss/persistence behavior, reset localStorage before the relevant action:
+`page.evaluate("localStorage.removeItem('key')")` then `page.reload()`.
+
 ## Test Structure
 
 - **Crawler tests**: `tests/crawlers/<name>_test.py` — unit tests for individual crawlers
