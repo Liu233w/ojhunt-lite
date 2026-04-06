@@ -45,10 +45,8 @@ async def test_valid_user(session):
 
     assert isinstance(result["solved"], int)
     assert isinstance(result["submissions"], int)
-    assert isinstance(result["solved_list"], list)
-
     assert result["solved"] > 0
     assert result["submissions"] >= result["solved"]
 
-    # LeetCode doesn't expose full solved list publicly; allow empty list
-    assert len(result["solved_list"]) == result["solved"] or result["solved_list"] == []
+    # LeetCode does not expose the full solved list publicly
+    assert result["solved_list"] is None

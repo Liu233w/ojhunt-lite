@@ -121,5 +121,5 @@ async def query(
     return {
         "solved": solved,
         "submissions": submissions,
-        "solved_list": [],
+        "solved_list": None,  # LeetCode does not expose the full solved list publicly
     }
