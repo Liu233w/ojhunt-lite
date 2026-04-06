@@ -42,7 +42,7 @@ async def query(
         return {
             "solved": solved,
             "submissions": solved,
-            "solved_list": [],
+            "solved_list": None,  # Topcoder API does not expose a problem list
         }
     except Exception as e:
         raise RuntimeError(f"Error while parsing: {str(e)}")

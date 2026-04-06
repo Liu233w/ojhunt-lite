@@ -62,5 +62,5 @@ async def query(
     return {
         "solved": solved,
         "submissions": submissions,
-        "solved_list": [],
+        "solved_list": None,  # HackerEarth API does not expose problem list
     }
