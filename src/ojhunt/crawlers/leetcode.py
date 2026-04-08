@@ -30,7 +30,7 @@ import aiohttp
 from typing import Dict, List, Union
 
 __crawler_meta__ = {
-    "title": "LeetCode",
+    "title": "LeetCode.com",
     "description": "LeetCode (international)",
     "url": "https://leetcode.com/",
     "test_username": "tourist",

@@ -131,7 +131,7 @@
 
 {% block content %}
     <div class="header">
-        <img src="/static/logo.png" alt="OJHunt Logo" class="logo">
+        <img src="/assets/logo.png" alt="OJHunt Logo" class="logo">
         <p class="org-title">ACM-ICPC 协会</p>
         <h1>OJHunt Lite</h1>
         <p class="subtitle">Query Online Judge statistics across multiple platforms</p>
@@ -294,6 +294,6 @@
     </footer>
 
     <script>window.__CRAWLERS__ = {{ crawlers | tojson }};</script>
-    <script src="/static/app.js?v={{ static_version }}"></script>
-    <script defer src="/static/alpinejs-3.14.1.min.js"></script>
+    <script src="/assets/app.js?v={{ static_version }}"></script>
+    <script defer src="/assets/alpinejs-3.14.1.min.js"></script>
 {% endblock %}
