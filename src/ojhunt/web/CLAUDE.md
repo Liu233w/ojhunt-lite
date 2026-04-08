@@ -1,4 +1,4 @@
-# AGENTS.md - Web
+# Web
 
 ## PDF Internals
 
