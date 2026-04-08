@@ -103,6 +103,35 @@ Examples:
 
   # List available crawlers
   %(prog)s --list
+
+JSON output (--json):
+  Results go to stdout; progress goes to stderr.
+
+  {
+    "results": [
+      {
+        "crawler": "codeforces", "title": "CodeForces",
+        "username": "tourist", "success": true,
+        "solved": 2962, "submissions": 5386,
+        "solved_list": ["1A", "2A"],  # platform-prefixed for aggregators
+        "duration": 2.78
+      },
+      {
+        "crawler": "atcoder", "title": "AtCoder",
+        "username": "tourist", "success": false,
+        "error": "User not found", "duration": 1.23
+      }
+    ],
+    "summary": {
+      "unique_solved": 2962,   # deduplicated across all platforms
+      "total_submissions": 5386,
+      "ok": 1, "failed": 1, "duration": 2.78
+    }
+  }
+
+  Pipe examples:
+    %(prog)s --json tourist@codeforces | jq .summary.unique_solved
+    %(prog)s --json tourist@codeforces tourist@atcoder | jq '.results[] | select(.success)'
         """,
     )
 
