@@ -11,6 +11,7 @@ from typing import AsyncGenerator
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
+from fastapi.exception_handlers import http_exception_handler as _default_http_exception_handler
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -69,7 +70,7 @@ async def http_exception_handler(
             ),
             status_code=404,
         )
-    return Response(content=str(exc.detail), status_code=exc.status_code)
+    return await _default_http_exception_handler(request, exc)
 
 
 STATIC_DIR = Path(__file__).parent / "static"
