@@ -13,9 +13,7 @@ updates:
       day: "sunday"
       time: "16:00"
     cooldown:
-      semver-major-days: 60
-      semver-minor-days: 14
-      semver-patch-days: 7
+      default-days: 14
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
