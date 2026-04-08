@@ -14,13 +14,59 @@ from fastapi.responses import (
     RedirectResponse,
     Response,
 )
-
-from ojhunt.web.legacy_db import export_user_pdf
-from ojhunt.web.pdf import PdfSnapshot, extract_data, generate_pdf, merge_history
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ojhunt.crawlers import discover_crawlers
 from ojhunt.web.crawler_status import get_all_status, CrawlerAvailability, CheckStatus
+from ojhunt.web.legacy_db import export_user_pdf
+from ojhunt.web.pdf import PdfSnapshot, extract_data, generate_pdf, merge_history
+
+_EASTER_EGG_PATHS = [
+    "/jojo",
+    "/index.html",
+    "/index.php",
+    "/index.jsp",
+    "/admin",
+    "/admin/",
+    "/wp-login.php",
+    "/wp-config.php",
+    "/readme.html",
+    "/license.txt",
+    "/wp-includes/js/wplink.js",
+    "/wp-admin/js/customize-controls.js",
+    "/wp-admin/js/nav-menu.js",
+    "/wp-includes/js/plupload",
+    "/wp-includes/js/tinymce",
+    "/wp-includes/js/tinymce/",
+    "/README",
+    "/README.md",
+    "/phpMyAdmin",
+    "/phpMyAdmin/",
+    "/phpmyadmin",
+    "/phpmyadmin/",
+    "/pma",
+    "/pma/",
+    "/swagger/elpsycongroo",
+    "/ZeroClipboard.swf",
+    "/js/ZeroClipboard.swf",
+    "/script/ZeroClipboard.swf",
+    "/lib/ZeroClipboard.swf",
+    "/api.php",
+    "/config.php",
+    "/config.json",
+    "/composer.json",
+    "/package.json",
+    "/actuator",
+    "/actuator/health",
+    "/.env",
+    "/.git/config",
+    "/.htaccess",
+    "/.DS_Store",
+    "/.bash_history",
+    "/etc/passwd",
+    "/shell.php",
+    "/cmd.php",
+]
 
 BUILD_TIME = os.environ.get("BUILD_TIME")
 GIT_COMMIT_SHA = os.environ.get("GIT_COMMIT_SHA")
@@ -195,3 +241,14 @@ async def crawlers_page() -> str:
         )
     template = jinja_env.get_template("crawlers.html.jinja")
     return template.render(crawlers=crawler_list)
+
+
+async def _easter_egg_handler(request: Request) -> HTMLResponse:
+    template = jinja_env.get_template("easter_egg.html.jinja")
+    return HTMLResponse(template.render(path=request.url.path))
+
+
+for _path in _EASTER_EGG_PATHS:
+    router.add_api_route(
+        _path, _easter_egg_handler, methods=["GET"], include_in_schema=False
+    )
