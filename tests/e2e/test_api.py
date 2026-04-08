@@ -44,7 +44,7 @@ def test_api_query_unknown_crawler(context: BrowserContext):
 
 @pytest.mark.playwright
 def test_api_crawlers_list(context: BrowserContext):
-    response = context.request.get(f"{BASE_URL}/api/crawlers/")
+    response = context.request.get(f"{BASE_URL}/api/crawlers")
     assert response.status == 200
     data = response.json()
     assert data["error"] is False

@@ -57,6 +57,7 @@ When editing multiple crawlers or performing independent tasks, spawn sub-agents
 ```bash
 uv sync                                                   # Install dependencies
 uv add <package>                                          # Add a new dependency (don't specify version, let uv resolve)
+uv run pytest -m "not network and not playwright"                # Run tests as CI does (skips crawler + e2e tests)
 uv run pytest                                                    # Run all tests
 uv run pytest tests/crawlers/codeforces_test.py                  # Run single test file
 uv run pytest tests/crawlers/codeforces_test.py::test_valid_user # Run single test
