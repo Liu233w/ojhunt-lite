@@ -1,0 +1,35 @@
+{% extends "base.html.jinja" %}
+
+{% block title %}你访问的不是 {{ path }} — OJHunt Lite{% endblock %}
+
+{% block extra_head %}
+<style>
+    .easter-egg-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        text-align: center;
+        gap: 1.5rem;
+        padding: 2rem 0;
+    }
+    .easter-egg-page p {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .easter-egg-page img {
+        max-width: 480px;
+        width: 100%;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="easter-egg-page">
+    <img src="/assets/dio.jpg" alt="DIO">
+    <p>你访问的不是 {{ path }}，是我DIO哒!!</p>
+</div>
+{% endblock %}
