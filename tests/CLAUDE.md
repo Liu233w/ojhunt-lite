@@ -1,4 +1,4 @@
-# AGENTS.md - Tests
+# Tests
 
 ## E2e test rules
 

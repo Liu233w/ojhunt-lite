@@ -1,4 +1,4 @@
-# AGENTS.md - Web Tests
+# Web Tests (E2E)
 
 ## Playwright Tests
 
