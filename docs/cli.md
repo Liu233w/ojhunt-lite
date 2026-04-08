@@ -112,3 +112,5 @@ ojhunt --json tourist@codeforces tourist@atcoder
 ```
 
 Progress messages are redirected to stderr when `--json` is used, so stdout contains only the JSON result.
+
+Run `ojhunt --help` to see the full output schema and `jq` pipe examples.
