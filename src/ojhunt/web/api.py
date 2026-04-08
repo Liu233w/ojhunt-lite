@@ -113,7 +113,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/api/crawlers/",
+    "/api/crawlers",
     response_model=CrawlersListResponse,
     summary="List all available crawlers",
     description="Returns a list of all available OJ crawlers with their metadata.",
