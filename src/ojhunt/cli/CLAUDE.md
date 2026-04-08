@@ -1,4 +1,4 @@
-# AGENTS.md - CLI
+# CLI
 
 ## Login-Required Crawlers (CLI Usage)
 

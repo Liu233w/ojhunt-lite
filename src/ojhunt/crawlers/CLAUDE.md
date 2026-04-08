@@ -1,4 +1,4 @@
-# AGENTS.md - Crawlers
+# Crawlers
 
 > **For full human-facing documentation** (crawler return format, deployment, API schema, testing setup), read `docs/development.md` first. This file contains agent-specific implementation guidance that complements it.
 

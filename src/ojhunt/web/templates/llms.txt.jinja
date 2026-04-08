@@ -18,6 +18,25 @@ To get a user's deduplicated solved-problem totals across platforms:
    Do not call /api/merge until all crawler queries have completed.
    The merge step handles aggregator cross-platform deduplication server-side.
 
+## CLI alternative (local installation)
+
+If you can install Python packages, the CLI is simpler for pure stats queries:
+
+  pip install ojhunt          # or: pipx install ojhunt / uv tool install ojhunt
+  ojhunt tourist@codeforces tourist@atcoder --json
+
+- Runs all queries in parallel; outputs JSON to stdout, progress to stderr
+- summary.unique_solved is already deduplicated (same logic as /api/merge)
+- No running server required
+
+Run `ojhunt --help` for full options, JSON output schema, and jq examples.
+
+CLI vs HTTP API:
+- Simple stats query -> CLI preferred (one command, no server dependency)
+- PDF generation or history tracking -> HTTP API only (server-side endpoints)
+- Server-managed credentials (e.g. VJudge on the hosted site) -> HTTP API
+- Login-required crawlers with your own credentials -> CLI (user:pass@crawler syntax)
+
 ## Tracking progress over time
 
 To generate a PDF progress report with accumulated history, use the web UI at
