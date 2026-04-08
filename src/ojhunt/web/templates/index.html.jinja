@@ -173,6 +173,9 @@
                 <input type="text" placeholder="Username" x-model="username" @keydown.enter="addQuery()" />
                 <button type="button" class="primary" @click="addQuery()" title="Enter">Add</button>
             </div>
+            <div x-show="selectedCrawler && selectedCrawler !== '*' && crawlers[selectedCrawler]?.description"
+                 style="margin-top: 0.35rem; font-size: 0.85rem; color: #666;"
+                 x-text="crawlers[selectedCrawler]?.description"></div>
             <div class="actions">
                 <button type="button" class="primary" @click="queryAll()" title="Ctrl(⌘)+Enter">Query All</button>
                 <button type="button" class="secondary" @click="clearAll()">Clear All</button>
