@@ -61,7 +61,7 @@ app.include_router(api_router)
 async def http_exception_handler(
     request: Request, exc: StarletteHTTPException
 ) -> Response:
-    if exc.status_code == 404:
+    if exc.status_code == 404 and not request.url.path.startswith("/api"):
         image_filename = random.choice(["cat.jpg", "man.jpg", "metro.jpg"])
         template = jinja_env.get_template("404.html.jinja")
         return HTMLResponse(
