@@ -254,7 +254,7 @@ function ojhunt() {
             this._mergeController = new AbortController();
 
             try {
-                const response = await fetch('/api/merge', {
+                const response = await fetch('/api/merge/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(executed.map(q => q.rawResponse)),
@@ -368,7 +368,7 @@ function ojhunt() {
 
             let data;
             try {
-                const response = await fetch('/api/pdf/extract', {
+                const response = await fetch('/api/pdf/extract/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pdf_b64: b64 }),
@@ -433,7 +433,7 @@ function ojhunt() {
 
             let data;
             try {
-                const response = await fetch('/api/pdf/generate', {
+                const response = await fetch('/api/pdf/generate/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(request),
