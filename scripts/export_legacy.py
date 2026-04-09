@@ -57,9 +57,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Export legacy ACM Statistics data as PDF"
     )
-    parser.add_argument(
-        "username", help="ABP site login username to look up"
-    )
+    parser.add_argument("username", help="ABP site login username to look up")
     parser.add_argument(
         "--output", "-o", help="Output PDF path (default: <username>_legacy.pdf)"
     )
