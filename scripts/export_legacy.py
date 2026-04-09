@@ -58,7 +58,7 @@ def main() -> None:
         description="Export legacy ACM Statistics data as PDF"
     )
     parser.add_argument(
-        "username", help="Username to look up (main OJ username or site login)"
+        "username", help="ABP site login username to look up"
     )
     parser.add_argument(
         "--output", "-o", help="Output PDF path (default: <username>_legacy.pdf)"
@@ -87,10 +87,7 @@ def main() -> None:
     if args.list_matches or len(matches) > 1:
         print(f"Found {len(matches)} match(es) for '{args.username}':")
         for i, m in enumerate(matches):
-            print(
-                f"  [{i}] user_id={m['user_id']}  main={m['main_username']!r}"
-                f"  abp={m['abp_username']!r}  ({m['match_type']})"
-            )
+            print(f"  [{i}] user_id={m['user_id']}  abp={m['abp_username']!r}")
         if args.list_matches:
             return
         print(
@@ -99,14 +96,26 @@ def main() -> None:
 
     match = matches[0]
     user_id = match["user_id"]
-    main_username = match["main_username"] or match["abp_username"] or args.username
+    abp_username = match["abp_username"]
+
+    con2 = sqlite3.connect(DB_PATH)
+    try:
+        row = con2.execute(
+            "SELECT main_username FROM query_histories"
+            " WHERE user_id = ? AND main_username <> ''"
+            " ORDER BY creation_time DESC LIMIT 1",
+            (user_id,),
+        ).fetchone()
+    finally:
+        con2.close()
+    display_username = (row[0] if row else None) or abp_username or args.username
 
     output_path = (
-        Path(args.output) if args.output else Path(f"{main_username}_legacy.pdf")
+        Path(args.output) if args.output else Path(f"{display_username}_legacy.pdf")
     )
 
-    print(f"Exporting: user_id={user_id}  username={main_username!r}")
-    export_user(user_id, main_username, output_path)
+    print(f"Exporting: user_id={user_id}  username={display_username!r}")
+    export_user(user_id, display_username, output_path)
 
 
 if __name__ == "__main__":
