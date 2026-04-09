@@ -34,11 +34,17 @@
         .results-section { margin-top: 1.5rem; flex: 1; }
         .results-section h3 { margin-bottom: 0.5rem; }
 
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th:nth-child(1) { width: 14%; }
+        th:nth-child(2) { width: 12%; }
+        th:nth-child(3) { width: 18%; }
+        th:nth-child(4) { width: 20%; }
+        th:nth-child(5) { width: 22%; }
+        th:nth-child(6) { width: 14%; }
+        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; overflow: hidden; }
         th { background: #f5f5f5; font-weight: 600; }
         .status { color: #22863a; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
-        .status.error { color: #cb2431; }
+        .status.error { color: #cb2431; display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
         .status.pending { color: #666; }
         .status.loading { color: #f5a623; }
         .status[title] { cursor: help; }
@@ -117,6 +123,9 @@
             .result-row td:nth-child(4)::before { content: "Submissions"; }
             .result-row td:nth-child(5)::before { content: "Status"; }
             .result-row td:nth-child(6)::before { content: "Actions"; }
+            /* Error rows: Solved/Submissions/Status merged into one cell (nth-child 3), Actions shifts to 4 */
+            .result-row.error td:nth-child(3)::before { content: "Error"; }
+            .result-row.error td:nth-child(4)::before { content: "Actions"; }
             /* Empty state row */
             tr:not(.result-row) td { padding: 0.5rem 0.75rem; }
 
@@ -199,44 +208,62 @@
                     <tr x-show="queries.length === 0">
                         <td colspan="6" class="empty-state">Add crawlers above to start querying.</td>
                     </tr>
-                    <template x-for="q in queries" :key="q.id">
-                        <tr :id="'row-' + q.id" :class="'result-row ' + q.status">
-                            <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
-                            <td x-text="q.username"></td>
-                            <td>
-                                <span x-show="q.status === 'pending'">-</span>
-                                <span x-show="q.status === 'loading'" class="loading-spinner">Loading...</span>
-                                <a href="#" x-show="q.status === 'success'" class="solved-count" @click.prevent="showDialog(q)" x-text="q.solved"></a>
-                                <span x-show="q.status === 'error'">N/A</span>
-                            </td>
-                            <td>
-                                <span x-show="q.status === 'pending'">-</span>
-                                <span x-show="q.status === 'loading'" class="loading-spinner"></span>
-                                <span x-show="q.status === 'success'" x-text="q.submissions"></span>
-                                <span x-show="q.status === 'error'">N/A</span>
-                            </td>
-                            <td>
-                                <span x-show="q.status === 'pending'" class="status pending">Pending</span>
-                                <span x-show="q.status === 'loading'" class="status loading">Loading...</span>
-                                <span x-show="q.status === 'success'" class="status" :title="'OK (' + q.duration.toFixed(2) + 's)'" x-text="'OK (' + q.duration.toFixed(2) + 's)'"></span>
-                                <span x-show="q.status === 'error'" class="status error" :title="'ERROR: ' + q.error" x-text="'ERROR: ' + q.error"></span>
-                            </td>
-                            <td>
-                                <span x-show="q.status === 'pending'">
+                </tbody>
+                <template x-for="q in queries" :key="q.id">
+                    <tbody :id="'row-' + q.id" :class="'result-row ' + q.status">
+                        <template x-if="q.status === 'pending'">
+                            <tr>
+                                <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
+                                <td x-text="q.username"></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td><span class="status pending">Pending</span></td>
+                                <td>
                                     <button type="button" class="query-btn" @click="queryOne(q.id)">Query</button>
                                     <button type="button" class="remove-btn" @click="removeQuery(q.id)">Remove</button>
-                                </span>
-                                <span x-show="q.status === 'loading'">
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="q.status === 'loading'">
+                            <tr>
+                                <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
+                                <td x-text="q.username"></td>
+                                <td><span class="loading-spinner">Loading...</span></td>
+                                <td></td>
+                                <td><span class="status loading">Loading...</span></td>
+                                <td>
                                     <button type="button" class="cancel-btn" @click="stopQuery(q.id)">Stop</button>
-                                </span>
-                                <span x-show="q.status === 'success' || q.status === 'error'">
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="q.status === 'success'">
+                            <tr>
+                                <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
+                                <td x-text="q.username"></td>
+                                <td><a href="#" class="solved-count" @click.prevent="showDialog(q)" x-text="q.solved"></a></td>
+                                <td x-text="q.submissions"></td>
+                                <td><span class="status" :title="'OK (' + q.duration.toFixed(2) + 's)'" x-text="'OK (' + q.duration.toFixed(2) + 's)'"></span></td>
+                                <td>
                                     <button type="button" class="retry-btn" @click="retryQuery(q.id)">Retry</button>
                                     <button type="button" class="remove-btn" @click="removeQuery(q.id)">Remove</button>
-                                </span>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
+                                </td>
+                            </tr>
+                        </template>
+                        <template x-if="q.status === 'error'">
+                            <tr>
+                                <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
+                                <td x-text="q.username"></td>
+                                <td colspan="3">
+                                    <a href="#" class="status error" @click.prevent="document.getElementById('dialog-error-' + q.id).showModal()" x-text="'ERROR: ' + q.error"></a>
+                                </td>
+                                <td>
+                                    <button type="button" class="retry-btn" @click="retryQuery(q.id)">Retry</button>
+                                    <button type="button" class="remove-btn" @click="removeQuery(q.id)">Remove</button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </template>
             </table>
         </div>
 
@@ -261,6 +288,15 @@
                 <div class="problems-list" x-text="q.solvedList?.sort().join(', ') || ''"></div>
                 <div class="dialog-actions">
                     <button type="button" class="primary" @click="closeDialog(q.id)">Close</button>
+                </div>
+            </dialog>
+        </template>
+        <template x-for="q in queries" :key="'err-' + q.id">
+            <dialog :id="'dialog-error-' + q.id">
+                <h3>Error — <span x-text="crawlers[q.crawler]?.title || q.crawler"></span> / <span x-text="q.username"></span></h3>
+                <div class="problems-list" x-text="q.error || ''"></div>
+                <div class="dialog-actions">
+                    <button type="button" class="primary" @click="closeDialog('error-' + q.id)">Close</button>
                 </div>
             </dialog>
         </template>
