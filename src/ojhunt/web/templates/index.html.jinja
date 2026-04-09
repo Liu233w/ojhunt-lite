@@ -48,6 +48,8 @@
         .status.pending { color: #666; }
         .status.loading { color: #f5a623; }
         .status[title] { cursor: help; }
+        .result-row td:nth-child(1)[title] { cursor: help; }
+        .crawler-desc-mobile { display: none; }
         .result-row.success { background: #f0fff4; }
         .result-row.error { background: #ffeef0; }
         .result-row.loading { background: #fffde7; }
@@ -129,6 +131,9 @@
             /* Empty state row */
             tr:not(.result-row) td { padding: 0.5rem 0.75rem; }
 
+            /* Crawler description: show inline in card layout */
+            .crawler-desc-mobile { display: block; font-size: 0.75rem; color: #888; margin-top: 0.15rem; }
+
             /* Status: allow wrapping */
             .status { max-width: none; white-space: normal; }
 
@@ -137,6 +142,17 @@
         }
     </style>
 {% endblock %}
+
+{% macro crawler_td() %}
+<td :title="crawlers[q.crawler]?.description || null">
+    <div>
+        <span x-text="crawlers[q.crawler]?.title || q.crawler"></span>
+        <small class="crawler-desc-mobile"
+               x-show="crawlers[q.crawler]?.description"
+               x-text="crawlers[q.crawler]?.description"></small>
+    </div>
+</td>
+{% endmacro %}
 
 {% block content %}
     <div class="header">
@@ -213,7 +229,7 @@
                     <tbody :id="'row-' + q.id" :class="'result-row ' + q.status">
                         <template x-if="q.status === 'pending'">
                             <tr>
-                                <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
+                                {{ crawler_td() }}
                                 <td x-text="q.username"></td>
                                 <td>-</td>
                                 <td>-</td>
@@ -226,7 +242,7 @@
                         </template>
                         <template x-if="q.status === 'loading'">
                             <tr>
-                                <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
+                                {{ crawler_td() }}
                                 <td x-text="q.username"></td>
                                 <td><span class="loading-spinner">Loading...</span></td>
                                 <td></td>
@@ -238,7 +254,7 @@
                         </template>
                         <template x-if="q.status === 'success'">
                             <tr>
-                                <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
+                                {{ crawler_td() }}
                                 <td x-text="q.username"></td>
                                 <td><a href="#" class="solved-count" @click.prevent="showDialog(q)" x-text="q.solved"></a></td>
                                 <td x-text="q.submissions"></td>
@@ -251,7 +267,7 @@
                         </template>
                         <template x-if="q.status === 'error'">
                             <tr>
-                                <td x-text="crawlers[q.crawler]?.title || q.crawler"></td>
+                                {{ crawler_td() }}
                                 <td x-text="q.username"></td>
                                 <td colspan="3">
                                     <a href="#" class="status error" @click.prevent="document.getElementById('dialog-error-' + q.id).showModal()" x-text="'ERROR: ' + q.error"></a>
