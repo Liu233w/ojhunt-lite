@@ -89,7 +89,10 @@ def find_user(con: sqlite3.Connection, username: str) -> List[dict]:
         "SELECT id, username FROM users WHERE LOWER(username) = ?",
         (lower,),
     ).fetchall()
-    return [{"user_id": user_id, "abp_username": abp_username} for user_id, abp_username in rows]
+    return [
+        {"user_id": user_id, "abp_username": abp_username}
+        for user_id, abp_username in rows
+    ]
 
 
 def get_iana_timezone(con: sqlite3.Connection, user_id: int) -> str:
