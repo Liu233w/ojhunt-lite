@@ -80,60 +80,16 @@ def _day_key_from_utc(utc_dt_str: str, iana_tz: str) -> str:
 
 
 def find_user(con: sqlite3.Connection, username: str) -> List[dict]:
-    """Find matching users by main_username or ABP username (case-insensitive).
+    """Find matching users by ABP username (case-insensitive).
 
-    Returns list of {user_id, main_username, abp_username, match_type} dicts.
+    Returns list of {user_id, abp_username} dicts.
     """
-    matches = []
     lower = username.lower()
-
-    # 1. Match by main_username in query_histories
-    rows = con.execute(
-        """
-        SELECT DISTINCT qh.user_id, qh.main_username, u.username
-        FROM query_histories qh
-        LEFT JOIN users u ON u.id = qh.user_id
-        WHERE LOWER(qh.main_username) = ?
-        """,
-        (lower,),
-    ).fetchall()
-    for user_id, main_username, abp_username in rows:
-        matches.append(
-            {
-                "user_id": user_id,
-                "main_username": main_username,
-                "abp_username": abp_username,
-                "match_type": "main_username",
-            }
-        )
-
-    # 2. Match by ABP username (if not already found)
-    found_ids = {m["user_id"] for m in matches}
     rows = con.execute(
         "SELECT id, username FROM users WHERE LOWER(username) = ?",
         (lower,),
     ).fetchall()
-    for user_id, abp_username in rows:
-        if user_id not in found_ids:
-            row = con.execute(
-                """
-                SELECT main_username FROM query_histories
-                WHERE user_id = ? AND main_username <> ''
-                ORDER BY creation_time DESC LIMIT 1
-                """,
-                (user_id,),
-            ).fetchone()
-            main_username = row[0] if row else abp_username
-            matches.append(
-                {
-                    "user_id": user_id,
-                    "main_username": main_username,
-                    "abp_username": abp_username,
-                    "match_type": "abp_username",
-                }
-            )
-
-    return matches
+    return [{"user_id": user_id, "abp_username": abp_username} for user_id, abp_username in rows]
 
 
 def get_iana_timezone(con: sqlite3.Connection, user_id: int) -> str:
@@ -297,12 +253,20 @@ def export_user_pdf(username: str) -> bytes:
 
         match = matches[0]
         user_id = match["user_id"]
-        main_username = match["main_username"] or match["abp_username"] or username
+        abp_username = match["abp_username"]
+
+        row = con.execute(
+            "SELECT main_username FROM query_histories"
+            " WHERE user_id = ? AND main_username <> ''"
+            " ORDER BY creation_time DESC LIMIT 1",
+            (user_id,),
+        ).fetchone()
+        display_username = (row[0] if row else None) or abp_username or username
 
         iana_tz = get_iana_timezone(con, user_id)
-        settings = build_settings(con, user_id, main_username)
-        history = build_history(con, user_id, iana_tz, main_username)
-        snapshot = build_snapshot(con, user_id, main_username, iana_tz)
+        settings = build_settings(con, user_id, display_username)
+        history = build_history(con, user_id, iana_tz, display_username)
+        snapshot = build_snapshot(con, user_id, display_username, iana_tz)
     finally:
         con.close()
 
