@@ -120,7 +120,7 @@ def test_upload_pdf_restores_queries_when_table_empty(
             "tourist", timeout=5000
         )
         # A codeforces row should appear
-        row = page.locator("tr.result-row").filter(has_text="CodeForces")
+        row = page.locator("tbody.result-row").filter(has_text="CodeForces")
         expect(row).to_be_visible(timeout=5000)
         # Date indicator should be shown
         expect(page.locator(".report-restore .prev-date")).to_be_visible(timeout=5000)
@@ -141,7 +141,7 @@ def test_upload_pdf_shows_info_when_queries_exist(page: Page, context: BrowserCo
         page.fill("input[placeholder='Username']", "different_user")
         page.click('button:has-text("Add")')
         expect(
-            page.locator("tr.result-row").filter(has_text="different_user")
+            page.locator("tbody.result-row").filter(has_text="different_user")
         ).to_be_visible(timeout=5000)
 
         # Now upload the PDF — dismiss the confirm dialog (don't refresh)
@@ -151,7 +151,7 @@ def test_upload_pdf_shows_info_when_queries_exist(page: Page, context: BrowserCo
 
         # Original query should still be there, not replaced
         expect(
-            page.locator("tr.result-row").filter(has_text="different_user")
+            page.locator("tbody.result-row").filter(has_text="different_user")
         ).to_be_visible()
     finally:
         os.unlink(pdf_path)
@@ -188,7 +188,7 @@ def test_download_report_updates_date_indicator(page: Page, context: BrowserCont
     page.fill("input[placeholder='Username']", "tourist")
     page.click('button:has-text("Add")')
     page.click('button:has-text("Query All")')
-    row = page.locator("tr.result-row").filter(has_text="CodeForces")
+    row = page.locator("tbody.result-row").filter(has_text="CodeForces")
     expect(row).to_have_class("result-row success", timeout=30000)
 
     # Download report and intercept the download
@@ -215,7 +215,7 @@ def test_download_then_upload_shows_date_and_merges(
     page.fill("input[placeholder='Username']", "tourist")
     page.click('button:has-text("Add")')
     page.click('button:has-text("Query All")')
-    row = page.locator("tr.result-row").filter(has_text="CodeForces")
+    row = page.locator("tbody.result-row").filter(has_text="CodeForces")
     expect(row).to_have_class("result-row success", timeout=30000)
 
     # Download report — download.path() is already on disk, use it directly
@@ -233,7 +233,7 @@ def test_download_then_upload_shows_date_and_merges(
         date_text, timeout=5000
     )
     # Queries should be restored
-    expect(page.locator("tr.result-row").filter(has_text="CodeForces")).to_be_visible(
+    expect(page.locator("tbody.result-row").filter(has_text="CodeForces")).to_be_visible(
         timeout=5000
     )
 
@@ -249,13 +249,13 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
     # Upload the historical PDF (3 entries from 2020)
     page.set_input_files("input[type='file']", historical_pdf_path)
     expect(page.locator(".report-restore .prev-date")).to_be_visible(timeout=5000)
-    expect(page.locator("tr.result-row").filter(has_text="CodeForces")).to_be_visible(
+    expect(page.locator("tbody.result-row").filter(has_text="CodeForces")).to_be_visible(
         timeout=5000
     )
 
     # Query and download a new report (today's date ~2026)
     page.click('button:has-text("Query All")')
-    expect(page.locator("tr.result-row").filter(has_text="CodeForces")).to_have_class(
+    expect(page.locator("tbody.result-row").filter(has_text="CodeForces")).to_have_class(
         "result-row success", timeout=30000
     )
     with page.expect_download() as dl_info:
