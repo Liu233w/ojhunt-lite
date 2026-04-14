@@ -79,7 +79,9 @@ uv add ojhunt
 ```python
 from ojhunt.crawlers.codeforces import query
 from ojhunt.crawlers import query_sync
+```
 
+```python notest
 result = query_sync(query, "tourist")
 print(result.solved, result.submissions, result.solved_list)
 ```
@@ -90,7 +92,9 @@ print(result.solved, result.submissions, result.solved_list)
 import asyncio, aiohttp
 from ojhunt.crawlers.codeforces import query
 from ojhunt.crawlers import CrawlerResult
+```
 
+```python notest
 async def main():
     async with aiohttp.ClientSession() as session:
         result = CrawlerResult.from_dict(await query(session, "tourist"))

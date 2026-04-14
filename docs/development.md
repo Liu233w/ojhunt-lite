@@ -15,7 +15,7 @@ uv sync
 
 ### API-based crawler template
 
-```python
+```python notest
 """BSD-2 License header..."""
 import aiohttp
 from typing import Dict, List, Union, Optional
@@ -50,7 +50,7 @@ async def query(session: aiohttp.ClientSession, username: str, password: Optiona
 
 ### HTML-scraping crawler template
 
-```python
+```python notest
 """BSD-2 License header..."""
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
@@ -91,7 +91,7 @@ async def query(session: aiohttp.ClientSession, username: str, password: Optiona
 
 ### Login-required crawler template (Shared Account)
 
-```python
+```python notest
 __crawler_meta__ = {
     'title': 'Your OJ',
     'url': 'https://your-oj.com/',
