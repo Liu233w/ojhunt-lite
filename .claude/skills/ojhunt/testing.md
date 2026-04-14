@@ -84,6 +84,14 @@ client = TestClient(app, follow_redirects=False)
 files={"field": ("name.pdf", bytes_content, "application/pdf")}
 ```
 
+## Markdown doc tests
+
+Python fenced blocks in `README.md` and `docs/` are collected by `pytest-markdown-docs`
+and run as part of the standard CI suite (`not network and not playwright`).
+
+- Use `python notest` in the fence header to exclude a block (network calls, incomplete templates)
+- `notest` is the correct keyword — NOT `skip` (which is silently ignored)
+
 ## Login-required crawler testing (CLI)
 
 For `shared_account` crawlers, tests read credentials from `.env` automatically — create

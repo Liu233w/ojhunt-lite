@@ -31,6 +31,8 @@ Use `Dict`, `List`, `Union` from the `typing` module — not the `dict[str, ...]
 Never specify version numbers when adding dependencies. Use `uv add <package>` and let uv
 resolve. This applies to all packages including FastAPI, uvicorn, etc.
 
+`uv add` writes to `uv.lock` — use `dangerouslyDisableSandbox: true`, same as git write operations.
+
 ## Parallel execution
 
 When editing multiple crawlers or running independent tasks, spawn sub-agents to work in
