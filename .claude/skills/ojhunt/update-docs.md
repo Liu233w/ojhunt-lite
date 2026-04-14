@@ -1,5 +1,9 @@
 # Where to update documentation
 
+**Single source of truth:** Each piece of knowledge lives in exactly one layer. When adding
+documentation, point to the authoritative source — don't inline definitions that already exist
+elsewhere. Duplication causes drift.
+
 ## README.md
 Entry-level documentation: setup, usage examples, CLI flags, supported OJs.
 Update when something operational changes (a command, a new crawler, a setup step).
@@ -24,6 +28,8 @@ To add a new workflow:
 ## Commands (`.claude/commands/`)
 Project-level slash commands that override global ones.
 Create a command when the global equivalent needs project-specific context injected.
+
+`/update-learnings` — captures session learnings and routes them to the right doc layer.
 
 ## `docs/adr/`
 Significant architectural decisions and their rationale. See `commit.md` for when a decision
