@@ -14,6 +14,7 @@ Read the relevant file for your task:
 - **[commit.md](commit.md)** — Committing, git operations, and ADRs. Use before any commit or when considering whether a decision warrants an ADR.
 - **[python.md](python.md)** — Python code style, imports, dependencies. Use when writing Python code in this project.
 - **[update-docs.md](update-docs.md)** — Where to update documentation and agent workflows. Use when adding or updating any documentation.
+- **[hooks.md](hooks.md)** — Project Claude Code hooks. Use when adding a new enforcement rule or side-effect automation.
 
 ---
 
