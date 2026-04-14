@@ -6,7 +6,7 @@ import os
 import tempfile
 
 import pytest
-from playwright.sync_api import BrowserContext, Page, expect
+from playwright.sync_api import BrowserContext, Page, Route, expect
 
 from ojhunt.web.pdf import (
     HistoryEntry,
@@ -19,6 +19,13 @@ from ojhunt.web.pdf import (
 
 BASE_URL = "http://localhost:8080"
 _TMPDIR = os.environ.get("TMPDIR", tempfile.gettempdir())
+_MOCK_CODEFORCES_RESPONSE = json.dumps({
+    "crawler": "codeforces",
+    "username": "tourist",
+    "error": False,
+    "data": {"solved": 2000, "submissions": 5000, "solvedList": ["1A", "1B"], "duration": 0.1},
+    "message": None,
+})
 
 
 # ---------------------------------------------------------------------------
@@ -96,6 +103,21 @@ def _write_temp_pdf(pdf_bytes: bytes) -> str:
 def _clear_storage(page: Page) -> None:
     page.evaluate("localStorage.clear()")
     page.reload()
+
+
+@pytest.fixture
+def mock_codeforces_api(page: Page):
+    """Intercept codeforces/tourist API calls and return a mock success response.
+
+    PDF workflow tests are testing PDF history-merging logic, not the crawler.
+    Mocking avoids rate-limit failures from multiple consecutive real API calls.
+    """
+    def handle(route: Route):
+        route.fulfill(status=200, content_type="application/json", body=_MOCK_CODEFORCES_RESPONSE)
+
+    page.route("**/api/crawlers/codeforces/tourist", handle)
+    yield
+    page.unroute("**/api/crawlers/codeforces/tourist", handle)
 
 
 # ---------------------------------------------------------------------------
@@ -178,7 +200,7 @@ def test_upload_invalid_file_shows_error(page: Page):
 
 
 @pytest.mark.playwright
-def test_download_report_updates_date_indicator(page: Page, context: BrowserContext):
+def test_download_report_updates_date_indicator(page: Page, context: BrowserContext, mock_codeforces_api):
     """After querying, downloading a report updates the date indicator in the UI."""
     page.goto(BASE_URL)
     _clear_storage(page)
@@ -204,7 +226,7 @@ def test_download_report_updates_date_indicator(page: Page, context: BrowserCont
 
 @pytest.mark.playwright
 def test_download_then_upload_shows_date_and_merges(
-    page: Page, context: BrowserContext
+    page: Page, context: BrowserContext, mock_codeforces_api
 ):
     """Download a report, re-upload it — date indicator matches and history is preserved."""
     page.goto(BASE_URL)
@@ -233,14 +255,14 @@ def test_download_then_upload_shows_date_and_merges(
         date_text, timeout=5000
     )
     # Queries should be restored
-    expect(page.locator("tbody.result-row").filter(has_text="CodeForces")).to_be_visible(
-        timeout=5000
-    )
+    expect(
+        page.locator("tbody.result-row").filter(has_text="CodeForces")
+    ).to_be_visible(timeout=5000)
 
 
 @pytest.mark.playwright
 def test_upload_historical_pdf_entries_preserved_in_new_download(
-    page: Page, context: BrowserContext, historical_pdf_path: str
+    page: Page, context: BrowserContext, historical_pdf_path: str, mock_codeforces_api
 ):
     """Old history entries (2020 dates) survive the full upload → query → download cycle."""
     page.goto(BASE_URL)
@@ -249,15 +271,15 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
     # Upload the historical PDF (3 entries from 2020)
     page.set_input_files("input[type='file']", historical_pdf_path)
     expect(page.locator(".report-restore .prev-date")).to_be_visible(timeout=5000)
-    expect(page.locator("tbody.result-row").filter(has_text="CodeForces")).to_be_visible(
-        timeout=5000
-    )
+    expect(
+        page.locator("tbody.result-row").filter(has_text="CodeForces")
+    ).to_be_visible(timeout=5000)
 
     # Query and download a new report (today's date ~2026)
     page.click('button:has-text("Query All")')
-    expect(page.locator("tbody.result-row").filter(has_text="CodeForces")).to_have_class(
-        "result-row success", timeout=30000
-    )
+    expect(
+        page.locator("tbody.result-row").filter(has_text="CodeForces")
+    ).to_have_class("result-row success", timeout=30000)
     with page.expect_download() as dl_info:
         page.click('button:has-text("Download Report")')
     download = dl_info.value

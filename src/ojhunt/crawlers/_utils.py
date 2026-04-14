@@ -33,7 +33,7 @@ from typing import Awaitable, Callable, Dict, List, Optional
 
 import aiohttp
 
-_DB_PATH = Path(__file__).parent.parent / "problem_labels.db"
+_DB_PATH = Path("problem_labels.db")
 
 _CONCURRENT_REQUESTS = 20
 
