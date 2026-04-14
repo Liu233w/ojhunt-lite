@@ -4,7 +4,6 @@ A lightweight async Python tool for querying Online Judge (OJ) statistics across
 
 - Async/concurrent requests via `aiohttp`
 - CLI and web interface
-- Self-contained crawlers — each file can be used independently
 - BSD-2 Licensed
 
 ## CLI
@@ -75,19 +74,33 @@ uv add ojhunt
 # or: pip install ojhunt
 ```
 
-Then import crawlers directly:
+**Sync (simplest):**
+
+```python
+from ojhunt.crawlers.codeforces import query
+from ojhunt.crawlers import query_sync
+
+result = query_sync(query, "tourist")
+print(result.solved, result.submissions, result.solved_list)
+```
+
+**Async (when you already have an event loop):**
 
 ```python
 import asyncio, aiohttp
 from ojhunt.crawlers.codeforces import query
+from ojhunt.crawlers import CrawlerResult
 
 async def main():
     async with aiohttp.ClientSession() as session:
-        result = await query(session, "tourist")
-        print(result["solved"], result["submissions"], result["solved_list"])
+        result = CrawlerResult.from_dict(await query(session, "tourist"))
+        print(result.solved, result.submissions, result.solved_list)
 
 asyncio.run(main())
 ```
+
+`query_sync` and `CrawlerResult` work with any crawler in `ojhunt.crawlers.*`.
+Some crawlers (`nit`, `uva`) use a persistent label cache and require the full package — they cannot be used as standalone copied files.
 
 ## Supported Platforms
 
