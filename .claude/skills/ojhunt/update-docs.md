@@ -21,6 +21,9 @@ Workflow documentation: how to implement crawlers, how to commit, how to write t
 the conventions behind those workflows. Update when the *process* of doing something changes
 in this project — not when the code changes.
 
+**Only document what's non-obvious.** If Claude can derive it by reading the files, or if
+it's enforced elsewhere (hook, test, linter), don't write it. Redundant entries create drift.
+
 To add a new workflow:
 1. Create `.claude/skills/ojhunt/<topic>.md`
 2. Add a link + one-line trigger description to `SKILL.md`
@@ -49,3 +52,4 @@ list in `docs/development.md`.
 - Project-level command override → `.claude/commands/`
 - Significant architectural decision (multiple approaches considered, choice non-obvious from code) → `docs/adr/`
 - Small tactical change → commit message intent (no doc needed)
+- "Never do X" or "always do Y after Z" → **hook first** (see `hooks.md`); once hook-enforced, do NOT also add a skill entry — the hook is the enforcement, a skill note just creates drift
