@@ -243,3 +243,4 @@ See those files to understand *why* things are shaped the way they are before pr
 - [ADR 0004](./adr/0004-history-pdf-backup.md) — History tracking via PDF backup/restore (no database)
 - [ADR 0005](./adr/0005-localstorage-watch-config-only.md) — localStorage sync via $watch (config-only persistence)
 - [ADR 0006](./adr/0006-legacy-lookup-abp-username-only.md) — legacy lookup restricted to ABP username only
+- [ADR 0007](./adr/0007-label-cache-is-load-bearing.md) — label cache in `nit`/`uva` is load-bearing; those crawlers require the full package

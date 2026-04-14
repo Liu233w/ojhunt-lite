@@ -2,19 +2,72 @@
 OJHunt Lite Crawlers Package
 
 This package contains async crawlers for various Online Judge platforms.
-Each crawler is self-contained and follows a consistent interface.
-All crawlers are async functions that can be awaited.
+Each crawler follows a consistent interface: an async query function that
+returns a dict with keys solved, submissions, solved_list.
 """
 
+import asyncio
 import importlib
 import pkgutil
+from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import Dict
+from typing import Any, Awaitable, Callable, Dict, List, Optional
+
+import aiohttp
 
 from ojhunt.core.models import CrawlerInfo, CrawlerMeta, LoginType
 
-__all__ = ["discover_crawlers"]
+
+@dataclass
+class CrawlerResult:
+    """Typed wrapper for the dict returned by crawler query functions."""
+
+    solved: int
+    submissions: int
+    solved_list: Optional[List[str]] = None
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "CrawlerResult":
+        return cls(
+            solved=d["solved"],
+            submissions=d["submissions"],
+            solved_list=d.get("solved_list"),
+        )
+
+
+def query_sync(
+    query_fn: Callable[..., Awaitable[dict]],
+    username: str,
+    **kwargs: Any,
+) -> CrawlerResult:
+    """
+    Synchronous wrapper around an async crawler query function.
+
+    Args:
+        query_fn: The crawler's async query function (e.g. codeforces.query)
+        username: Username to query
+        **kwargs: Additional arguments forwarded to the query function
+                  (e.g. password, login_user, login_password for login-required crawlers)
+
+    Returns:
+        CrawlerResult with solved, submissions, solved_list fields
+
+    Example:
+        from ojhunt.crawlers.codeforces import query
+        from ojhunt.crawlers import query_sync
+        result = query_sync(query, "tourist")
+        print(result.solved, result.submissions)
+    """
+
+    async def _run() -> CrawlerResult:
+        async with aiohttp.ClientSession() as session:
+            return CrawlerResult.from_dict(await query_fn(session, username, **kwargs))
+
+    return asyncio.run(_run())
+
+
+__all__ = ["CrawlerResult", "discover_crawlers", "query_sync"]
 
 
 @cache
