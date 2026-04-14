@@ -6,7 +6,7 @@ import os
 import tempfile
 
 import pytest
-from playwright.sync_api import BrowserContext, Page, expect
+from playwright.sync_api import BrowserContext, Page, Route, expect
 
 from ojhunt.web.pdf import (
     HistoryEntry,
@@ -19,6 +19,13 @@ from ojhunt.web.pdf import (
 
 BASE_URL = "http://localhost:8080"
 _TMPDIR = os.environ.get("TMPDIR", tempfile.gettempdir())
+_MOCK_CODEFORCES_RESPONSE = json.dumps({
+    "crawler": "codeforces",
+    "username": "tourist",
+    "error": False,
+    "data": {"solved": 2000, "submissions": 5000, "solvedList": ["1A", "1B"], "duration": 0.1},
+    "message": None,
+})
 
 
 # ---------------------------------------------------------------------------
@@ -96,6 +103,21 @@ def _write_temp_pdf(pdf_bytes: bytes) -> str:
 def _clear_storage(page: Page) -> None:
     page.evaluate("localStorage.clear()")
     page.reload()
+
+
+@pytest.fixture
+def mock_codeforces_api(page: Page):
+    """Intercept codeforces/tourist API calls and return a mock success response.
+
+    PDF workflow tests are testing PDF history-merging logic, not the crawler.
+    Mocking avoids rate-limit failures from multiple consecutive real API calls.
+    """
+    def handle(route: Route):
+        route.fulfill(status=200, content_type="application/json", body=_MOCK_CODEFORCES_RESPONSE)
+
+    page.route("**/api/crawlers/codeforces/tourist", handle)
+    yield
+    page.unroute("**/api/crawlers/codeforces/tourist", handle)
 
 
 # ---------------------------------------------------------------------------
@@ -178,7 +200,7 @@ def test_upload_invalid_file_shows_error(page: Page):
 
 
 @pytest.mark.playwright
-def test_download_report_updates_date_indicator(page: Page, context: BrowserContext):
+def test_download_report_updates_date_indicator(page: Page, context: BrowserContext, mock_codeforces_api):
     """After querying, downloading a report updates the date indicator in the UI."""
     page.goto(BASE_URL)
     _clear_storage(page)
@@ -204,7 +226,7 @@ def test_download_report_updates_date_indicator(page: Page, context: BrowserCont
 
 @pytest.mark.playwright
 def test_download_then_upload_shows_date_and_merges(
-    page: Page, context: BrowserContext
+    page: Page, context: BrowserContext, mock_codeforces_api
 ):
     """Download a report, re-upload it — date indicator matches and history is preserved."""
     page.goto(BASE_URL)
@@ -240,7 +262,7 @@ def test_download_then_upload_shows_date_and_merges(
 
 @pytest.mark.playwright
 def test_upload_historical_pdf_entries_preserved_in_new_download(
-    page: Page, context: BrowserContext, historical_pdf_path: str
+    page: Page, context: BrowserContext, historical_pdf_path: str, mock_codeforces_api
 ):
     """Old history entries (2020 dates) survive the full upload → query → download cycle."""
     page.goto(BASE_URL)
