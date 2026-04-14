@@ -25,3 +25,7 @@ skill files are loaded into every prompt.
 ## Step 4: Apply with approval
 
 Ask the user which changes to apply. Only edit the files they approve.
+
+**Important:** Documentation updates (skill files, README, docs/) are the primary
+output of this command — always propose at least one. Memory updates are optional
+and secondary; never substitute memory for documentation.
