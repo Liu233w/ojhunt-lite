@@ -6,37 +6,6 @@
 uv sync
 ```
 
-## Running Tests
-
-```bash
-# Run all tests
-uv run pytest
-
-# Run specific crawler tests
-uv run pytest tests/crawlers/codeforces_test.py
-
-# Exclude network-dependent tests and playwright (for CI)
-uv run pytest -m "not network and not playwright"
-
-# Run only network tests
-uv run pytest -m network
-
-# Run playwright/e2e tests (requires running web server)
-uv run pytest -m playwright tests/e2e/
-```
-
-### Testing Login-Required Crawlers
-
-Set environment variables before running tests:
-
-```bash
-export LOGIN_USERNAME__VJUDGE=your_username
-export LOGIN_PASSWORD__VJUDGE=your_password
-uv run pytest tests/crawlers/vjudge_test.py
-```
-
-Tests are automatically skipped if required environment variables are not set.
-
 ## Adding a New Crawler
 
 1. Create `src/ojhunt/crawlers/your_crawler.py` with a BSD-2 license header
@@ -146,7 +115,29 @@ async def query(
     # ... use actual_user and actual_pass for authentication
 ```
 
-See [`src/ojhunt/crawlers/vjudge.py`](../src/ojhunt/crawlers/vjudge.py) and [`src/ojhunt/crawlers/cses.py`](../src/ojhunt/crawlers/cses.py) for complete reference implementations.
+See [`src/ojhunt/crawlers/vjudge.py`](../src/ojhunt/crawlers/vjudge.py) and
+[`src/ojhunt/crawlers/cses.py`](../src/ojhunt/crawlers/cses.py) for complete reference
+implementations.
+
+### `__crawler_meta__` fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `title` | Yes | Display name |
+| `url` | Yes | Homepage URL |
+| `test_username` | Yes | Used for tests and `/crawlers` availability checks |
+| `description` | No | Shown in web UI (default: `""`) |
+| `cli_description` | No | Shown in `--list` CLI output instead of `description`. Use when CLI usage differs significantly (e.g., login instructions, ID vs. username). |
+| `login_type` | No | `"shared_account"` or `"own_account"`; omit if no login required |
+| `is_aggregator` | No | Whether this crawler aggregates problems from other platforms (e.g. VJudge). Aggregator `solved_list` entries are already prefixed with the source platform, so `/api/merge` skips re-prefixing. |
+
+### Login types
+
+**Own Account (`own_account`)** — the platform only shows a user's own stats when logged in.
+The crawler logs in *as the target user*. CLI: `user:pass@crawler`.
+
+**Shared Account (`shared_account`)** — any authenticated user can view any user's stats.
+A single shared account queries arbitrary targets. CLI: `-l mylogin:mypass@crawler -- target@crawler`.
 
 ## Return Format
 
@@ -160,10 +151,18 @@ All crawlers return:
 }
 ```
 
+## Test File Locations
+
+| Type | Location | Convention | Requires server |
+|------|----------|-----------|-----------------|
+| Crawler unit tests | `tests/crawlers/<name>_test.py` | `*_test.py` | No |
+| Web unit tests | `tests/web/<module>_test.py` | `*_test.py` | No |
+| Web e2e tests | `tests/e2e/test_*.py` | `test_*.py` | Yes (`localhost:8080`) |
+
 ## System Fonts for PDF Generation
 
 PDF generation uses Unicode fonts to support non-latin usernames (CJK, Arabic, Hebrew, etc.).
-The font is discovered at startup from the host system — no font files are bundled with the project.
+The font is discovered at startup from the host system — no font files are bundled.
 
 **Linux / Docker** — install both packages:
 
@@ -178,22 +177,18 @@ For local Linux development, install the packages once and restart the server.
 extra steps needed.
 
 **Neither font found** — the PDF generator falls back to Helvetica (latin-1 only). Non-latin
-characters will raise an error. Check that one of the above font packages is installed.
+characters will raise an error.
 
 ## Deploying legacy.db
 
 The `/pdf/legacy` page reads `legacy.db` from the current working directory at runtime.
 The app works normally if the file is absent — the export form is simply disabled.
 
-**Local**: place `legacy.db` in the project root (the same directory where you run the server
-or `export_legacy.py`).
+**Local**: place `legacy.db` in the project root.
 
-**Docker / Podman**: mount the file at `/app/legacy.db` using an **absolute path**
-(relative paths create a named volume instead of a bind mount):
+**Docker / Podman**: mount the file at `/app/legacy.db` using an **absolute path**:
 ```bash
 docker run -v $(pwd)/legacy.db:/app/legacy.db:ro <image>
-# or with podman:
-podman run -v $(pwd)/legacy.db:/app/legacy.db:ro <image>
 ```
 
 The `legacy.db` file is gitignored — it contains personal data and must never be committed.
@@ -211,31 +206,9 @@ uv run python scripts/generate_preview_pdf.py
 # Writes preview_001_entries.pdf … preview_100_entries.pdf in scripts/previews/ (gitignored)
 ```
 
-All history entries are dated from 2020, so you can upload a preview PDF to the web UI
-and test the "merge with existing history" feature against today's date.
-
-## Test File Locations
-
-| Type | Location | Convention | Requires server |
-|------|----------|-----------|-----------------|
-| Crawler unit tests | `tests/crawlers/<name>_test.py` | `*_test.py` | No |
-| Web unit tests | `tests/web/<module>_test.py` | `*_test.py` | No |
-| Web e2e tests | `tests/e2e/test_*.py` | `test_*.py` | Yes (`localhost:8080`) |
-
-Do not add unit tests to `tests/e2e/` — that folder is exclusively for Playwright tests.
-
-## Linting
-
-```bash
-uv run ruff check .
-```
-
-Run after every edit.
-
 ## Architecture Decisions
 
 Significant architectural decisions and their rationale are recorded in [`docs/adr/`](./adr/).
-See those files to understand *why* things are shaped the way they are before proposing changes.
 
 - [ADR 0001](./adr/0001-enrich-query-response-schema.md) — Enrich query response schema and add `/api/merge`
 - [ADR 0002](./adr/0002-agent-support-via-llmstxt.md) — Agent support via `/llms.txt`

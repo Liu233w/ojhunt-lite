@@ -1,6 +1,8 @@
 # Crawlers
 
-> **For full human-facing documentation** (crawler return format, deployment, API schema, testing setup), read `docs/development.md` first. This file contains agent-specific implementation guidance that complements it.
+For `__crawler_meta__` field reference and login type concepts, see **`docs/development.md`**.
+For test assertion conventions, see **[testing.md](testing.md)**.
+For ADR guidance on significant design decisions, see **[commit.md](commit.md)**.
 
 ## Implementing a New Crawler
 
@@ -34,11 +36,12 @@ Try common patterns to find a known user's profile page:
 /user/{numeric_id}
 ```
 
-If profiles require numeric IDs (no username in URL), see the "Numeric User ID Handling" section below.
+If profiles require numeric IDs (no username in URL), see "Numeric User ID Handling" below.
 
 ### Step 3: Identify the Data Source
 
-Inspect network traffic (browser devtools Network tab, or Playwright) while loading a profile page.
+Inspect network traffic (browser devtools Network tab, or Playwright) while loading a
+profile page.
 
 **API-based (preferred):** Look for XHR/Fetch requests returning JSON:
 ```
@@ -48,7 +51,8 @@ Inspect network traffic (browser devtools Network tab, or Playwright) while load
 /graphql (POST with query)
 ```
 
-Test the API directly without a browser to confirm it works with plain HTTP. You can use `page.evaluate()` to make `fetch()` calls from within Playwright if needed:
+Test the API directly without a browser to confirm it works with plain HTTP. You can use
+`page.evaluate()` to make `fetch()` calls from within Playwright if needed:
 ```python
 result = page.evaluate("""
 async () => {
@@ -58,15 +62,17 @@ async () => {
 """)
 ```
 
-**HTML scraping (fallback):** If no JSON API exists, parse the HTML profile page with selectolax (see "HTML Parsing" section below).
+**HTML scraping (fallback):** If no JSON API exists, parse the HTML profile page with
+selectolax (see "HTML Parsing" below).
 
-**Note:** React/Vue SPAs load data via JS. Only the API calls in the Network tab will work — you cannot parse the initial HTML for SPA sites.
+**Note:** React/Vue SPAs load data via JS. Only the API calls in the Network tab will work —
+you cannot parse the initial HTML for SPA sites.
 
 ### Step 4: Numeric User ID Handling
 
 If the site uses numeric IDs instead of usernames:
 
-1. **Try username→ID lookup API first.** Inspect network traffic when searching on the site. Look for endpoints like:
+1. **Try username→ID lookup API first.** Inspect network traffic when searching on the site:
    ```
    /api/user/search?keyword={username}
    /api/search?q={username}&type=user
@@ -82,7 +88,7 @@ If the site uses numeric IDs instead of usernames:
 
 ### Step 5: Crawler Implementation
 
-Use the appropriate template from the "Crawler Templates" section below.
+Use the appropriate template from "Crawler Templates" below.
 
 ### Step 6: Verification Checklist
 
@@ -113,10 +119,14 @@ Site accessible?
 
 ### Common Pitfalls
 
-- **WAF blocking aiohttp**: Cloudflare and Akamai block non-browser requests. If a site requires browser rendering, it's not feasible for this aiohttp-based project.
-- **SPA data**: React/Vue SPAs load data via JS. Only the API calls in the Network tab will work — you cannot parse the initial HTML.
-- **Wrong JSON keys**: Always verify API response structure with a real fetch (via Playwright or manual curl) before coding.
-- **Solved count vs solved list mismatch**: Some sites have uncategorized problems not in their problem lists. Add a comment in the test if `len(solved_list) < solved`.
+- **WAF blocking aiohttp**: Cloudflare and Akamai block non-browser requests. If a site
+  requires browser rendering, it's not feasible for this aiohttp-based project.
+- **SPA data**: React/Vue SPAs load data via JS. Only the API calls in the Network tab will
+  work — you cannot parse the initial HTML.
+- **Wrong JSON keys**: Always verify API response structure with a real fetch (via Playwright
+  or manual curl) before coding.
+- **Solved count vs solved list mismatch**: Some sites have uncategorized problems not in
+  their problem lists. Add a comment in the test if `len(solved_list) < solved`.
 
 ---
 
@@ -207,11 +217,12 @@ async def test_valid_user(session):
 
 Use `selectolax.lexbor.LexborHTMLParser`.
 
-Prefer CSS selectors over regex when extracting values from HTML structure. Use the `lexbor-contains` pseudo-class to find an element by its text content, then navigate to sibling/child elements for the value:
+Prefer CSS selectors over regex when extracting values from HTML structure. Use the
+`lexbor-contains` pseudo-class to find an element by text, then navigate to siblings/children:
 
 ```python
 # Find a <td> containing "Submission count", then get the next sibling <td>
-# Note: do NOT include a trailing colon in the text — lexbor parses it as CSS pseudo-class syntax
+# Note: do NOT include a trailing colon — lexbor parses it as CSS pseudo-class syntax
 count = doc.css_first('td:lexbor-contains("Submission count") + td').text(strip=True)
 
 # Check presence of text in a container
@@ -219,44 +230,44 @@ if doc.css_first('.content:lexbor-contains("Please login")'):
     ...
 ```
 
-Reserve `re` for strings that are not structured HTML — e.g. extracting a numeric ID from a URL (`/user/(\d+)`), or parsing a value embedded mid-sentence in a text node (`"Solved tasks: 150/400"`). See `archived_crawlers/fzu.py` for a reference example.
+Reserve `re` for strings that are not structured HTML — e.g. extracting a numeric ID from a
+URL (`/user/(\d+)`), or parsing a value embedded mid-sentence in a text node
+(`"Solved tasks: 150/400"`).
 
 ---
 
 ## License Header
 
 BSD-2 Clause license header (copy from existing crawler, use current year for new files).
-- **Only add license headers to files in `src/ojhunt/crawlers/` folder** - users can copy individual crawler files.
+- **Only add license headers to files in `src/ojhunt/crawlers/`** — users can copy individual crawler files.
 - **Do NOT add license headers** to CLI, web, or other internal code.
 
 ---
 
 ## Login-Required Crawlers
 
-There are two distinct types of login-required crawlers. Always identify which type before implementing.
+There are two distinct types. Always identify which type before implementing.
 
-**How to identify the type:** Visit the site as a guest and try to access another user's profile. If it's blocked (login wall on all profiles), it's Shared Account. If profiles are public for others but not for yourself, it's Own Account.
+**How to identify the type:** Visit the site as a guest and try to access another user's
+profile. If it's blocked (login wall on all profiles), it's Shared Account. If profiles are
+public for others but not yourself, it's Own Account.
 
 **Own Account (`own_account`) — Login to see your own data only:**
-- The platform only exposes a user's own stats when they are logged in.
-- The crawler must log in *as the target user* to retrieve their data.
+- The platform only exposes a user's own stats when logged in.
+- The crawler must log in *as the target user*.
 - `login_user` and `login_password` equal `username` and `password`.
-- CLI usage: `user:pass@crawler` (the `-l` flag is redundant/inapplicable).
-- Example platforms: QOJ, LightOJ, Jisuanke (if implemented).
+- CLI usage: `user:pass@crawler` (the `-l` flag is redundant).
 
 **Shared Account (`shared_account`) — Any account can query any user:**
-- The platform requires login, but once authenticated any user's stats are visible.
+- The platform requires login, but any authenticated user can see any user's stats.
 - A single shared account can query arbitrary target users.
 - `login_user`/`login_password` (from `-l` flag) may differ from `username`.
 - CLI usage: `-l mylogin:mypass@crawler -- target@crawler`.
-- Example platforms (implemented): CSES, VJudge.
-
-**Reference implementations:**
-- Shared Account: `src/ojhunt/crawlers/vjudge.py`, `src/ojhunt/crawlers/cses.py`
+- Example implementations: `src/ojhunt/crawlers/vjudge.py`, `src/ojhunt/crawlers/cses.py`
 
 **`CrawlerMeta` field mapping:**
-- `"login_type": "shared_account"` → Shared Account (supports `-l` flag; any account can query any user)
-- `"login_type": "own_account"` → Own Account (must log in as the target user)
+- `"login_type": "shared_account"` → Shared Account
+- `"login_type": "own_account"` → Own Account
 - key omitted → no login required
 
 ### Registration for Testing
@@ -264,7 +275,7 @@ There are two distinct types of login-required crawlers. Always identify which t
 If you need an account to test login behavior:
 1. Try email registration via Playwright
 2. Check for CAPTCHA / reCAPTCHA
-3. If CAPTCHA is solvable (image-based simple ones), solve it
+3. If CAPTCHA is solvable (simple image-based), solve it
 4. If CAPTCHA is unsolvable (reCAPTCHA v2/v3, hCaptcha), note this and skip
 5. Save credentials to `archived_crawlers/test_accounts.md`
 
@@ -272,29 +283,17 @@ If you need an account to test login behavior:
 
 ## SSL
 
-`ssl=False` is acceptable in crawler `session.get()` calls for sites with expired or self-signed certs **when no login is involved** — public stats queries have nothing sensitive in transit. Never bypass SSL for authenticated sessions (login crawlers, cookie-based auth).
-
----
-
-## Crawler Metadata Fields (`__crawler_meta__`)
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `title` | Yes | Display name |
-| `url` | Yes | Homepage URL |
-| `test_username` | Yes | Used for tests and `/crawlers` availability checks |
-| `description` | No | Shown in web UI (default: `""`) |
-| `cli_description` | No | Shown in `--list` CLI output instead of `description` when present. Use for crawlers where the CLI usage differs significantly (e.g., login instructions, ID vs. username). |
-| `login_type` | No | `"shared_account"` or `"own_account"`; omit if no login required |
-| `is_aggregator` | No | Whether this crawler aggregates problems from other platforms (e.g. VJudge, NIT). Aggregator solvedLists are already prefixed with the source platform, so `/api/merge` skips re-prefixing them. |
+`ssl=False` is acceptable in crawler `session.get()` calls for sites with expired or
+self-signed certs **when no login is involved** — public stats queries have nothing sensitive
+in transit. Never bypass SSL for authenticated sessions.
 
 ---
 
 ## Archived Crawlers
 
-Crawlers for dead sites or sites with unfixable issues are moved to `archived_crawlers/`. Do not list individual archived crawlers in documentation - point users to the folder instead.
+Crawlers for dead sites or sites with unfixable issues are moved to `archived_crawlers/`.
 
-**Important:**
-- `archived_crawlers/` does NOT have an `__init__.py` - it's for archival only, not a package
+- `archived_crawlers/` does NOT have an `__init__.py` — it's for archival only, not a package
 - Tests in `archived_crawlers/` are NOT run by pytest
-- Do not create stub crawlers that just raise exceptions - add them to `archived_crawlers/README.md` instead
+- Do not create stub crawlers that just raise exceptions — add them to `archived_crawlers/README.md`
+- Do not list individual archived crawlers in documentation — point users to the folder
