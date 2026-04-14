@@ -6,7 +6,7 @@ These types are used across CLI, web, and crawler modules.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Awaitable, Callable, List, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 import aiohttp
 
@@ -32,6 +32,23 @@ class LoginType(Enum):
 
 
 @dataclass
+class CrawlerResult:
+    """Typed result returned by crawler query functions."""
+
+    solved: int
+    submissions: int
+    solved_list: Optional[List[str]] = None
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "CrawlerResult":
+        return cls(
+            solved=d["solved"],
+            submissions=d["submissions"],
+            solved_list=d.get("solved_list"),
+        )
+
+
+@dataclass
 class CrawlerMeta:
     """Metadata for a crawler."""
 
@@ -50,7 +67,7 @@ class CrawlerInfo:
 
     name: str
     meta: CrawlerMeta
-    query: Callable[..., Awaitable[dict]]
+    query: Callable[..., Awaitable[CrawlerResult]]
 
 
 @dataclass
@@ -77,5 +94,7 @@ class NullCrawler(CrawlerInfo):
             query=self._null_query,
         )
 
-    async def _null_query(self, session: aiohttp.ClientSession, username: str) -> dict:
+    async def _null_query(
+        self, session: aiohttp.ClientSession, username: str
+    ) -> CrawlerResult:
         raise RuntimeError("NullCrawler cannot execute queries")

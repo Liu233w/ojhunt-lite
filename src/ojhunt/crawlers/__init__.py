@@ -7,33 +7,16 @@ returns a dict with keys solved, submissions, solved_list.
 """
 
 import asyncio
+import functools
 import importlib
 import pkgutil
-from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Dict, List, Optional
+from typing import Any, Awaitable, Callable, Dict
 
 import aiohttp
 
-from ojhunt.core.models import CrawlerInfo, CrawlerMeta, LoginType
-
-
-@dataclass
-class CrawlerResult:
-    """Typed wrapper for the dict returned by crawler query functions."""
-
-    solved: int
-    submissions: int
-    solved_list: Optional[List[str]] = None
-
-    @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "CrawlerResult":
-        return cls(
-            solved=d["solved"],
-            submissions=d["submissions"],
-            solved_list=d.get("solved_list"),
-        )
+from ojhunt.core.models import CrawlerInfo, CrawlerMeta, CrawlerResult, LoginType
 
 
 def query_sync(
@@ -68,6 +51,16 @@ def query_sync(
 
 
 __all__ = ["CrawlerResult", "discover_crawlers", "query_sync"]
+
+
+def _wrap_query(fn: Callable) -> Callable[..., Awaitable[CrawlerResult]]:
+    """Wrap a raw dict-returning query function to return CrawlerResult."""
+
+    @functools.wraps(fn)
+    async def wrapped(*args: Any, **kwargs: Any) -> CrawlerResult:
+        return CrawlerResult.from_dict(await fn(*args, **kwargs))
+
+    return wrapped
 
 
 @cache
@@ -109,7 +102,7 @@ def discover_crawlers() -> Dict[str, CrawlerInfo]:
                 crawlers[module_name] = CrawlerInfo(
                     name=module_name,
                     meta=meta,
-                    query=module.query,
+                    query=_wrap_query(module.query),
                 )
         except (ImportError, AttributeError) as e:
             print(f"Warning: Could not load crawler '{module_name}': {e}")

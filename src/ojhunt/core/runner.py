@@ -33,9 +33,9 @@ async def run_crawler(
             crawler=crawler,
             username=username,
             success=True,
-            solved=result["solved"],
-            submissions=result["submissions"],
-            solved_list=result.get("solved_list"),
+            solved=result.solved,
+            submissions=result.submissions,
+            solved_list=result.solved_list,
             duration=duration,
         )
     except ValueError as e:
