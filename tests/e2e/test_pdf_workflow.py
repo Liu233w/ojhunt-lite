@@ -233,9 +233,9 @@ def test_download_then_upload_shows_date_and_merges(
         date_text, timeout=5000
     )
     # Queries should be restored
-    expect(page.locator("tbody.result-row").filter(has_text="CodeForces")).to_be_visible(
-        timeout=5000
-    )
+    expect(
+        page.locator("tbody.result-row").filter(has_text="CodeForces")
+    ).to_be_visible(timeout=5000)
 
 
 @pytest.mark.playwright
@@ -249,15 +249,15 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
     # Upload the historical PDF (3 entries from 2020)
     page.set_input_files("input[type='file']", historical_pdf_path)
     expect(page.locator(".report-restore .prev-date")).to_be_visible(timeout=5000)
-    expect(page.locator("tbody.result-row").filter(has_text="CodeForces")).to_be_visible(
-        timeout=5000
-    )
+    expect(
+        page.locator("tbody.result-row").filter(has_text="CodeForces")
+    ).to_be_visible(timeout=5000)
 
     # Query and download a new report (today's date ~2026)
     page.click('button:has-text("Query All")')
-    expect(page.locator("tbody.result-row").filter(has_text="CodeForces")).to_have_class(
-        "result-row success", timeout=30000
-    )
+    expect(
+        page.locator("tbody.result-row").filter(has_text="CodeForces")
+    ).to_have_class("result-row success", timeout=30000)
     with page.expect_download() as dl_info:
         page.click('button:has-text("Download Report")')
     download = dl_info.value
