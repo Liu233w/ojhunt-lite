@@ -38,6 +38,10 @@ To add a new workflow:
    ---
    ```
 
+**Note:** Claude Code's skill loader does not support colon-namespaced sub-skills
+(e.g. `ojhunt:topic`) at the project level. Each skill must be its own top-level
+directory. Use the `ojhunt-` prefix to group related project skills.
+
 ## Commands (`.claude/commands/`)
 Project-level slash commands that override global ones.
 Create a command when the global equivalent needs project-specific context injected.
