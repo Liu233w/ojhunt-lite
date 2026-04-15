@@ -1,3 +1,8 @@
+---
+name: ojhunt-commit
+description: Committing, git operations, and ADRs. Use before any commit or when considering whether a decision warrants an ADR.
+---
+
 # Commit conventions
 
 ## Git operations require sandbox bypass

@@ -1,6 +1,11 @@
+---
+name: ojhunt-testing
+description: Unit tests and crawler tests. Use when writing or running pytest tests (non-Playwright).
+---
+
 # Unit Tests & Crawler Tests
 
-See also **[e2e.md](e2e.md)** for Playwright-specific testing.
+See also the **ojhunt-e2e** skill for Playwright-specific testing.
 
 ## Running tests
 
