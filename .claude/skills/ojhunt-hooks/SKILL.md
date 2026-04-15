@@ -1,3 +1,8 @@
+---
+name: ojhunt-hooks
+description: Project Claude Code hooks. Use when adding a new enforcement rule or side-effect automation.
+---
+
 # Project Hooks
 
 Hooks enforce constraints mechanically. Check `.claude/settings.json` to see

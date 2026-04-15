@@ -1,3 +1,8 @@
+---
+name: ojhunt-web
+description: Web layer, PDF internals, API routes, running the dev server. Use when working on the FastAPI app, PDF features, or environment setup.
+---
+
 # Web Layer
 
 ## Running the dev server

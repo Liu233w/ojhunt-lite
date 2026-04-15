@@ -1,3 +1,8 @@
+---
+name: ojhunt-python
+description: Python code style, imports, dependencies. Use when writing Python code in this project.
+---
+
 # Python conventions
 
 ## Import order

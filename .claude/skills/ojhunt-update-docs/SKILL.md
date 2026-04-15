@@ -1,3 +1,8 @@
+---
+name: ojhunt-update-docs
+description: Where to update documentation and agent workflows. Use when adding or updating any documentation.
+---
+
 # Where to update documentation
 
 **Single source of truth:** Each piece of knowledge lives in exactly one layer. When adding
@@ -16,7 +21,7 @@ Documentation for users running or deploying the project:
   templates, return format). Update when the crawler API or contribution process changes.
 - `docs/adr/` — Architectural decisions (see below)
 
-## Skills (`.claude/skills/ojhunt/`)
+## Skills (`.claude/skills/ojhunt-*/`)
 Workflow documentation: how to implement crawlers, how to commit, how to write tests, and
 the conventions behind those workflows. Update when the *process* of doing something changes
 in this project — not when the code changes.
@@ -25,8 +30,13 @@ in this project — not when the code changes.
 it's enforced elsewhere (hook, test, linter), don't write it. Redundant entries create drift.
 
 To add a new workflow:
-1. Create `.claude/skills/ojhunt/<topic>.md`
-2. Add a link + one-line trigger description to `SKILL.md`
+1. Create `.claude/skills/ojhunt-<topic>/SKILL.md` with frontmatter:
+   ```
+   ---
+   name: ojhunt-<topic>
+   description: <one-line trigger description>
+   ---
+   ```
 
 ## Commands (`.claude/commands/`)
 Project-level slash commands that override global ones.
@@ -35,8 +45,8 @@ Create a command when the global equivalent needs project-specific context injec
 `/update-learnings` — captures session learnings and routes them to the right doc layer.
 
 ## `docs/adr/`
-Significant architectural decisions and their rationale. See `commit.md` for when a decision
-warrants an ADR vs a commit message.
+Significant architectural decisions and their rationale. See the **ojhunt-commit** skill for
+when a decision warrants an ADR vs a commit message.
 
 To add an ADR: create `docs/adr/NNNN-short-title.md` and add a one-line pointer to the ADR
 list in `docs/development.md`.
@@ -48,8 +58,8 @@ list in `docs/development.md`.
 - Operational fact (setup, command, structure) → README
 - User-facing reference → `docs/`
 - Crawler contributor reference → `docs/development.md`
-- Workflow or process → `.claude/skills/ojhunt/`
+- Workflow or process → `.claude/skills/ojhunt-*/`
 - Project-level command override → `.claude/commands/`
 - Significant architectural decision (multiple approaches considered, choice non-obvious from code) → `docs/adr/`
 - Small tactical change → commit message intent (no doc needed)
-- "Never do X" or "always do Y after Z" → **hook first** (see `hooks.md`); once hook-enforced, do NOT also add a skill entry — the hook is the enforcement, a skill note just creates drift
+- "Never do X" or "always do Y after Z" → **hook first** (see **ojhunt-hooks** skill); once hook-enforced, do NOT also add a skill entry — the hook is the enforcement, a skill note just creates drift

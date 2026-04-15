@@ -1,8 +1,13 @@
+---
+name: ojhunt-crawlers
+description: Adding or fixing crawlers. Use when implementing a new crawler, debugging an existing one, or working with crawler metadata.
+---
+
 # Crawlers
 
 For `__crawler_meta__` field reference and login type concepts, see **`docs/development.md`**.
-For test assertion conventions, see **[testing.md](testing.md)**.
-For ADR guidance on significant design decisions, see **[commit.md](commit.md)**.
+For test assertion conventions, invoke the **ojhunt-testing** skill.
+For ADR guidance on significant design decisions, invoke the **ojhunt-commit** skill.
 
 ## Implementing a New Crawler
 
@@ -262,7 +267,7 @@ public for others but not yourself, it's Own Account.
 - The platform requires login, but any authenticated user can see any user's stats.
 - A single shared account can query arbitrary target users.
 - `login_user`/`login_password` (from `-l` flag) may differ from `username`.
-- CLI usage: `-l mylogin:mypass@crawler -- target@crawler`.
+- CLI usage: `-l mylogin:mypass@crawler -- target_user@<crawler>`.
 - Example implementations: `src/ojhunt/crawlers/vjudge.py`, `src/ojhunt/crawlers/cses.py`
 
 **`CrawlerMeta` field mapping:**
