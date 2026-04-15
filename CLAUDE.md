@@ -8,7 +8,7 @@
 
 ## Project skills
 
-All skills whose name starts with `ojhunt-` are project-specific workflows for this repo. Check their descriptions to find the right one for your task.
+All skills whose name starts with `ojhunt-` are project-specific workflows for this repo. Check their descriptions to find the right one for your task. Use the Skill tool to invoke them — do not read skill files directly as plain text.
 
 ### Growing these skills
 
