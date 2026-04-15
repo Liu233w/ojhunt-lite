@@ -1,6 +1,6 @@
 ---
 name: ojhunt-hooks
-description: Project Claude Code hooks. Use when adding a new enforcement rule or side-effect automation.
+description: Claude Code hooks for this project - existing rules and how to add new ones. Load when adding, reviewing, or planning enforcement rules or automation, or when the user asks what constraints are currently active.
 ---
 
 # Project Hooks

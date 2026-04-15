@@ -1,6 +1,6 @@
 ---
 name: ojhunt-testing
-description: Unit tests and crawler tests. Use when writing or running pytest tests (non-Playwright).
+description: pytest unit tests and crawler tests (non-Playwright). Load whenever the task involves tests — finding where tests live, planning test coverage, writing or running pytest, or understanding fixtures and assertions. See ojhunt-e2e for Playwright.
 ---
 
 # Unit Tests & Crawler Tests

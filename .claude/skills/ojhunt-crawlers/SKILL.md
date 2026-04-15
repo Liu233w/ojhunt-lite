@@ -1,6 +1,6 @@
 ---
 name: ojhunt-crawlers
-description: Adding or fixing crawlers. Use when implementing a new crawler, debugging an existing one, or working with crawler metadata.
+description: Crawlers - file locations, metadata schema, login types, and conventions. Load whenever the task touches crawlers in any way — reading the code, planning a new one, debugging, implementing, or reviewing crawler metadata.
 ---
 
 # Crawlers

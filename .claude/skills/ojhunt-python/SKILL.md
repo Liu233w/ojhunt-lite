@@ -1,6 +1,6 @@
 ---
 name: ojhunt-python
-description: Python code style, imports, dependencies. Use when writing Python code in this project.
+description: Python conventions for this project - import order, code style, and dependency management. Load whenever the task involves Python code — reading existing code, planning a new module, writing or refactoring Python, or adding a dependency.
 ---
 
 # Python conventions

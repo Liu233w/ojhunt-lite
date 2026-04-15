@@ -1,6 +1,6 @@
 ---
 name: ojhunt-update-docs
-description: Where to update documentation and agent workflows. Use when adding or updating any documentation.
+description: Documentation structure and agent workflow locations. Load whenever the task involves documentation — finding where docs live, planning changes, writing or updating docs, or updating skills and commands.
 ---
 
 # Where to update documentation

@@ -1,6 +1,6 @@
 ---
 name: ojhunt-web
-description: Web layer, PDF internals, API routes, running the dev server. Use when working on the FastAPI app, PDF features, or environment setup.
+description: FastAPI app, PDF internals, API routes, and dev server. Load whenever the task involves the web layer — exploring routes, planning API changes, reading PDF handling code, implementing endpoints, or setting up the environment.
 ---
 
 # Web Layer
