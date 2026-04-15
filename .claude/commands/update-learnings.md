@@ -5,17 +5,19 @@ allowed-tools: Read, Edit, Write, Glob
 
 Review this session for learnings about working in this codebase.
 
-## Step 1: Reflect
+**Do steps 1-2 silently. Only start outputting at step 3.**
 
-What was non-obvious, missing, or corrected that would help future sessions?
+## Step 1 (silent): Reflect
+
+Identify what was non-obvious, missing, or corrected that would help future sessions:
 - Workflows, conventions, or gotchas not yet documented
 - Feedback or corrections from the user on how to approach work
 - Project state changes: features shipped, decisions made, bugs resolved
 
-## Step 2: Route changes
+## Step 2 (silent): Route changes
 
-Invoke the `/ojhunt` skill and read its `update-docs.md` sub-skill to decide where
-each learning belongs in the project's documentation layers.
+Invoke the `ojhunt-update-docs` skill and read it in full before deciding where
+each learning belongs. Do not route from memory — read the skill.
 
 ## Step 3: Show proposed changes
 

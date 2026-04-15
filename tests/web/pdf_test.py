@@ -120,6 +120,24 @@ def test_compute_day_key_timezone_before_4am_local():
         assert compute_day_key("America/New_York") == "2026-03-28"
 
 
+def test_compute_day_key_dst_spring_forward():
+    # 2024-03-10 is US "spring forward" day (clocks jump 2am EST → 3am EDT at 07:00 UTC).
+    # 07:30 UTC = 03:30 EDT — inside the spring-forward gap, still before 4am local.
+    # Day key should roll back to the previous day, not produce an incorrect date.
+    fixed = _datetime(2024, 3, 10, 7, 30, tzinfo=_timezone.utc)
+    with patch("ojhunt.web.pdf.datetime") as mock_dt:
+        mock_dt.now.side_effect = _mock_now(fixed)
+        assert compute_day_key("America/New_York") == "2024-03-09"
+
+
+def test_compute_day_key_dst_spring_forward_after_4am():
+    # 08:00 UTC on spring-forward day = 04:00 EDT — exactly 4am, so current day.
+    fixed = _datetime(2024, 3, 10, 8, 0, tzinfo=_timezone.utc)
+    with patch("ojhunt.web.pdf.datetime") as mock_dt:
+        mock_dt.now.side_effect = _mock_now(fixed)
+        assert compute_day_key("America/New_York") == "2024-03-10"
+
+
 # ---------------------------------------------------------------------------
 # merge_history
 # ---------------------------------------------------------------------------

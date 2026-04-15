@@ -1,3 +1,8 @@
+---
+name: ojhunt-commit
+description: Git operations, commit conventions, and ADRs. Load when preparing to commit, planning a change that may warrant an ADR, or evaluating whether a design decision needs documentation.
+---
+
 # Commit conventions
 
 ## Git operations require sandbox bypass
@@ -5,10 +10,9 @@
 Always use `dangerouslyDisableSandbox: true` for any git write operation (add, commit, reset,
 rebase, etc.) — the sandbox blocks writes to `.git/`.
 
-## Never use `gh` CLI
+## Do not push to remote
 
-The bot user has no GitHub credentials. Do not run `gh` commands. Commit locally; the user
-handles push and PR creation.
+Commit locally; the user handles push and PR creation.
 
 ## Commit hygiene
 

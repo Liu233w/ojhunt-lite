@@ -19,13 +19,20 @@ from ojhunt.web.pdf import (
 
 BASE_URL = "http://localhost:8080"
 _TMPDIR = os.environ.get("TMPDIR", tempfile.gettempdir())
-_MOCK_CODEFORCES_RESPONSE = json.dumps({
-    "crawler": "codeforces",
-    "username": "tourist",
-    "error": False,
-    "data": {"solved": 2000, "submissions": 5000, "solvedList": ["1A", "1B"], "duration": 0.1},
-    "message": None,
-})
+_MOCK_CODEFORCES_RESPONSE = json.dumps(
+    {
+        "crawler": "codeforces",
+        "username": "tourist",
+        "error": False,
+        "data": {
+            "solved": 2000,
+            "submissions": 5000,
+            "solvedList": ["1A", "1B"],
+            "duration": 0.1,
+        },
+        "message": None,
+    }
+)
 
 
 # ---------------------------------------------------------------------------
@@ -112,8 +119,11 @@ def mock_codeforces_api(page: Page):
     PDF workflow tests are testing PDF history-merging logic, not the crawler.
     Mocking avoids rate-limit failures from multiple consecutive real API calls.
     """
+
     def handle(route: Route):
-        route.fulfill(status=200, content_type="application/json", body=_MOCK_CODEFORCES_RESPONSE)
+        route.fulfill(
+            status=200, content_type="application/json", body=_MOCK_CODEFORCES_RESPONSE
+        )
 
     page.route("**/api/crawlers/codeforces/tourist", handle)
     yield
@@ -200,7 +210,9 @@ def test_upload_invalid_file_shows_error(page: Page):
 
 
 @pytest.mark.playwright
-def test_download_report_updates_date_indicator(page: Page, context: BrowserContext, mock_codeforces_api):
+def test_download_report_updates_date_indicator(
+    page: Page, context: BrowserContext, mock_codeforces_api
+):
     """After querying, downloading a report updates the date indicator in the UI."""
     page.goto(BASE_URL)
     _clear_storage(page)

@@ -1,6 +1,11 @@
+---
+name: ojhunt-e2e
+description: Playwright e2e browser tests. Load whenever the task involves e2e tests — understanding coverage, planning browser test scenarios, writing or running Playwright tests. See also ojhunt-testing for shared pytest conventions.
+---
+
 # E2E Tests (Playwright)
 
-See also **[testing.md](testing.md)** for shared pytest fixture and assertion conventions.
+See also the **ojhunt-testing** skill for shared pytest fixture and assertion conventions.
 
 ## Setup
 
