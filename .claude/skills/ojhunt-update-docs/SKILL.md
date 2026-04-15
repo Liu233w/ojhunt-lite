@@ -55,6 +55,15 @@ when a decision warrants an ADR vs a commit message.
 To add an ADR: create `docs/adr/NNNN-short-title.md` and add a one-line pointer to the ADR
 list in `docs/development.md`.
 
+## `CLAUDE.md`
+Context that **every agent working on this project must know**, regardless of the task.
+Update when something is so fundamental that any agent — without it — would make the wrong
+call: project-wide invariants, hard constraints, or pointers to where documentation lives.
+
+Keep entries minimal. `CLAUDE.md` is loaded into every conversation; bloat here costs context
+on every invocation. If the knowledge is task-specific (e.g., "how to write a crawler"),
+put it in a skill, not here.
+
 ---
 
 ## If unsure which layer
@@ -67,3 +76,4 @@ list in `docs/development.md`.
 - Significant architectural decision (multiple approaches considered, choice non-obvious from code) → `docs/adr/`
 - Small tactical change → commit message intent (no doc needed)
 - "Never do X" or "always do Y after Z" → **hook first** (see **ojhunt-hooks** skill); once hook-enforced, do NOT also add a skill entry — the hook is the enforcement, a skill note just creates drift
+- Project-wide invariant every agent must know, regardless of task → `CLAUDE.md`
