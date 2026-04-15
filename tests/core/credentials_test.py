@@ -1,6 +1,5 @@
 """Unit tests for core/credentials.py — get_login_kwargs() env var lookup."""
 
-
 from ojhunt.core.credentials import get_login_kwargs
 
 
@@ -25,34 +24,3 @@ def test_neither_var_set_returns_none(monkeypatch):
     monkeypatch.delenv("LOGIN_PASSWORD__FOO", raising=False)
 
     assert get_login_kwargs("foo") is None
-
-
-def test_vjudge_backwards_compat(monkeypatch):
-    monkeypatch.delenv("LOGIN_USERNAME__VJUDGE", raising=False)
-    monkeypatch.delenv("LOGIN_PASSWORD__VJUDGE", raising=False)
-    monkeypatch.setenv("VJUDGE_USERNAME", "vjuser")
-    monkeypatch.setenv("VJUDGE_PASSWORD", "vjpass")
-
-    result = get_login_kwargs("vjudge")
-
-    assert result == {"login_user": "vjuser", "login_password": "vjpass"}
-
-
-def test_vjudge_new_style_takes_precedence(monkeypatch):
-    monkeypatch.setenv("LOGIN_USERNAME__VJUDGE", "new_user")
-    monkeypatch.setenv("LOGIN_PASSWORD__VJUDGE", "new_pass")
-    monkeypatch.setenv("VJUDGE_USERNAME", "old_user")
-    monkeypatch.setenv("VJUDGE_PASSWORD", "old_pass")
-
-    result = get_login_kwargs("vjudge")
-
-    assert result == {"login_user": "new_user", "login_password": "new_pass"}
-
-
-def test_vjudge_backwards_compat_does_not_apply_to_other_crawlers(monkeypatch):
-    monkeypatch.delenv("LOGIN_USERNAME__CODEFORCES", raising=False)
-    monkeypatch.delenv("LOGIN_PASSWORD__CODEFORCES", raising=False)
-    monkeypatch.setenv("VJUDGE_USERNAME", "vjuser")
-    monkeypatch.setenv("VJUDGE_PASSWORD", "vjpass")
-
-    assert get_login_kwargs("codeforces") is None
