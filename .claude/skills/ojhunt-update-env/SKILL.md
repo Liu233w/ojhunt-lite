@@ -1,9 +1,9 @@
 ---
-name: ojhunt-update-docs
-description: Documentation structure and agent workflow locations. Load whenever the task involves documentation — finding where docs live, planning changes, writing or updating docs, or updating skills and commands.
+name: ojhunt-update-env
+description: Project environment structure — where each type of knowledge belongs across docs/, skills, hooks, commands, and CLAUDE.md. Load whenever the task involves documentation, creating or updating skills, adding hooks or commands, updating CLAUDE.md, or deciding where a new piece of knowledge should live.
 ---
 
-# Where to update documentation
+# Where knowledge lives in this project's environment
 
 **Single source of truth:** Each piece of knowledge lives in exactly one layer. When adding
 documentation, point to the authoritative source — don't inline definitions that already exist
@@ -29,7 +29,10 @@ in this project — not when the code changes.
 **Only document what's non-obvious.** If Claude can derive it by reading the files, or if
 it's enforced elsewhere (hook, test, linter), don't write it. Redundant entries create drift.
 
-To add a new workflow:
+**When a well-written doc file already covers the topic, the skill should be a thin pointer
+to that file plus any gotchas the doc doesn't capture. Don't replicate discoverable content.**
+
+To add a new skill:
 1. Create `.claude/skills/ojhunt-<topic>/SKILL.md` with frontmatter:
    ```
    ---
@@ -42,11 +45,15 @@ To add a new workflow:
 (e.g. `ojhunt:topic`) at the project level. Each skill must be its own top-level
 directory. Use the `ojhunt-` prefix to group related project skills.
 
+## Hooks (`.claude/hooks/` + `.claude/settings.json`)
+Hard enforcement rules — things the agent must never do or must always do automatically.
+Update when you need mechanical enforcement, not just reminders. See **ojhunt-hooks** skill.
+
 ## Commands (`.claude/commands/`)
 Project-level slash commands that override global ones.
 Create a command when the global equivalent needs project-specific context injected.
 
-`/update-learnings` — captures session learnings and routes them to the right doc layer.
+`/update-learnings` — captures session learnings and routes them to the right layer.
 
 ## `docs/adr/`
 Significant architectural decisions and their rationale. See the **ojhunt-commit** skill for
@@ -72,8 +79,8 @@ put it in a skill, not here.
 - User-facing reference → `docs/`
 - Crawler contributor reference → `docs/development.md`
 - Workflow or process → `.claude/skills/ojhunt-*/`
+- "Never do X" or "always do Y after Z" → **hook first** (see **ojhunt-hooks** skill); once hook-enforced, do NOT also add a skill entry — the hook is the enforcement, a skill note just creates drift
 - Project-level command override → `.claude/commands/`
 - Significant architectural decision (multiple approaches considered, choice non-obvious from code) → `docs/adr/`
 - Small tactical change → commit message intent (no doc needed)
-- "Never do X" or "always do Y after Z" → **hook first** (see **ojhunt-hooks** skill); once hook-enforced, do NOT also add a skill entry — the hook is the enforcement, a skill note just creates drift
 - Project-wide invariant every agent must know, regardless of task → `CLAUDE.md`

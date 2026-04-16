@@ -5,6 +5,8 @@ description: FastAPI app, PDF internals, API routes, and dev server. Load whenev
 
 # Web Layer
 
+See `docs/web.md` for production deployment, container usage, and API endpoint reference.
+
 ## Running the dev server
 
 Start as a background task with sandbox disabled (file watcher and loopback networking are
