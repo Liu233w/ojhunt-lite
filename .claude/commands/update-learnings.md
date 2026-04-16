@@ -16,7 +16,7 @@ Identify what was non-obvious, missing, or corrected that would help future sess
 
 ## Step 2 (silent): Route changes
 
-Invoke the `ojhunt-update-docs` skill and read it in full before deciding where
+Invoke the `ojhunt-update-env` skill and read it in full before deciding where
 each learning belongs. Do not route from memory — read the skill.
 
 ## Step 3: Show proposed changes
