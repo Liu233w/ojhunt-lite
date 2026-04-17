@@ -1,0 +1,178 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "Liu233w",
+      "name": "Liu233w",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/16333687?v=4",
+      "profile": "https://liu233w.github.io",
+      "contributions": [
+        "code",
+        "ideas",
+        "infra",
+        "test"
+      ]
+    },
+    {
+      "login": "kidozh",
+      "name": "Kido Zhang",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/11661760?v=4",
+      "profile": "https://kidozh.com",
+      "contributions": [
+        "infra",
+        "ideas"
+      ]
+    },
+    {
+      "login": "flylai",
+      "name": "flylai",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/9880740?v=4",
+      "profile": "https://github.com/flylai",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "fzu-h4cky",
+      "name": "fzu-h4cky",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/36151020?v=4",
+      "profile": "https://github.com/fzu-h4cky",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "2512821228",
+      "name": "Zhao",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/11994295?v=4",
+      "profile": "http://zhao.wtf",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "cometeme",
+      "name": "Adelard Collins",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/22635759?v=4",
+      "profile": "https://www.cometeme.tech",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "ctuu",
+      "name": "ct",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/22322656?v=4",
+      "profile": "https://github.com/ctuu",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "Geekxiong",
+      "name": "Geekxiong",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/25352156?v=4",
+      "profile": "https://github.com/Geekxiong",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "Halorv",
+      "name": "Halorv",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/39403985?v=4",
+      "profile": "https://github.com/settings/profile",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "bodhisatan",
+      "name": "Bodhisatan_Yao",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/35862184?v=4",
+      "profile": "https://github.com/bodhisatan",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "Meulsama",
+      "name": "Meulsama",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/55663936?v=4",
+      "profile": "https://github.com/Meulsama",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "UserUnknownX",
+      "name": "Michael Xiang",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/50655871?v=4",
+      "profile": "https://github.com/UserUnknownX",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "zby0327",
+      "name": "zby",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/43291744?v=4",
+      "profile": "https://github.com/zby0327",
+      "contributions": [
+        "ideas",
+        "bug"
+      ]
+    },
+    {
+      "login": "BackSlashDelta",
+      "name": "BackSlashDelta",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/64258212?v=4",
+      "profile": "https://github.com/BackSlashDelta",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "bluebear4",
+      "name": "bluebear4",
+      "avatar_url": "https://avatars.githubusercontent.com/u/49401963?v=4",
+      "profile": "https://github.com/bluebear4",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "wwawwaww",
+      "name": "wwawwaww",
+      "avatar_url": "https://avatars.githubusercontent.com/u/42441490?v=4",
+      "profile": "https://github.com/wwawwaww",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "dreamerblue",
+      "name": "bLue",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19774268?v=4",
+      "profile": "https://dreamer.blue/",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 6,
+  "contributorTemplate": "<img src=\"<%= contributor.avatar_url %>\" width=\"<%= options.imageSize %>px;\" alt=\"\"/><br /><sub><a href=\"<%= contributor.profile %>\"><b><%= contributor.name %></b></a><a href=\"https://github.com/<%= contributor.login %>\">🔗</a></sub><br /><%= contributions %>",
+  "contributorsSortAlphabetically": true,
+  "projectName": "acm-statistics",
+  "projectOwner": "Liu233w",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true,
+  "commitConvention": "none",
+  "commitType": "docs"
+}
