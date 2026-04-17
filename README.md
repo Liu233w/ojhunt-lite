@@ -1,4 +1,7 @@
 # OJHunt Lite
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 A lightweight async Python tool for querying Online Judge (OJ) statistics across multiple platforms. Track your accepted problems and total submissions from competitive programming sites.
 
@@ -124,3 +127,25 @@ Lightweight Python rewrite of [OJHunt (acm-statistics)](https://github.com/Liu23
 originally inspired by 西北工业大学ACM查询系统 (npuacm.info) by [Jiduo Zhang](https://kidozh.com).
 
 Special thanks to test account providers: @leoloveacm, @2013300262
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://anthropic.com/claude-code"><img src="https://avatars.githubusercontent.com/u/81847?v=4?s=100" width="100px;" alt="Claude"/><br /><sub><b>Claude</b></sub></a><br /><a href="https://github.com/Liu233w/ojhunt-lite/commits?author=claude" title="Code">💻</a> <a href="#infra-claude" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/Liu233w/ojhunt-lite/commits?author=claude" title="Tests">⚠️</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
