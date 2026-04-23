@@ -43,8 +43,8 @@
         --fs-s:   12px;
         --fs-xs:  11px;
 
-        --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        --cjk:  'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', var(--mono);
+        --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace,
+                'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei';
       }
 
       [data-accent="amber"]   { --acc: var(--acc-amber); }
@@ -172,7 +172,7 @@
         text-transform: uppercase;
       }
       .header .h-meta .cjk {
-        font-family: var(--cjk); text-transform: none;
+        text-transform: none;
         letter-spacing: 0.05em; color: var(--fg-3); font-size: var(--fs-s);
       }
       .header .subtitle {
