@@ -2,102 +2,66 @@
 
 {% block title %}Supported Crawlers - OJHunt Lite{% endblock %}
 
-{% block page_max_width %}900px{% endblock %}
-
-{% block extra_head %}
-    <style>
-        * { box-sizing: border-box; }
-
-        .header { text-align: center; margin-bottom: 2rem; }
-        .header .logo { height: 60px; margin-bottom: 0.5rem; }
-        .header h1 { margin: 0; font-size: 1.5rem; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #f5f5f5; font-weight: 600; }
-
-        .crawler-tag { font-family: monospace; font-size: 0.85rem; color: #555; }
-        .crawler-link { color: #0066cc; text-decoration: none; }
-        .crawler-link:hover { text-decoration: underline; }
-        .crawler-desc { color: #666; font-size: 0.875rem; }
-
-        .status-online { color: #22863a; font-weight: 500; }
-        .status-offline { color: #cb2431; font-weight: 500; }
-        .status-waiting { color: #999; }
-        .status-has-error { cursor: help; }
-
-        /* ── Mobile: hide Description, card layout ── */
-        @media (max-width: 540px) {
-            th:nth-child(3), td:nth-child(3) { display: none; }
-
-            table, thead, tbody, th, td, tr { display: block; }
-            thead tr { display: none; }
-            tbody tr {
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                margin-bottom: 0.6rem;
-                padding: 0.25rem 0;
-            }
-            tbody td {
-                border-bottom: none;
-                padding: 0.3rem 0.75rem;
-                display: flex;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-            tbody td::before {
-                font-weight: 600;
-                color: #555;
-                font-size: 0.8rem;
-                min-width: 60px;
-                flex-shrink: 0;
-            }
-            tbody td:nth-child(1)::before { content: "Tag"; }
-            tbody td:nth-child(2)::before { content: "Name"; }
-            tbody td:nth-child(4)::before { content: "Status"; }
-        }
-    </style>
-{% endblock %}
+{% block page_id %}page-crawlers{% endblock %}
 
 {% block content %}
-    <div class="header">
-        <img src="/assets/logo.png" alt="OJHunt Logo" class="logo">
-        <h1>Supported Crawlers</h1>
+<header class="header">
+    <div class="mark">
+        <img src="/assets/logo.png" alt="OJHunt Logo">
+        <div>
+            <h1>Supported Crawlers</h1>
+            <div class="h-meta"><span class="cjk">支持的爬虫</span> · {{ crawlers | length }} total</div>
+        </div>
     </div>
+    <div class="subtitle">
+        <span class="prompt">$</span> ojhunt --list
+    </div>
+</header>
 
-    <table>
+<div class="tbl-wrap">
+    <table class="tbl clw-tbl">
         <thead>
             <tr>
-                <th>Tag</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Status</th>
+                <th style="width:20%">tag</th>
+                <th style="width:25%">name</th>
+                <th>description</th>
+                <th style="width:12%">status</th>
             </tr>
         </thead>
         <tbody>
             {% for c in crawlers %}
-            <tr>
-                <td><span class="crawler-tag">{{ c.name }}</span></td>
-                <td>
+            <tr class="{% if c.availability.status.value == 'online' %}r-ok{% elif c.availability.status.value == 'offline' %}r-err{% else %}r-pend{% endif %}">
+                <td><span class="tag-cell">{{ c.name }}</span></td>
+                <td class="name">
                     {% if c.url %}
-                    <a href="{{ c.url }}" target="_blank" rel="noopener noreferrer" class="crawler-link">{{ c.title }}</a>
+                    <a href="{{ c.url }}" target="_blank" rel="noopener noreferrer">{{ c.title }}</a>
                     {% else %}
                     {{ c.title }}
                     {% endif %}
                 </td>
-                <td><span class="crawler-desc">{{ c.description }}</span></td>
+                <td class="desc">{{ c.description }}</td>
                 <td>
                     {% if c.availability.status.value == "online" %}
-                    <span class="status-online">Online</span>
+                    <span class="status s-ok">online</span>
                     {% elif c.availability.status.value == "offline" %}
-                    <span class="status-offline{% if c.availability.error %} status-has-error{% endif %}"
-                      {% if c.availability.error %}title="{{ c.availability.error }}"{% endif %}>Offline</span>
+                    <span class="status s-err"{% if c.availability.error %} title="{{ c.availability.error }}"{% endif %}>offline</span>
                     {% else %}
-                    <span class="status-waiting">Waiting...</span>
+                    <span class="status s-pend">waiting</span>
                     {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<footer class="footer">
+    <div>
+        <p>status is checked live from the server; offline crawlers are usually temporary — the site might be down or the crawler's endpoint may have changed.</p>
+        <p>want to add a crawler? <a href="https://github.com/Liu233w/ojhunt-lite/blob/main/docs/development.md" target="_blank" rel="noopener noreferrer">see docs/development.md →</a></p>
+    </div>
+    <div class="ascii">┌─────────────┐
+│ ojhunt-lite │
+└─────────────┘</div>
+</footer>
 {% endblock %}
