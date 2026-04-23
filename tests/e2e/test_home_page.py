@@ -50,7 +50,7 @@ def test_ai_agent_footer_link(page: Page):
     page.goto(BASE_URL)
     link = page.locator('footer a[href="/llms.txt"]')
     expect(link).to_be_visible()
-    expect(link).to_have_text("Read the guide for LLM →")
+    expect(link).to_have_text("read the guide for llm →")
 
 
 @pytest.mark.playwright
