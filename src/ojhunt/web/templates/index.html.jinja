@@ -339,7 +339,7 @@ function dismissLegacyBanner() {
                             <div x-text="crawlers[q.crawler]?.title || q.crawler"></div>
                             <div class="tag" x-text="q.crawler"></div>
                         </td>
-                        <td data-lbl="solved" :colspan="q.status === 'error' ? 2 : 1">
+                        <td data-lbl="solved" :colspan="q.status === 'error' ? 2 : null">
                             <a href="#" class="err-link" x-show="q.status === 'error'"
                                @click.prevent="document.getElementById('dialog-error-' + q.id)?.showModal()"
                                x-text="q.error"></a>
