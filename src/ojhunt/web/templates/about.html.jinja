@@ -1,5 +1,54 @@
 {% extends "base.html.jinja" %}
 
+{% block extra_head %}
+<style>
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;
+  }
+  .card { border: 1px solid var(--line); background: var(--bg-1); }
+  .card-hd {
+    padding: 0.55rem 1rem;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--fg-3);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .card-hd .prompt { color: var(--acc); }
+  .row-item {
+    display: grid; grid-template-columns: 110px 1fr auto;
+    gap: 1rem; padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--line);
+    align-items: center; color: var(--fg); font-size: var(--fs-s);
+    text-decoration: none;
+  }
+  .row-item:last-child { border-bottom: 0; }
+  .row-item:hover { background: var(--bg-2); }
+  .row-item .k {
+    color: var(--fg-4); text-transform: uppercase;
+    font-size: var(--fs-xs); letter-spacing: 0.08em;
+  }
+  .row-item .v { color: var(--fg-2); word-break: break-all; }
+  .row-item .v .cjk { font-family: var(--cjk); color: var(--fg); }
+  .row-item .v .highlight { color: var(--fg); }
+  .row-item .arr { color: var(--fg-4); font-size: var(--fs-s); }
+  .row-item:hover .arr { color: var(--acc); }
+
+  @media (max-width: 640px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .row-item {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 0.1rem 0.5rem; padding: 0.65rem 0.85rem;
+    }
+    .row-item .k { grid-column: 1; grid-row: 1; }
+    .row-item .v { grid-column: 1 / -1; grid-row: 2; font-size: var(--fs-s); }
+    .row-item .arr { grid-column: 2; grid-row: 1; }
+  }
+</style>
+{% endblock %}
+
 {% block title %}About - OJHunt Lite{% endblock %}
 
 {% block page_id %}page-about{% endblock %}

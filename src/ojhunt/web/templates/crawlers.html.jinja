@@ -2,6 +2,13 @@
 
 {% block extra_head %}
 <style>
+  /* ── CRAWLERS TABLE ── */
+  .clw-tbl .tag-cell { color: var(--acc); letter-spacing: 0.04em; }
+  .clw-tbl .desc { color: var(--fg-3); font-size: var(--fs-s); }
+  .clw-tbl .name { color: var(--fg); }
+  .clw-tbl .name a { color: var(--fg); }
+  .clw-tbl .name a:hover { color: var(--acc); }
+
   @media (max-width: 640px) {
     /* ── CRAWLERS: table → card layout ── */
     #page-crawlers .tbl-wrap { border: 0; background: transparent; }
