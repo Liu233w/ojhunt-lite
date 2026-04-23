@@ -1,18 +1,9 @@
 import time
+
 import pytest
-from playwright.sync_api import Page, expect, Route
+from playwright.sync_api import Page, Route, expect
 
-BASE_URL = "http://localhost:8080"
-
-
-def _add_query(page: Page, crawler: str, username: str):
-    page.select_option("select[x-model='selectedCrawler']", crawler)
-    page.fill("input[placeholder='username']", username)
-    page.click("button.btn:has-text('add')")
-
-
-def _row(page: Page, text: str):
-    return page.locator("#queries-tbl tbody tr").filter(has_text=text)
+from e2e.helpers import BASE_URL, _add_query, _row
 
 
 @pytest.mark.playwright

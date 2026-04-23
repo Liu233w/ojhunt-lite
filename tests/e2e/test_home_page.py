@@ -1,14 +1,19 @@
 import pytest
 from playwright.sync_api import Page, expect
 
-BASE_URL = "http://localhost:8080"
+from e2e.helpers import BASE_URL
+
+
+def _reset_legacy_banner(page: Page) -> None:
+    """Remove the dismissed flag and reload so the banner shows."""
+    page.evaluate("localStorage.removeItem('legacy-banner-dismissed')")
+    page.reload()
 
 
 @pytest.mark.playwright
 def test_legacy_banner_visible_by_default(page: Page):
     page.goto(BASE_URL)
-    page.evaluate("localStorage.removeItem('legacy-banner-dismissed')")
-    page.reload()
+    _reset_legacy_banner(page)
     banner = page.locator("#legacy-banner")
     expect(banner).to_be_visible()
     expect(banner).to_contain_text("Were you a user of the old acm-statistics site")
@@ -18,8 +23,7 @@ def test_legacy_banner_visible_by_default(page: Page):
 @pytest.mark.playwright
 def test_legacy_banner_dismiss_hides_banner(page: Page):
     page.goto(BASE_URL)
-    page.evaluate("localStorage.removeItem('legacy-banner-dismissed')")
-    page.reload()
+    _reset_legacy_banner(page)
     page.locator("#legacy-banner button").click()
     expect(page.locator("#legacy-banner")).not_to_be_visible()
 
@@ -27,8 +31,7 @@ def test_legacy_banner_dismiss_hides_banner(page: Page):
 @pytest.mark.playwright
 def test_legacy_banner_stays_hidden_after_reload(page: Page):
     page.goto(BASE_URL)
-    page.evaluate("localStorage.removeItem('legacy-banner-dismissed')")
-    page.reload()
+    _reset_legacy_banner(page)
     page.locator("#legacy-banner button").click()
     page.reload()
     expect(page.locator("#legacy-banner")).not_to_be_visible()
@@ -37,11 +40,9 @@ def test_legacy_banner_stays_hidden_after_reload(page: Page):
 @pytest.mark.playwright
 def test_legacy_banner_reappears_after_localstorage_cleared(page: Page):
     page.goto(BASE_URL)
-    page.evaluate("localStorage.removeItem('legacy-banner-dismissed')")
-    page.reload()
+    _reset_legacy_banner(page)
     page.locator("#legacy-banner button").click()
-    page.evaluate("localStorage.removeItem('legacy-banner-dismissed')")
-    page.reload()
+    _reset_legacy_banner(page)
     expect(page.locator("#legacy-banner")).to_be_visible()
 
 
