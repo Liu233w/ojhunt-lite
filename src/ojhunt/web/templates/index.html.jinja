@@ -292,7 +292,7 @@ function dismissLegacyBanner() {
                 add <span class="kbd">↵</span>
             </button>
             <button type="button" class="btn primary" @click="queryAll()" title="Ctrl/Cmd+Enter">
-                query all <span class="kbd">⌘↵</span>
+                query all <span class="kbd" x-text="isMac ? '⌘↵' : '^↵'"></span>
             </button>
             <div class="crawler-hint"
                  x-show="selectedCrawler && selectedCrawler !== '*' && crawlers[selectedCrawler]?.description"
