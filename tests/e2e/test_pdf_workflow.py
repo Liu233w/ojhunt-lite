@@ -17,7 +17,8 @@ from ojhunt.web.pdf import (
     generate_pdf,
 )
 
-BASE_URL = "http://localhost:8080"
+from e2e.helpers import BASE_URL, _add_query, _clear_storage, _row
+
 _TMPDIR = os.environ.get("TMPDIR", tempfile.gettempdir())
 _MOCK_CODEFORCES_RESPONSE = json.dumps(
     {
@@ -105,21 +106,6 @@ def _write_temp_pdf(pdf_bytes: bytes) -> str:
     tmp.write(pdf_bytes)
     tmp.close()
     return tmp.name
-
-
-def _clear_storage(page: Page) -> None:
-    page.evaluate("localStorage.clear()")
-    page.reload()
-
-
-def _add_query(page: Page, crawler: str, username: str):
-    page.select_option("select[x-model='selectedCrawler']", crawler)
-    page.fill("input[placeholder='username']", username)
-    page.click("button.btn:has-text('add')")
-
-
-def _row(page: Page, text: str):
-    return page.locator("#queries-tbl tbody tr").filter(has_text=text)
 
 
 @pytest.fixture

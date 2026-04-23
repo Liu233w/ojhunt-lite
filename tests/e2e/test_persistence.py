@@ -1,17 +1,7 @@
 import pytest
 from playwright.sync_api import Page, expect
 
-BASE_URL = "http://localhost:8080"
-
-
-def _add_query(page: Page, crawler: str, username: str):
-    page.select_option("select[x-model='selectedCrawler']", crawler)
-    page.fill("input[placeholder='username']", username)
-    page.click("button.btn:has-text('add')")
-
-
-def _row(page: Page, text: str):
-    return page.locator("#queries-tbl tbody tr").filter(has_text=text)
+from e2e.helpers import BASE_URL, _add_query, _clear_storage, _row
 
 
 @pytest.mark.playwright
@@ -40,8 +30,7 @@ def test_username_persists_when_crawler_added(page: Page):
 @pytest.mark.playwright
 def test_cleared_row_does_not_persist(page: Page):
     page.goto(BASE_URL)
-    page.evaluate("localStorage.clear()")
-    page.reload()
+    _clear_storage(page)
     _add_query(page, "codeforces", "tourist")
     row = _row(page, "CodeForces")
     expect(row).to_be_visible(timeout=5000)
