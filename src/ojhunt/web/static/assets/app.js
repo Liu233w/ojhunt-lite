@@ -46,6 +46,8 @@ function createQuery(crawler, username, id) {
 
 function ojhunt() {
     return {
+        isMac: /Mac|iPhone|iPad|iPod/.test(navigator.platform),
+
         /** @type {Object<string, {title: string, description: string, isAggregator: boolean}>} */
         crawlers: window.__CRAWLERS__,
 
