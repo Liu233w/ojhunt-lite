@@ -346,7 +346,7 @@ function dismissLegacyBanner() {
                             <a href="#" class="solved-link" x-show="q.status === 'success'"
                                @click.prevent="showDialog(q)"
                                x-text="q.solved?.toLocaleString('en-US')"></a>
-                            <span class="num dim loading-dots" x-show="q.status === 'loading'">—</span>
+                            <span class="num dim" x-show="q.status === 'loading'">—</span>
                             <span class="num dim" x-show="q.status === 'pending'">—</span>
                         </td>
                         <td data-lbl="subs" x-show="q.status !== 'error'">
