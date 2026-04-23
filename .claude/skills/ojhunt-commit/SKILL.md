@@ -1,6 +1,6 @@
 ---
 name: ojhunt-commit
-description: Git operations, commit conventions, and ADRs. Load when preparing to commit, planning a change that may warrant an ADR, or evaluating whether a design decision needs documentation.
+description: Git operations, commit conventions, and ADRs. Load when preparing to commit, writing agent/worker prompts that include git steps, planning a change that may warrant an ADR, or evaluating whether a design decision needs documentation.
 ---
 
 # Commit conventions
