@@ -11,7 +11,9 @@ See also the **ojhunt-testing** skill for shared pytest fixture and assertion co
 
 - Tests use `test_*.py` naming convention (crawler unit tests use `*_test.py`)
 - Marked with `@pytest.mark.playwright` — excluded from regular CI
-- Require a running web server: `uv run pytest -m playwright tests/e2e/`
+- **Running:** Load the **ojhunt-web** skill to start the dev server, then run tests — both
+  require `dangerouslyDisableSandbox: true`. Or have the user run directly:
+  `! uv run pytest -m playwright tests/e2e/`
 - Install browsers first: `uv run playwright install --with-deps chromium`
 - Always run e2e tests after writing or modifying them — don't mark done until they pass
 

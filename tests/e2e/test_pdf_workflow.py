@@ -17,7 +17,8 @@ from ojhunt.web.pdf import (
     generate_pdf,
 )
 
-BASE_URL = "http://localhost:8080"
+from e2e.helpers import BASE_URL, _add_query, _clear_storage, _row
+
 _TMPDIR = os.environ.get("TMPDIR", tempfile.gettempdir())
 _MOCK_CODEFORCES_RESPONSE = json.dumps(
     {
@@ -107,11 +108,6 @@ def _write_temp_pdf(pdf_bytes: bytes) -> str:
     return tmp.name
 
 
-def _clear_storage(page: Page) -> None:
-    page.evaluate("localStorage.clear()")
-    page.reload()
-
-
 @pytest.fixture
 def mock_codeforces_api(page: Page):
     """Intercept codeforces/tourist API calls and return a mock success response.
@@ -148,14 +144,13 @@ def test_upload_pdf_restores_queries_when_table_empty(
         page.set_input_files("input[type='file']", pdf_path)
 
         # Username field should be populated
-        expect(page.locator("input[placeholder='Username']")).to_have_value(
+        expect(page.locator("input[placeholder='username']")).to_have_value(
             "tourist", timeout=5000
         )
         # A codeforces row should appear
-        row = page.locator("tbody.result-row").filter(has_text="CodeForces")
-        expect(row).to_be_visible(timeout=5000)
-        # Date indicator should be shown
-        expect(page.locator(".report-restore .prev-date")).to_be_visible(timeout=5000)
+        expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
+        # Date indicator in the PDF banner should be shown
+        expect(page.locator(".banner .date")).to_be_visible(timeout=5000)
     finally:
         os.unlink(pdf_path)
 
@@ -169,12 +164,8 @@ def test_upload_pdf_shows_info_when_queries_exist(page: Page, context: BrowserCo
         _clear_storage(page)
 
         # Add a different query first
-        page.select_option("select[x-model='selectedCrawler']", "codeforces")
-        page.fill("input[placeholder='Username']", "different_user")
-        page.click('button:has-text("Add")')
-        expect(
-            page.locator("tbody.result-row").filter(has_text="different_user")
-        ).to_be_visible(timeout=5000)
+        _add_query(page, "codeforces", "different_user")
+        expect(_row(page, "different_user")).to_be_visible(timeout=5000)
 
         # Now upload the PDF — dismiss the confirm dialog (don't refresh)
         page.on("dialog", lambda d: d.dismiss())
@@ -182,9 +173,7 @@ def test_upload_pdf_shows_info_when_queries_exist(page: Page, context: BrowserCo
         page.wait_for_timeout(2000)
 
         # Original query should still be there, not replaced
-        expect(
-            page.locator("tbody.result-row").filter(has_text="different_user")
-        ).to_be_visible()
+        expect(_row(page, "different_user")).to_be_visible()
     finally:
         os.unlink(pdf_path)
 
@@ -218,22 +207,20 @@ def test_download_report_updates_date_indicator(
     _clear_storage(page)
 
     # Add and run a query
-    page.select_option("select[x-model='selectedCrawler']", "codeforces")
-    page.fill("input[placeholder='Username']", "tourist")
-    page.click('button:has-text("Add")')
-    page.click('button:has-text("Query All")')
-    row = page.locator("tbody.result-row").filter(has_text="CodeForces")
-    expect(row).to_have_class("result-row success", timeout=30000)
+    _add_query(page, "codeforces", "tourist")
+    page.click("button.btn.primary:has-text('query all')")
+    row = _row(page, "CodeForces")
+    expect(row).to_have_class("r-ok", timeout=30000)
 
     # Download report and intercept the download
     with page.expect_download() as dl_info:
-        page.click('button:has-text("Download Report")')
+        page.click("button.btn.primary:has-text('download report.pdf')")
     download = dl_info.value
     assert download.suggested_filename.startswith("ojhunt-report-")
     assert download.suggested_filename.endswith(".pdf")
 
     # Date indicator should be updated
-    expect(page.locator(".report-restore .prev-date")).to_be_visible(timeout=5000)
+    expect(page.locator(".banner .date")).to_be_visible(timeout=5000)
 
 
 @pytest.mark.playwright
@@ -245,31 +232,25 @@ def test_download_then_upload_shows_date_and_merges(
     _clear_storage(page)
 
     # Add and run a query
-    page.select_option("select[x-model='selectedCrawler']", "codeforces")
-    page.fill("input[placeholder='Username']", "tourist")
-    page.click('button:has-text("Add")')
-    page.click('button:has-text("Query All")')
-    row = page.locator("tbody.result-row").filter(has_text="CodeForces")
-    expect(row).to_have_class("result-row success", timeout=30000)
+    _add_query(page, "codeforces", "tourist")
+    page.click("button.btn.primary:has-text('query all')")
+    row = _row(page, "CodeForces")
+    expect(row).to_have_class("r-ok", timeout=30000)
 
     # Download report — download.path() is already on disk, use it directly
     with page.expect_download() as dl_info:
-        page.click('button:has-text("Download Report")')
+        page.click("button.btn.primary:has-text('download report.pdf')")
     download = dl_info.value
-    date_text = page.locator(".report-restore .prev-date").inner_text(timeout=5000)
+    date_text = page.locator(".banner .date").inner_text(timeout=5000)
 
     # Clear storage and reload, then re-upload the downloaded file
     _clear_storage(page)
     page.set_input_files("input[type='file']", download.path())
 
     # Date should match what was shown after download
-    expect(page.locator(".report-restore .prev-date")).to_have_text(
-        date_text, timeout=5000
-    )
+    expect(page.locator(".banner .date")).to_have_text(date_text, timeout=5000)
     # Queries should be restored
-    expect(
-        page.locator("tbody.result-row").filter(has_text="CodeForces")
-    ).to_be_visible(timeout=5000)
+    expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
 
 
 @pytest.mark.playwright
@@ -282,18 +263,14 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
 
     # Upload the historical PDF (3 entries from 2020)
     page.set_input_files("input[type='file']", historical_pdf_path)
-    expect(page.locator(".report-restore .prev-date")).to_be_visible(timeout=5000)
-    expect(
-        page.locator("tbody.result-row").filter(has_text="CodeForces")
-    ).to_be_visible(timeout=5000)
+    expect(page.locator(".banner .date")).to_be_visible(timeout=5000)
+    expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
 
     # Query and download a new report (today's date ~2026)
-    page.click('button:has-text("Query All")')
-    expect(
-        page.locator("tbody.result-row").filter(has_text="CodeForces")
-    ).to_have_class("result-row success", timeout=30000)
+    page.click("button.btn.primary:has-text('query all')")
+    expect(_row(page, "CodeForces")).to_have_class("r-ok", timeout=30000)
     with page.expect_download() as dl_info:
-        page.click('button:has-text("Download Report")')
+        page.click("button.btn.primary:has-text('download report.pdf')")
     download = dl_info.value
 
     # Extract history from the new PDF and verify the 2020 entries are still there

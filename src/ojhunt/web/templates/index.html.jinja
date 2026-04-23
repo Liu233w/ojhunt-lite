@@ -1,354 +1,460 @@
 {% extends "base.html.jinja" %}
 
-{% block title %}OJHunt Lite{% endblock %}
-
 {% block extra_head %}
-    <style>
-        * { box-sizing: border-box; }
+<style>
+  /* ── SECTION HEAD ── */
+  .section-head {
+    display: flex; align-items: baseline; gap: 0.75rem;
+    color: var(--fg-4); font-size: var(--fs-xs);
+    text-transform: uppercase; letter-spacing: 0.12em;
+    margin: 1.5rem 0 0.75rem;
+  }
+  .section-head .hash { color: var(--acc); }
+  .section-head .rule { flex: 1; border-bottom: 1px dashed var(--line); }
+  .section-head .count { color: var(--fg-3); font-variant-numeric: tabular-nums; }
 
-        .header { text-align: center; margin-bottom: 2rem; }
-        .header .logo { height: 80px; margin-bottom: 0.5rem; }
-        .header h1 { margin: 0; font-size: 1.75rem; }
-        .header .org-title { color: #666; margin: 0.25rem 0 0.5rem 0; }
-        .header .subtitle { color: #888; margin: 0; font-size: 0.95rem; }
+  /* ── BANNERS ── */
+  .banner {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--acc);
+    background: var(--bg-1);
+    font-size: var(--fs-s);
+    color: var(--fg-2);
+    margin-bottom: 1rem;
+  }
+  .banner .tag {
+    color: var(--acc); font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; font-size: var(--fs-xs);
+  }
+  .banner .date { color: var(--fg); font-weight: 500; }
+  .banner .help { color: var(--fg-4); font-size: var(--fs-xs); }
+  .banner .spacer { flex: 1 1 auto; }
+  .banner.legacy { border-left-color: var(--fg-4); }
+  .banner.legacy .tag { color: var(--fg-3); }
+  .banner button.x {
+    background: none; border: 0; color: var(--fg-4);
+    padding: 0.25rem 0.5rem; font-size: 1rem; line-height: 1;
+  }
+  .banner button.x:hover { color: var(--fg); }
 
-        .query-builder { background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }
-        .query-builder-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-        .query-builder-row select, .query-builder-row input { padding: 0.5rem; font-size: 1rem; }
-        .query-builder-row select { min-width: 150px; }
-        .query-builder-row input { flex: 1; min-width: 150px; }
+  /* ── COMPOSER ── */
+  .composer {
+    border: 1px solid var(--line);
+    background: var(--bg-1);
+    margin-bottom: 1.5rem;
+  }
+  .composer .c-label {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-2);
+    font-size: var(--fs-xs); color: var(--fg-3);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .composer .c-label .dot { color: var(--acc); }
+  .composer .c-body {
+    padding: 0.9rem 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto auto;
+    gap: 0.5rem;
+    align-items: center;
+  }
 
-        button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
-        button.primary { background: #0066cc; color: white; border: none; border-radius: 4px; }
-        button.primary:hover { background: #0055aa; }
-        button.secondary { background: #e0e0e0; border: none; border-radius: 4px; }
-        button.secondary:hover { background: #d0d0d0; }
-        button.danger { background: #cc4444; color: white; border: none; border-radius: 4px; }
-        button.query-btn { background: #0066cc; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
-        button.cancel-btn { background: #cc4444; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
-        button.retry-btn { background: #ff9800; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
-        button.remove-btn { background: #e0e0e0; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+  .field {
+    display: flex; align-items: center;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    padding: 0 0.6rem;
+    height: 36px;
+    position: relative;
+  }
+  .field:focus-within { border-color: var(--acc); box-shadow: 0 0 0 2px var(--acc-dimmer); }
+  .field .prefix { color: var(--fg-4); user-select: none; margin-right: 0.45rem; }
+  .field select, .field input {
+    background: transparent; border: 0; outline: none;
+    color: var(--fg); font: inherit; width: 100%; padding: 0;
+  }
+  .field select option { background: var(--bg-1); color: var(--fg); }
+  .field input::placeholder { color: var(--fg-4); }
+  .field .at { color: var(--acc); margin: 0 0.3rem; }
 
-        .actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--bg-2); color: var(--fg);
+    border: 1px solid var(--line-2);
+    padding: 0 0.85rem; height: 36px;
+    font: inherit; letter-spacing: 0.04em;
+    text-transform: lowercase; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--acc); color: var(--acc); }
+  .btn.primary { background: var(--acc); color: #0c0d0e; border-color: var(--acc); font-weight: 600; }
+  .btn.primary:hover { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+  .btn.ghost { background: transparent; }
+  .btn.danger:hover { border-color: var(--err); color: var(--err); }
+  .btn .kbd {
+    margin-left: 0.3rem; color: var(--fg-4); font-size: 10px;
+    letter-spacing: 0.05em; border: 1px solid var(--line); padding: 0 0.3rem; border-radius: 2px;
+  }
+  .btn.primary .kbd { color: rgba(12,13,14,0.75); border-color: rgba(12,13,14,0.35); }
+  .btn.xs { height: 26px; padding: 0 0.55rem; font-size: var(--fs-xs); }
 
-        .results-section { margin-top: 1.5rem; flex: 1; }
-        .results-section h3 { margin-bottom: 0.5rem; }
+  .crawler-hint {
+    grid-column: 1 / -1;
+    font-size: var(--fs-xs); color: var(--fg-3); padding-left: 0.1rem;
+  }
+  .crawler-hint::before { content: "ℹ "; color: var(--fg-4); }
 
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th:nth-child(1) { width: 14%; }
-        th:nth-child(2) { width: 12%; }
-        th:nth-child(3) { width: 18%; }
-        th:nth-child(4) { width: 20%; }
-        th:nth-child(5) { width: 22%; }
-        th:nth-child(6) { width: 14%; }
-        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; overflow: hidden; }
-        th { background: #f5f5f5; font-weight: 600; }
-        .status { color: #22863a; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
-        .status.error { color: #cb2431; display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
-        .status.pending { color: #666; }
-        .status.loading { color: #f5a623; }
-        .status[title] { cursor: help; }
-        .result-row td:nth-child(1)[title] { cursor: help; }
-        .crawler-desc-mobile { display: none; }
-        .result-row.success { background: #f0fff4; }
-        .result-row.error { background: #ffeef0; }
-        .result-row.loading { background: #fffde7; }
-        .result-row.pending { background: #fafafa; }
+  /* ── SUMMARY ── */
+  .summary {
+    margin-top: 1.5rem;
+    border: 1px solid var(--line);
+    background: var(--bg-1);
+    display: grid; grid-template-columns: 1fr auto; align-items: center;
+  }
+  .summary-left {
+    padding: 1rem 1.25rem;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 1.5rem;
+  }
+  .summary .stat { display: flex; flex-direction: column; }
+  .summary .stat .n {
+    font-size: 1.75rem; font-weight: 600; color: var(--acc);
+    letter-spacing: -0.01em; line-height: 1.1;
+  }
+  .summary .stat .l {
+    font-size: var(--fs-xs); color: var(--fg-4);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.2rem;
+  }
+  .summary .sep { color: var(--fg-4); font-size: 1.5rem; line-height: 1; align-self: center; }
+  .summary-right {
+    padding: 1rem 1.25rem;
+    border-left: 1px solid var(--line);
+    display: flex; flex-direction: row-reverse; gap: 1rem; align-items: center;
+  }
+  .summary-right .note {
+    font-size: var(--fs-xs); color: var(--fg-4); max-width: 28ch; line-height: 1.4;
+    text-align: right;
+  }
 
-        .solved-count { cursor: pointer; text-decoration: underline; color: #0066cc; }
-        .solved-count:hover { color: #0055aa; }
+  @media (max-width: 640px) {
+    .banner { gap: 0.4rem 0.75rem; padding: 0.6rem 0.75rem; }
+    .banner .spacer { flex-basis: 100%; height: 0; }
 
-        .report { background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
-        .report strong { font-size: 1.1rem; }
-        .report-note { font-size: 0.8rem; color: #555; }
+    .composer .c-body {
+      grid-template-columns: 1fr 1fr; gap: 0.4rem; padding: 0.7rem 0.75rem;
+    }
+    .composer .c-label { padding: 0.45rem 0.75rem; }
+    .composer .c-body .field-user,
+    .composer .c-body .field-crawler { grid-column: 1 / -1; }
+    .btn { padding: 0 0.65rem; }
+    .btn .kbd { display: none; }
 
-        .loading-spinner { color: #666; }
+    /* ── SUMMARY ── */
+    .summary { grid-template-columns: 1fr; }
+    .summary-left { padding: 0.85rem 1rem; gap: 0.75rem 1.25rem; }
+    .summary .stat .n { font-size: 1.5rem; }
+    .summary .sep { display: none; }
+    .summary-right { border-left: 0; border-top: 1px solid var(--line); padding: 0.85rem 1rem; }
 
-        dialog { padding: 1.5rem; border-radius: 8px; border: 1px solid #ccc; max-width: 600px; max-height: 80vh; }
-        dialog::backdrop { background: rgba(0,0,0,0.3); }
-        dialog h3 { margin-top: 0; margin-bottom: 1rem; }
-        dialog .dialog-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
-        dialog .problems-list { max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.875rem; line-height: 1.5; word-break: break-all; }
+    /* ── HOME: table → card layout ── */
+    #page-home .tbl-wrap { border: 0; background: transparent; }
+    #page-home .tbl,
+    #page-home .tbl thead,
+    #page-home .tbl tbody,
+    #page-home .tbl tr,
+    #page-home .tbl td,
+    #page-home .tbl th { display: block; }
+    #page-home .tbl thead { display: none; }
+    #page-home .tbl tbody tr {
+      border: 1px solid var(--line); background: var(--bg-1);
+      margin-bottom: 0.5rem; padding: 0.2rem 0;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    }
+    /* bar variant: border on card (tr), not on td:first-child */
+    [data-row-style="bar"] #page-home .tbl tbody tr.r-ok   { border-left: 3px solid var(--ok); }
+    [data-row-style="bar"] #page-home .tbl tbody tr.r-err  { border-left: 3px solid var(--err); }
+    [data-row-style="bar"] #page-home .tbl tbody tr.r-load { border-left: 3px solid var(--load); }
+    [data-row-style="bar"] #page-home .tbl tbody tr.r-pend { border-left: 3px solid var(--line-2); }
+    /* cancel desktop td:first-child bar for home */
+    [data-row-style="bar"] #page-home .tbl tbody tr td:first-child { border-left: 0 !important; }
 
-        .empty-state { color: #666; font-style: italic; padding: 1rem; text-align: center; }
-
-        .report-restore { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.6rem 0.75rem; background: #f0f4ff; border-radius: 6px; border: 1px solid #d0d8f0; font-size: 0.875rem; }
-        .report-restore .prev-label { color: #555; }
-        .report-restore .prev-date { font-weight: 600; color: #0066cc; }
-        .report-restore .help { font-size: 0.8rem; color: #666; display: block; margin-top: 0.2rem; }
-        .report-restore label { cursor: pointer; }
-        .report-restore button { font-size: 0.8rem; padding: 0.25rem 0.75rem; }
-        .report-actions { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; }
-
-        .footer { margin-top: auto; padding-top: 2rem; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 0.875rem; line-height: 1.6; }
-        .footer a { color: #0066cc; text-decoration: none; }
-        .footer a:hover { text-decoration: underline; }
-
-        /* ── Mobile ── */
-        @media (max-width: 600px) {
-            /* Query builder: stack select + input vertically */
-            .query-builder-row { flex-direction: column; align-items: stretch; }
-            .query-builder-row select,
-            .query-builder-row input { width: 100%; min-width: 0; }
-
-            /* Results table: card layout */
-            table, thead, tbody, th, td, tr { display: block; }
-            thead tr { display: none; }
-            .result-row {
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                margin-bottom: 0.75rem;
-                padding: 0.25rem 0;
-                background: #fff;
-            }
-            .result-row.success { background: #f0fff4; }
-            .result-row.error   { background: #ffeef0; }
-            .result-row.loading { background: #fffde7; }
-            .result-row.pending { background: #fafafa; }
-            .result-row td {
-                border-bottom: none;
-                padding: 0.3rem 0.75rem;
-                display: flex;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-            .result-row td::before {
-                font-weight: 600;
-                color: #555;
-                font-size: 0.8rem;
-                min-width: 90px;
-                flex-shrink: 0;
-            }
-            .result-row td:nth-child(1)::before { content: "Crawler"; }
-            .result-row td:nth-child(2)::before { content: "Username"; }
-            .result-row td:nth-child(3)::before { content: "Solved"; }
-            .result-row td:nth-child(4)::before { content: "Submissions"; }
-            .result-row td:nth-child(5)::before { content: "Status"; }
-            .result-row td:nth-child(6)::before { content: "Actions"; }
-            /* Error rows: Solved/Submissions/Status merged into one cell (nth-child 3), Actions shifts to 4 */
-            .result-row.error td:nth-child(3)::before { content: "Error"; }
-            .result-row.error td:nth-child(4)::before { content: "Actions"; }
-            /* Empty state row */
-            tr:not(.result-row) td { padding: 0.5rem 0.75rem; }
-
-            /* Crawler description: show inline in card layout */
-            .crawler-desc-mobile { display: block; font-size: 0.75rem; color: #888; margin-top: 0.15rem; }
-
-            /* Status: allow wrapping */
-            .status { max-width: none; white-space: normal; }
-
-            /* Dialog: fit viewport */
-            dialog { max-width: calc(100vw - 2rem); width: 100%; }
-        }
-    </style>
+    #page-home .tbl tbody td {
+      border-bottom: 0; padding: 0.3rem 0.75rem;
+      display: flex; align-items: flex-start; gap: 0.5rem; font-size: var(--fs-s);
+      min-width: 0;
+    }
+    #page-home .tbl tbody td::before {
+      content: attr(data-lbl);
+      color: var(--fg-4); font-size: var(--fs-xs); text-transform: uppercase;
+      letter-spacing: 0.08em; min-width: 72px; flex-shrink: 0;
+    }
+    #page-home .tbl tbody td.crawler {
+      grid-column: 1 / -1; border-bottom: 1px solid var(--line);
+      padding-bottom: 0.5rem; margin-bottom: 0.25rem; font-size: var(--fs);
+    }
+    #page-home .tbl tbody td.crawler::before { display: none; }
+    #page-home .tbl tbody td.actions { grid-column: 1 / -1; justify-content: flex-end; }
+    #page-home .tbl tbody td.actions::before { display: none; }
+    #page-home .tbl tbody td[colspan] { grid-column: 1 / -1; }
+    #page-home .tbl tbody tr { position: relative; }
+  }
+</style>
 {% endblock %}
 
-{% macro crawler_td() %}
-<td :title="crawlers[q.crawler]?.description || null">
-    <div>
-        <span x-text="crawlers[q.crawler]?.title || q.crawler"></span>
-        <small class="crawler-desc-mobile"
-               x-show="crawlers[q.crawler]?.description"
-               x-text="crawlers[q.crawler]?.description"></small>
-    </div>
-</td>
-{% endmacro %}
+{% block title %}OJHunt Lite{% endblock %}
+
+{% block page_id %}page-home{% endblock %}
 
 {% block content %}
-    <div class="header">
-        <img src="/assets/logo.png" alt="OJHunt Logo" class="logo">
-        <p class="org-title">ACM-ICPC 协会</p>
-        <h1>OJHunt Lite</h1>
-        <p class="subtitle">Query Online Judge statistics across multiple platforms</p>
+<header class="header">
+    <div class="mark">
+        <img src="/assets/logo.png" alt="OJHunt Logo">
+        <div>
+            <h1>OJHunt Lite</h1>
+            <div class="h-meta"><span class="cjk">西北工业大学 ACM 协会</span></div>
+        </div>
+    </div>
+    <div class="subtitle">
+        <span class="prompt">$</span> pip install ojhunt<br>
+        <span class="prompt">$</span> ojhunt username@crawler
+    </div>
+</header>
+
+<!-- Legacy banner — plain JS, no Alpine dependency -->
+<div id="legacy-banner" class="banner legacy" style="display: none;">
+    <span class="tag">legacy</span>
+    <span>Were you a user of the old <span style="color:var(--fg)">acm-statistics</span> site?</span>
+    <a href="/pdf/legacy">Download your progress history →</a>
+    <span class="spacer"></span>
+    <button class="x" aria-label="dismiss" onclick="dismissLegacyBanner()">×</button>
+</div>
+<script>
+(function () {
+    if (localStorage.getItem('legacy-banner-dismissed') !== '1') {
+        document.getElementById('legacy-banner').style.display = '';
+    }
+})();
+function dismissLegacyBanner() {
+    localStorage.setItem('legacy-banner-dismissed', '1');
+    document.getElementById('legacy-banner').style.display = 'none';
+}
+</script>
+
+<div x-data="ojhunt()" x-init="init()">
+
+    <!-- Report restore banner (always visible after Alpine init) -->
+    <div class="banner" x-cloak>
+        <span class="tag" x-show="cachedPdfDate">report</span>
+        <span class="tag" x-show="!cachedPdfDate" style="color:var(--fg-4)">pdf</span>
+        <span x-show="cachedPdfDate">
+            previous: <span class="date" x-text="cachedPdfDate"></span>
+            <span class="help">loaded from pdf</span>
+        </span>
+        <span x-show="!cachedPdfDate" style="color:var(--fg-4)">no saved pdf</span>
+        <span class="spacer"></span>
+        <label>
+            <input type="file" accept=".pdf" x-ref="pdfUploadInput"
+                   @change="uploadReport($event.target.files[0]); $event.target.value=''"
+                   style="display:none">
+            <button type="button" class="btn xs ghost"
+                    @click="$refs.pdfUploadInput.click()"
+                    x-text="cachedPdfDate ? 'load different' : 'load pdf'"></button>
+        </label>
+        <button type="button" class="btn xs ghost danger" x-show="cachedPdfDate" @click="clearCachedPdf()">delete</button>
     </div>
 
-    <div x-data="ojhunt()" x-init="init()">
-
-        <!-- Previous report restore banner -->
-        <div class="report-restore">
-            <span class="prev-label" x-show="cachedPdfDate">
-                Previous report: <span class="prev-date" x-text="cachedPdfDate"></span>
-            </span>
-            <span class="prev-label" x-show="!cachedPdfDate">
-                No report loaded
-                <span class="help">Upload a previous report to restore your crawler list and track progress over time.</span>
-            </span>
-            <label>
-                <input type="file" accept=".pdf" x-ref="pdfUploadInput"
-                       @change="uploadReport($event.target.files[0]); $event.target.value=''"
-                       style="display:none">
-                <button type="button" class="secondary"
-                        @click="$refs.pdfUploadInput.click()"
-                        x-text="cachedPdfDate ? 'Load different report' : 'Load report'"></button>
-            </label>
-            <button type="button" class="danger"
-                    x-show="cachedPdfDate"
-                    @click="clearCachedPdf()">Delete report</button>
+    <!-- Query composer -->
+    <div class="composer">
+        <div class="c-label">
+            <span><span class="dot">●</span> add_query</span>
+            <span>username @ crawler</span>
         </div>
-
-        <div class="query-builder">
-            <div class="query-builder-row">
-                <select x-model="selectedCrawler">
-                    <option value="">Select crawler...</option>
+        <div class="c-body">
+            <div class="field field-user">
+                <span class="prefix">user</span>
+                <input type="text" placeholder="username"
+                       x-model="username"
+                       @keydown.enter="addQuery()">
+                <span class="at">@</span>
+            </div>
+            <div class="field field-crawler">
+                <span class="prefix">crawler</span>
+                <select x-model="selectedCrawler" @keydown.enter="addQuery()">
+                    <option value="">-- select --</option>
                     <template x-for="[name, info] in Object.entries(crawlers)" :key="name">
                         <option :value="name" x-text="info.title"></option>
                     </template>
-                    <option value="*">All Crawlers</option>
+                    <option value="*">* all crawlers</option>
                 </select>
-                <input type="text" placeholder="Username" x-model="username" @keydown.enter="addQuery()" />
-                <button type="button" class="primary" @click="addQuery()" title="Enter">Add</button>
             </div>
-            <div x-show="selectedCrawler && selectedCrawler !== '*' && crawlers[selectedCrawler]?.description"
-                 style="margin-top: 0.35rem; font-size: 0.85rem; color: #666;"
-                 x-text="crawlers[selectedCrawler]?.description"></div>
-            <div class="actions">
-                <button type="button" class="primary" @click="queryAll()" title="Ctrl(⌘)+Enter">Query All</button>
-                <button type="button" class="secondary" @click="clearAll()">Clear All</button>
+            <button type="button" class="btn" @click="addQuery()">
+                add <span class="kbd">↵</span>
+            </button>
+            <button type="button" class="btn primary" @click="queryAll()" title="Ctrl/Cmd+Enter">
+                query all <span class="kbd" x-text="isMac ? '⌘↵' : '^↵'"></span>
+            </button>
+            <div class="crawler-hint"
+                 x-show="selectedCrawler && selectedCrawler !== '*' && crawlers[selectedCrawler]?.description"
+                 x-text="(crawlers[selectedCrawler]?.title || '') + ' — ' + (crawlers[selectedCrawler]?.description || '')">
             </div>
         </div>
+    </div>
 
-        <div class="results-section">
-            <h3>Queries</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Crawler</th>
-                        <th>Username</th>
-                        <th>Solved</th>
-                        <th>Submissions</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr x-show="queries.length === 0">
-                        <td colspan="6" class="empty-state">Add crawlers above to start querying.</td>
-                    </tr>
-                </tbody>
+    <!-- Queries section -->
+    <div class="section-head">
+        <span class="hash">##</span>
+        <span>queries</span>
+        <span class="count" x-text="queries.length + ' rows'"></span>
+        <button type="button" class="btn xs ghost danger"
+                x-show="queries.length > 0"
+                @click="clearAll()">clear all</button>
+        <span class="rule"></span>
+    </div>
+
+    <div class="tbl-wrap">
+        <table class="tbl" id="queries-tbl">
+            <thead>
+                <tr>
+                    <th style="width:25%">username</th>
+                    <th style="width:16%">crawler</th>
+                    <th style="width:14%">solved</th>
+                    <th style="width:19%">submissions</th>
+                    <th style="width:10%">status</th>
+                    <th style="width:80px; text-align:right">actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr x-show="queries.length === 0">
+                    <td colspan="6" class="empty">
+                        <pre>  no queries yet.</pre>
+                        <span>add a <span class="hint-cmd"><span class="hl">username@crawler</span></span> above to start.</span>
+                    </td>
+                </tr>
                 <template x-for="q in queries" :key="q.id">
-                    <tbody :id="'row-' + q.id" :class="'result-row ' + q.status">
-                        <template x-if="q.status === 'pending'">
-                            <tr>
-                                {{ crawler_td() }}
-                                <td x-text="q.username"></td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td><span class="status pending">Pending</span></td>
-                                <td>
-                                    <button type="button" class="query-btn" @click="queryOne(q.id)">Query</button>
-                                    <button type="button" class="remove-btn" @click="removeQuery(q.id)">Remove</button>
-                                </td>
-                            </tr>
-                        </template>
-                        <template x-if="q.status === 'loading'">
-                            <tr>
-                                {{ crawler_td() }}
-                                <td x-text="q.username"></td>
-                                <td><span class="loading-spinner">Loading...</span></td>
-                                <td></td>
-                                <td><span class="status loading">Loading...</span></td>
-                                <td>
-                                    <button type="button" class="cancel-btn" @click="stopQuery(q.id)">Stop</button>
-                                </td>
-                            </tr>
-                        </template>
-                        <template x-if="q.status === 'success'">
-                            <tr>
-                                {{ crawler_td() }}
-                                <td x-text="q.username"></td>
-                                <td><a href="#" class="solved-count" @click.prevent="showDialog(q)" x-text="q.solved"></a></td>
-                                <td x-text="q.submissions"></td>
-                                <td><span class="status" :title="'OK (' + q.duration.toFixed(2) + 's)'" x-text="'OK (' + q.duration.toFixed(2) + 's)'"></span></td>
-                                <td>
-                                    <button type="button" class="retry-btn" @click="retryQuery(q.id)">Retry</button>
-                                    <button type="button" class="remove-btn" @click="removeQuery(q.id)">Remove</button>
-                                </td>
-                            </tr>
-                        </template>
-                        <template x-if="q.status === 'error'">
-                            <tr>
-                                {{ crawler_td() }}
-                                <td x-text="q.username"></td>
-                                <td colspan="3">
-                                    <a href="#" class="status error" @click.prevent="document.getElementById('dialog-error-' + q.id).showModal()" x-text="'ERROR: ' + q.error"></a>
-                                </td>
-                                <td>
-                                    <button type="button" class="retry-btn" @click="retryQuery(q.id)">Retry</button>
-                                    <button type="button" class="remove-btn" @click="removeQuery(q.id)">Remove</button>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
+                    <tr :class="{
+                        'r-ok':   q.status === 'success',
+                        'r-err':  q.status === 'error',
+                        'r-load': q.status === 'loading',
+                        'r-pend': q.status === 'pending'
+                    }">
+                        <td data-lbl="user"><span class="user" x-text="q.username"></span></td>
+                        <td class="crawler" data-lbl="crawler">
+                            <div x-text="crawlers[q.crawler]?.title || q.crawler"></div>
+                            <div class="tag" x-text="q.crawler"></div>
+                        </td>
+                        <td data-lbl="solved" :colspan="q.status === 'error' ? 2 : null">
+                            <a href="#" class="err-link" x-show="q.status === 'error'"
+                               @click.prevent="document.getElementById('dialog-error-' + q.id)?.showModal()"
+                               x-text="q.error"></a>
+                            <a href="#" class="solved-link" x-show="q.status === 'success'"
+                               @click.prevent="showDialog(q)"
+                               x-text="q.solved?.toLocaleString('en-US')"></a>
+                            <span class="num dim" x-show="q.status === 'loading'">—</span>
+                            <span class="num dim" x-show="q.status === 'pending'">—</span>
+                        </td>
+                        <td data-lbl="subs" x-show="q.status !== 'error'">
+                            <span class="num dim" x-show="q.status === 'success'" x-text="q.submissions?.toLocaleString('en-US')"></span>
+                            <span class="num dim" x-show="q.status !== 'success'">—</span>
+                        </td>
+                        <td data-lbl="status">
+                            <span class="status s-ok" x-show="q.status === 'success'">ok<span class="t" x-text="'  ' + q.duration?.toFixed(2) + 's'"></span></span>
+                            <span class="status s-err" x-show="q.status === 'error'">error</span>
+                            <span class="status s-load" x-show="q.status === 'loading'">fetching<span class="loading-dots"></span></span>
+                            <span class="status s-pend" x-show="q.status === 'pending'">pending</span>
+                        </td>
+                        <td class="actions">
+                            <button class="iconbtn" x-show="q.status === 'pending'" title="query" @click="queryOne(q.id)">▶</button>
+                            <button class="iconbtn" x-show="q.status === 'success' || q.status === 'error'" title="retry" @click="retryQuery(q.id)">↻</button>
+                            <button class="iconbtn danger" x-show="q.status === 'loading'" title="stop" @click="stopQuery(q.id)">■</button>
+                            <button class="iconbtn danger" x-show="q.status !== 'loading'" title="remove" @click="removeQuery(q.id)">×</button>
+                        </td>
+                    </tr>
                 </template>
-            </table>
-        </div>
+            </tbody>
+        </table>
+    </div>
 
-        <div class="report" x-show="report.totalSolved !== null">
-            <strong>Total: <span x-text="report.totalSolved"></span> solved / <span x-text="report.totalSubmissions"></span> submissions</strong>
-            <div class="report-actions">
-                <button type="button" class="primary" @click="downloadReport()">Download Report</button>
-                <span class="report-note">
-                    Saves your crawler list and progress history<span x-show="cachedPdfDate"> — history from <span x-text="cachedPdfDate"></span> will be included</span>.
-                    Store this PDF on your own device — browser storage can be cleared at any time.
+    <!-- Report summary -->
+    <div class="summary" x-show="report.totalSolved !== null" x-cloak>
+        <div class="summary-left">
+            <div class="stat">
+                <span class="n" x-text="report.totalSolved?.toLocaleString('en-US')"></span>
+                <span class="l">total solved</span>
+            </div>
+            <span class="sep">/</span>
+            <div class="stat">
+                <span class="n" style="color:var(--fg)"
+                      x-text="report.totalSubmissions?.toLocaleString('en-US')"></span>
+                <span class="l">total submissions</span>
+            </div>
+        </div>
+        <div class="summary-right">
+            <button type="button" class="btn primary" @click="downloadReport()">
+                download report.pdf
+            </button>
+            <span class="note">
+                Saves your crawler list and history.
+                Store the PDF on your device — browser storage may be cleared.
+            </span>
+        </div>
+    </div>
+
+    <!-- Solved list dialogs -->
+    <template x-for="q in queries" :key="q.id">
+        <dialog :id="'dialog-' + q.id" x-show="q.status === 'success'">
+            <div class="dlg-hd">
+                <span>problems_list</span>
+                <span class="title">
+                    <span x-text="crawlers[q.crawler]?.title || q.crawler"></span> /
+                    <span x-text="q.username"></span> —
+                    <span x-text="(q.solvedList?.length || 0).toLocaleString('en-US')"></span> problems
                 </span>
             </div>
-        </div>
+            <div class="dlg-bd">
+                <span x-text="q.solvedList?.sort().join(', ') || ''"></span>
+            </div>
+            <div class="dlg-ft">
+                <button class="btn" @click="closeDialog(q.id)">close <span class="kbd">esc</span></button>
+            </div>
+        </dialog>
+    </template>
+    <!-- Error detail dialogs -->
+    <template x-for="q in queries" :key="'err-' + q.id">
+        <dialog :id="'dialog-error-' + q.id">
+            <div class="dlg-hd">
+                <span>error_detail</span>
+                <span class="title">
+                    <span x-text="crawlers[q.crawler]?.title || q.crawler"></span> /
+                    <span x-text="q.username"></span>
+                </span>
+            </div>
+            <div class="dlg-bd" x-text="q.error || ''"></div>
+            <div class="dlg-ft">
+                <button class="btn" @click="closeDialog('error-' + q.id)">close <span class="kbd">esc</span></button>
+            </div>
+        </dialog>
+    </template>
 
-        <template x-for="q in queries" :key="q.id">
-            <dialog :id="'dialog-' + q.id" x-show="q.status === 'success'">
-                <h3>
-                    <span x-text="crawlers[q.crawler]?.title || q.crawler"></span>
-                    (<span x-text="q.username"></span>):
-                    <span x-text="q.solvedList?.length || 0"></span> problems
-                </h3>
-                <div class="problems-list" x-text="q.solvedList?.sort().join(', ') || ''"></div>
-                <div class="dialog-actions">
-                    <button type="button" class="primary" @click="closeDialog(q.id)">Close</button>
-                </div>
-            </dialog>
-        </template>
-        <template x-for="q in queries" :key="'err-' + q.id">
-            <dialog :id="'dialog-error-' + q.id">
-                <h3>Error — <span x-text="crawlers[q.crawler]?.title || q.crawler"></span> / <span x-text="q.username"></span></h3>
-                <div class="problems-list" x-text="q.error || ''"></div>
-                <div class="dialog-actions">
-                    <button type="button" class="primary" @click="closeDialog('error-' + q.id)">Close</button>
-                </div>
-            </dialog>
-        </template>
+</div>{# end x-data #}
+
+<footer class="footer">
+    <div>
+        <p>inspired by <a href="https://kidozh.com" target="_blank" rel="noopener noreferrer">jiduo zhang</a>'s
+            西北工业大学ACM查询系统 (npuacm.info).</p>
+        <p>a from-scratch rewrite of
+            <a href="https://github.com/Liu233w/acm-statistics" target="_blank" rel="noopener noreferrer">acm-statistics</a>,
+            no server-side storage — everything lives in your browser and your pdf.</p>
+        <p>ai agent? <a href="/llms.txt">read the guide for llm →</a></p>
     </div>
+    <div class="ascii">┌─────────────┐
+│ ojhunt-lite │
+└─────────────┘</div>
+</footer>
+{% endblock %}
 
-    <div id="legacy-banner" class="report-restore">
-        <span>Were you a user of the old acm-statistics site (old OJHunt)?</span>
-        <a href="/pdf/legacy">Download your progress history →</a>
-        <button type="button" class="secondary" onclick="dismissLegacyBanner()">×</button>
-    </div>
-    <script>
-        (function () {
-            if (localStorage.getItem('legacy-banner-dismissed') === '1') {
-                document.getElementById('legacy-banner').style.display = 'none';
-            }
-        })();
-        function dismissLegacyBanner() {
-            localStorage.setItem('legacy-banner-dismissed', '1');
-            document.getElementById('legacy-banner').style.display = 'none';
-        }
-    </script>
-
-    <footer class="footer">
-        <p>
-            Inspired by <a href="https://kidozh.com" target="_blank" rel="noopener noreferrer">Jiduo Zhang</a>'s
-            西北工业大学ACM查询系统 (npuacm.info).
-            OJHunt Lite is a from-scratch rewrite of the author's
-            <a href="https://github.com/Liu233w/acm-statistics" target="_blank" rel="noopener noreferrer">OJHunt (acm-statistics)</a>,
-            with a lightweight Python implementation and no server-side data storage.
-        </p>
-        <p>
-            Are you an AI agent? <a href="/llms.txt">Read the guide for LLM →</a>
-        </p>
-    </footer>
-
-    <script>window.__CRAWLERS__ = {{ crawlers | tojson }};</script>
-    <script src="/assets/app.js?v={{ static_version }}"></script>
-    <script defer src="/assets/alpinejs-3.14.1.min.js"></script>
+{% block extra_scripts %}
+<script>window.__CRAWLERS__ = {{ crawlers | tojson }};</script>
+<script src="/assets/app.js?v={{ static_version }}"></script>
+<script defer src="/assets/alpinejs-3.14.1.min.js"></script>
 {% endblock %}

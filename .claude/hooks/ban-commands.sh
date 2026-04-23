@@ -13,4 +13,9 @@ if echo "$COMMAND" | grep -qE '(^|[;&|[:space:]])pip[[:space:]]+install'; then
     exit 2
 fi
 
+if echo "$COMMAND" | grep -qE '^[[:space:]]*(sudo[[:space:]]+)?uvicorn[[:space:]]'; then
+    echo "ERROR: Do not start the dev server with 'uvicorn' directly. Load the ojhunt-web skill for the correct start command." >&2
+    exit 2
+fi
+
 exit 0

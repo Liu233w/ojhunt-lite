@@ -1,112 +1,119 @@
 {% extends "base.html.jinja" %}
 
+{% block page_id %}page-pdf{% endblock %}
+{% block page_max_width %}760px{% endblock %}
+
 {% block extra_head %}
     <style>
-        * { box-sizing: border-box; }
-
         .pdf-subnav {
-            display: flex;
-            gap: 0.25rem;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #e5e7eb;
+            display: flex; gap: 0.25rem;
+            border-bottom: 1px solid var(--line);
             margin-bottom: 1.5rem;
         }
         .pdf-subnav a {
-            padding: 0.35rem 0.75rem;
-            border-radius: 5px;
-            text-decoration: none;
-            color: #444;
-            font-size: 0.9rem;
+            padding: 0.5rem 0.9rem;
+            color: var(--fg-3); font-size: var(--fs-s);
+            text-decoration: none; text-transform: lowercase; letter-spacing: 0.04em;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
         }
-        .pdf-subnav a:hover { background: #f3f4f6; color: #111; }
-        .pdf-subnav a.active {
-            background: #0066cc;
-            color: #fff;
-            font-weight: 600;
+        .pdf-subnav a:hover { color: var(--fg); text-decoration: none; }
+        .pdf-subnav a.active { color: var(--acc); border-bottom-color: var(--acc); }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group > label {
+            display: block; font-size: var(--fs-xs); text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--fg-4); margin-bottom: 0.4rem;
         }
-
-        .pdf-page h1 { margin: 0 0 0.5rem 0; font-size: 1.5rem; }
-        .pdf-page .subtitle { color: #666; margin: 0 0 1.5rem 0; }
-
-        .info-box {
-            background: #f0f4ff;
-            border: 1px solid #d0d8f0;
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #333;
+        .form-group > label .hint {
+            text-transform: none; letter-spacing: 0;
+            color: var(--fg-3); font-size: var(--fs-s);
         }
-
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.9rem; }
-        .form-group label .hint { font-weight: 400; color: #666; }
-        .form-group input[type="text"],
-        .form-group input[type="file"] {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        /* ── FIELD ── */
+        .field {
+            display: flex; align-items: center;
+            border: 1px solid var(--line);
+            background: var(--bg);
+            padding: 0 0.6rem;
+            height: 36px;
+            position: relative;
         }
-        .form-group input[type="file"] { padding: 0.4rem 0.5rem; }
+        .field:focus-within { border-color: var(--acc); box-shadow: 0 0 0 2px var(--acc-dimmer); }
+        .field input {
+            background: transparent; border: 0; outline: none;
+            color: var(--fg); font: inherit; width: 100%; padding: 0;
+        }
+        .field input::placeholder { color: var(--fg-4); }
+        .form-group .field { width: 100%; }
+        .form-group .field-file { height: auto; padding: 0.35rem 0.6rem; }
+        .form-group .field-file input[type="file"] { color: var(--fg-2); font-size: var(--fs-s); }
 
-        .btn-primary {
-            padding: 0.6rem 1.5rem;
-            font-size: 1rem;
-            background: #0066cc;
-            color: white;
-            border: none;
-            border-radius: 4px;
+        /* ── CARD ── */
+        .card { border: 1px solid var(--line); background: var(--bg-1); }
+        .card-hd {
+            padding: 0.55rem 1rem;
+            background: var(--bg-2);
+            border-bottom: 1px solid var(--line);
+            font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--fg-3);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .card-hd .prompt { color: var(--acc); }
+
+        /* ── BANNER ── */
+        .banner {
+            display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--acc);
+            background: var(--bg-1);
+            font-size: var(--fs-s);
+            color: var(--fg-2);
+            margin-bottom: 1rem;
+        }
+        .banner .tag {
+            color: var(--acc); font-weight: 600;
+            letter-spacing: 0.06em; text-transform: uppercase; font-size: var(--fs-xs);
+        }
+        .banner.legacy { border-left-color: var(--fg-4); }
+        .banner.legacy .tag { color: var(--fg-3); }
+
+        /* ── BUTTON ── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: var(--bg-2); color: var(--fg);
+            border: 1px solid var(--line-2);
+            padding: 0 0.85rem; height: 36px;
+            font: inherit; letter-spacing: 0.04em;
+            text-transform: lowercase; white-space: nowrap;
             cursor: pointer;
         }
-        .btn-primary:hover { background: #0055aa; }
-
-        .error-box {
-            background: #ffeef0;
-            border: 1px solid #f5a0a0;
-            border-radius: 6px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-            color: #c00;
-            font-size: 0.9rem;
-        }
-
-        .notice-box {
-            background: #fff8e1;
-            border: 1px solid #ffe082;
-            border-radius: 6px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1rem;
-            color: #7a5500;
-            font-size: 0.9rem;
-        }
+        .btn:hover { border-color: var(--acc); color: var(--acc); }
+        .btn.primary { background: var(--acc); color: #0c0d0e; border-color: var(--acc); font-weight: 600; }
+        .btn.primary:hover { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 
         .help-text {
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-            font-size: 0.875rem;
-            color: #555;
-            line-height: 1.6;
+            margin-top: 1.5rem; padding-top: 1rem;
+            border-top: 1px dashed var(--line);
+            font-size: var(--fs-s); color: var(--fg-3); line-height: 1.7;
         }
-        .help-text a { color: #0066cc; text-decoration: none; }
-        .help-text a:hover { text-decoration: underline; }
 
-        @media (max-width: 540px) {
-            .pdf-subnav { flex-wrap: wrap; }
-        }
+        @media (max-width: 540px) { .pdf-subnav { flex-wrap: wrap; } }
     </style>
     {% block pdf_extra_head %}{% endblock %}
 {% endblock %}
 
 {% block content %}
-    <div class="pdf-page">
-        <nav class="pdf-subnav">
-            <a href="/pdf/legacy" class="{{ 'active' if active_page == 'legacy' else '' }}">Legacy Data Export</a>
-            <a href="/pdf/merge" class="{{ 'active' if active_page == 'merge' else '' }}">Merge History</a>
-        </nav>
-        {% block pdf_content %}{% endblock %}
-    </div>
+    <header class="header">
+        <div>
+            <h1>{% block pdf_heading %}pdf-tools{% endblock %}</h1>
+            <div class="h-meta">{% block pdf_meta %}{% endblock %}</div>
+        </div>
+    </header>
+
+    <nav class="pdf-subnav">
+        <a href="/pdf/legacy" class="{{ 'active' if active_page == 'legacy' else '' }}">legacy-export</a>
+        <a href="/pdf/merge" class="{{ 'active' if active_page == 'merge' else '' }}">merge-history</a>
+    </nav>
+
+    {% block pdf_content %}{% endblock %}
 {% endblock %}

@@ -1,7 +1,8 @@
 import pytest
 from playwright.sync_api import Page, expect
 
-BASE_URL = "http://localhost:8080"
+from e2e.helpers import BASE_URL
+
 DISCORD_INVITE_URL = "https://discord.gg/9BsnDaHpTU"
 DISCORD_SERVER_NAME = "OJ Analyzer Development"
 

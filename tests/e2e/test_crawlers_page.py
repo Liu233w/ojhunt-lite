@@ -1,7 +1,7 @@
 import pytest
 from playwright.sync_api import Page, expect
 
-BASE_URL = "http://localhost:8080"
+from e2e.helpers import BASE_URL
 
 
 @pytest.mark.playwright
@@ -15,8 +15,8 @@ def test_crawlers_page_loads(page: Page):
 @pytest.mark.playwright
 def test_crawlers_page_has_known_crawler(page: Page):
     page.goto(f"{BASE_URL}/crawlers")
-    expect(page.locator(".crawler-tag", has_text="codeforces")).to_be_visible()
-    expect(page.locator(".crawler-link", has_text="CodeForces")).to_be_visible()
+    expect(page.locator(".tag-cell", has_text="codeforces")).to_be_visible()
+    expect(page.locator(".clw-tbl .name", has_text="CodeForces")).to_be_visible()
 
 
 @pytest.mark.playwright
@@ -28,13 +28,13 @@ def test_crawlers_page_shows_status(page: Page):
         row = rows.nth(i)
         status_cell = row.locator("td:nth-child(4) span")
         text = status_cell.text_content()
-        assert text in ("Online", "Offline", "Waiting...", "Offline (No Credentials)")
+        assert text in ("online", "offline", "waiting")
 
 
 @pytest.mark.playwright
 def test_crawlers_page_has_links(page: Page):
     page.goto(f"{BASE_URL}/crawlers")
-    links = page.locator("table tbody a.crawler-link")
+    links = page.locator(".clw-tbl .name a")
     assert links.count() > 0
     # Verify links have href attributes pointing to external sites
     first_href = links.first.get_attribute("href")
@@ -44,13 +44,13 @@ def test_crawlers_page_has_links(page: Page):
 @pytest.mark.playwright
 def test_crawlers_page_home_link(page: Page):
     page.goto(f"{BASE_URL}/crawlers")
-    page.click("a.topnav-brand")
+    page.click("a.tb-brand")
     expect(page).to_have_url(f"{BASE_URL}/")
 
 
 @pytest.mark.playwright
 def test_crawlers_status_updates(page: Page):
-    """Verify that at least one crawler has been checked (not all Waiting)."""
+    """Verify that at least one crawler has been checked (not all waiting)."""
     page.goto(f"{BASE_URL}/crawlers")
     # The background checker starts immediately, so after a short wait
     # at least the first crawler should have a status
@@ -61,6 +61,6 @@ def test_crawlers_status_updates(page: Page):
     has_checked = False
     for i in range(count):
         text = statuses.nth(i).text_content()
-        if text in ("Online", "Offline", "Offline (No Credentials)"):
+        if text in ("online", "offline"):
             has_checked = True
     assert has_checked, "Expected at least one crawler to have been checked"

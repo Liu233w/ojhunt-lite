@@ -1,191 +1,212 @@
 {% extends "base.html.jinja" %}
 
-{% block title %}About - OJHunt Lite{% endblock %}
-
-{% block page_max_width %}800px{% endblock %}
-
 {% block extra_head %}
-    <style>
-        * { box-sizing: border-box; }
+<style>
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;
+  }
+  .card { border: 1px solid var(--line); background: var(--bg-1); }
+  .card-hd {
+    padding: 0.55rem 1rem;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--fg-3);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .card-hd .prompt { color: var(--acc); }
+  .row-item {
+    display: grid; grid-template-columns: 110px 1fr auto;
+    gap: 1rem; padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--line);
+    align-items: center; color: var(--fg); font-size: var(--fs-s);
+    text-decoration: none;
+  }
+  .row-item:last-child { border-bottom: 0; }
+  .row-item:hover { background: var(--bg-2); }
+  .row-item .k {
+    color: var(--fg-4); text-transform: uppercase;
+    font-size: var(--fs-xs); letter-spacing: 0.08em;
+  }
+  .row-item .v { color: var(--fg-2); word-break: break-all; }
+  .row-item .v .cjk { color: var(--fg); }
+  .row-item .v .highlight { color: var(--fg); }
+  .row-item .arr { color: var(--fg-4); font-size: var(--fs-s); }
+  .row-item:hover .arr { color: var(--acc); }
 
-        .header { text-align: center; margin-bottom: 2rem; }
-        .header .logo { height: 60px; margin-bottom: 0.5rem; }
-        .header h1 { margin: 0; font-size: 1.5rem; }
-
-        .card { background: #f9f9f9; border-radius: 8px; margin-bottom: 1.5rem; overflow: hidden; }
-        .card-header { background: #2196f3; color: white; padding: 0.75rem 1rem; font-weight: 600; }
-        .card-body { padding: 0; }
-
-        .list-item { display: flex; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid #eee; text-decoration: none; color: inherit; }
-        .list-item:last-child { border-bottom: none; }
-        .list-item:hover { background: #f0f0f0; }
-        .list-item-icon { width: 24px; color: #2196f3; margin-right: 0.75rem; flex-shrink: 0; }
-        .list-item-content { flex: 1; }
-        .list-item-title { font-weight: 500; margin-bottom: 0.125rem; }
-        .list-item-subtitle { color: #666; font-size: 0.875rem; }
-        .list-item-action { color: #999; margin-left: 0.5rem; }
-
-        .wechat-dialog { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; }
-        .wechat-dialog.show { display: flex; align-items: center; justify-content: center; }
-        .wechat-dialog-content { background: white; padding: 1.5rem; border-radius: 8px; text-align: center; max-width: 400px; }
-        .wechat-dialog-content h3 { margin-top: 0; }
-        .wechat-dialog-content img { max-width: 250px; }
-        .wechat-dialog-content button { margin-top: 1rem; padding: 0.5rem 1.5rem; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; }
-
-        /* ── Mobile ── */
-        @media (max-width: 540px) {
-            .list-item-subtitle { word-break: break-all; }
-            .wechat-dialog-content { max-width: calc(100vw - 2rem); }
-            .wechat-dialog-content img { max-width: 100%; }
-        }
-    </style>
+  @media (max-width: 640px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .row-item {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 0.1rem 0.5rem; padding: 0.65rem 0.85rem;
+    }
+    .row-item .k { grid-column: 1; grid-row: 1; }
+    .row-item .v { grid-column: 1 / -1; grid-row: 2; font-size: var(--fs-s); }
+    .row-item .arr { grid-column: 2; grid-row: 1; }
+  }
+</style>
 {% endblock %}
 
+{% block title %}About - OJHunt Lite{% endblock %}
+
+{% block page_id %}page-about{% endblock %}
+
+{% block page_max_width %}900px{% endblock %}
+
 {% block content %}
-    <div class="header">
-        <img src="/assets/logo.png" alt="OJHunt Logo" class="logo">
-        <h1>About OJHunt Lite</h1>
+<header class="header">
+    <div class="mark">
+        <img src="/assets/logo.png" alt="OJHunt Logo">
+        <div>
+            <h1>About OJHunt Lite</h1>
+            <div class="h-meta"><span class="cjk">关于本项目</span></div>
+        </div>
     </div>
+    <div class="subtitle">
+        <span class="prompt">$</span> ojhunt --help
+    </div>
+</header>
 
+<div class="about-grid">
+    <!-- about_us -->
     <div class="card">
-        <div class="card-header">About Us</div>
-        <div class="card-body">
-            <a href="https://github.com/Liu233w/ojhunt-lite/blob/master/README.md#contributors-" target="_blank" rel="noopener noreferrer" class="list-item">
-                <span class="list-item-icon">👥</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">Developed By</div>
-                    <div class="list-item-subtitle">Shumin Liu and Contributors</div>
-                </span>
-                <span class="list-item-action">↗</span>
-            </a>
-            <a href="mailto:support@ojhunt.com" class="list-item">
-                <span class="list-item-icon">✉️</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">Contact</div>
-                    <div class="list-item-subtitle">support@ojhunt.com</div>
-                </span>
-            </a>
-            <a href="https://github.com/Liu233w/ojhunt-lite" target="_blank" rel="noopener noreferrer" class="list-item">
-                <span class="list-item-icon">📦</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">GitHub</div>
-                    <div class="list-item-subtitle">https://github.com/Liu233w/ojhunt-lite</div>
-                </span>
-                <span class="list-item-action">↗</span>
-            </a>
-            <a href="https://t.me/ojhunt" target="_blank" rel="noopener noreferrer" class="list-item">
-                <span class="list-item-icon">📱</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">Telegram</div>
-                    <div class="list-item-subtitle">https://t.me/ojhunt</div>
-                </span>
-                <span class="list-item-action">↗</span>
-            </a>
-            <a href="https://discord.gg/9BsnDaHpTU" target="_blank" rel="noopener noreferrer" class="list-item">
-                <span class="list-item-icon">💬</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">Discord</div>
-                    <div class="list-item-subtitle">OJ Analyzer Development</div>
-                </span>
-                <span class="list-item-action">↗</span>
-            </a>
-            <a href="https://github.com/Liu233w/ojhunt-lite/discussions/new/choose" target="_blank" rel="noopener noreferrer" class="list-item">
-                <span class="list-item-icon">💡</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">GitHub Discussions</div>
-                    <div class="list-item-subtitle">Ask questions and share ideas</div>
-                </span>
-                <span class="list-item-action">↗</span>
-            </a>
-        </div>
+        <div class="card-hd"><span class="prompt">&gt;</span> about_us</div>
+        <a class="row-item" href="https://github.com/Liu233w/ojhunt-lite/blob/master/README.md#contributors-" target="_blank" rel="noopener noreferrer">
+            <span class="k">developed</span>
+            <span class="v"><span class="highlight">Shumin Liu</span> &amp; contributors</span>
+            <span class="arr">↗</span>
+        </a>
+        <a class="row-item" href="mailto:support@ojhunt.com">
+            <span class="k">contact</span>
+            <span class="v">support@ojhunt.com</span>
+            <span class="arr">✉</span>
+        </a>
+        <a class="row-item" href="https://github.com/Liu233w/ojhunt-lite" target="_blank" rel="noopener noreferrer">
+            <span class="k">github</span>
+            <span class="v">Liu233w/ojhunt-lite</span>
+            <span class="arr">↗</span>
+        </a>
+        <a class="row-item" href="https://t.me/ojhunt" target="_blank" rel="noopener noreferrer">
+            <span class="k">telegram</span>
+            <span class="v">t.me/ojhunt</span>
+            <span class="arr">↗</span>
+        </a>
+        <a class="row-item" href="https://discord.gg/9BsnDaHpTU" target="_blank" rel="noopener noreferrer">
+            <span class="k">discord</span>
+            <span class="v">OJ Analyzer Development</span>
+            <span class="arr">↗</span>
+        </a>
+        <a class="row-item" href="https://github.com/Liu233w/ojhunt-lite/discussions/new/choose" target="_blank" rel="noopener noreferrer">
+            <span class="k">discuss</span>
+            <span class="v">GitHub Discussions — ask &amp; share</span>
+            <span class="arr">↗</span>
+        </a>
     </div>
 
+    <!-- development -->
     <div class="card">
-        <div class="card-header">Development</div>
-        <div class="card-body">
-            <a href="/docs" target="_blank" rel="noopener noreferrer" class="list-item">
-                <span class="list-item-icon">📜</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">API Documentation</div>
-                    <div class="list-item-subtitle">Swagger UI</div>
-                </span>
-                <span class="list-item-action">↗</span>
-            </a>
-        </div>
+        <div class="card-hd"><span class="prompt">&gt;</span> development</div>
+        <a class="row-item" href="/docs" target="_blank" rel="noopener noreferrer">
+            <span class="k">api docs</span>
+            <span class="v">Swagger UI — /docs</span>
+            <span class="arr">↗</span>
+        </a>
+        <a class="row-item" href="https://github.com/Liu233w/ojhunt-lite/blob/main/docs/cli.md" target="_blank" rel="noopener noreferrer">
+            <span class="k">cli</span>
+            <span class="v">docs/cli.md</span>
+            <span class="arr">↗</span>
+        </a>
+        <a class="row-item" href="https://github.com/Liu233w/ojhunt-lite/blob/main/docs/development.md" target="_blank" rel="noopener noreferrer">
+            <span class="k">contribute</span>
+            <span class="v">docs/development.md</span>
+            <span class="arr">↗</span>
+        </a>
     </div>
 
+    <!-- special thanks -->
     <div class="card">
-        <div class="card-header">Special Thanks To</div>
-        <div class="card-body">
-            <div class="list-item">
-                <span class="list-item-icon">🏫</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">西北工业大学ACM协会技术组</div>
-                </span>
-            </div>
-            <div class="list-item">
-                <span class="list-item-icon">📍</span>
-                <span class="list-item-content">
-                    <div class="list-item-subtitle">陕西省西安市长安区西北工业大学长安校区计算机学院110室</div>
-                </span>
-            </div>
-            <a href="https://jq.qq.com/?_wv=1027&k=5qgzfQc" target="_blank" rel="noopener noreferrer" class="list-item">
-                <span class="list-item-icon">💬</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">QQ群</div>
-                    <div class="list-item-subtitle">198820787</div>
-                </span>
-                <span class="list-item-action">↗</span>
-            </a>
-            <a href="#" class="list-item" onclick="document.getElementById('wechat-dialog').classList.add('show'); return false;">
-                <span class="list-item-icon">📳</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">微信公众号</div>
-                    <div class="list-item-subtitle">点击查看二维码</div>
-                </span>
-            </a>
+        <div class="card-hd">
+            <span class="prompt">&gt;</span>
+            <span class="cjk" style="color:var(--fg-3); text-transform:none; letter-spacing:0.02em;">特别鸣谢</span>
+            · special thanks to
         </div>
+        <div class="row-item">
+            <span class="k">club</span>
+            <span class="v"><span class="cjk">西北工业大学 ACM 协会技术组</span></span>
+            <span class="arr"></span>
+        </div>
+        <div class="row-item">
+            <span class="k">address</span>
+            <span class="v"><span class="cjk">陕西省西安市长安区<br>西北工业大学长安校区计算机学院 110 室</span></span>
+            <span class="arr"></span>
+        </div>
+        <a class="row-item" href="https://jq.qq.com/?_wv=1027&k=5qgzfQc" target="_blank" rel="noopener noreferrer">
+            <span class="k">qq 群</span>
+            <span class="v">198820787</span>
+            <span class="arr">↗</span>
+        </a>
+        <a class="row-item" href="#" onclick="document.getElementById('wechat-dialog').showModal(); return false;">
+            <span class="k">wechat</span>
+            <span class="v"><span class="cjk">微信公众号</span> — click for qr</span>
+            <span class="arr">▣</span>
+        </a>
     </div>
 
+    <!-- system info -->
     <div class="card">
-        <div class="card-header">System Info</div>
-        <div class="card-body">
-            {% if build_time %}
-            <div class="list-item">
-                <span class="list-item-icon">🕐</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">Build Time</div>
-                    <div class="list-item-subtitle">{{ build_time }}</div>
-                </span>
-            </div>
-            {% endif %}
-            {% if git_commit_sha %}
-            <a href="https://github.com/Liu233w/ojhunt-lite/tree/{{ git_commit_sha }}" target="_blank" rel="noopener noreferrer" class="list-item">
-                <span class="list-item-icon">🔗</span>
-                <span class="list-item-content">
-                    <div class="list-item-title">Source Code</div>
-                    <div class="list-item-subtitle">https://github.com/Liu233w/ojhunt-lite/tree/{{ git_commit_sha }}</div>
-                </span>
-                <span class="list-item-action">↗</span>
-            </a>
-            {% endif %}
-            {% if not build_time and not git_commit_sha %}
-            <div class="list-item">
-                <span class="list-item-content">
-                    <div class="list-item-subtitle">Build information not available</div>
-                </span>
-            </div>
-            {% endif %}
+        <div class="card-hd"><span class="prompt">&gt;</span> system_info</div>
+        {% if build_time %}
+        <div class="row-item">
+            <span class="k">build</span>
+            <span class="v">{{ build_time }}</span>
+            <span class="arr"></span>
+        </div>
+        {% endif %}
+        {% if git_commit_sha %}
+        <a class="row-item" href="https://github.com/Liu233w/ojhunt-lite/tree/{{ git_commit_sha }}" target="_blank" rel="noopener noreferrer">
+            <span class="k">commit</span>
+            <span class="v"><span style="color:var(--acc)">{{ git_commit_sha[:7] }}</span></span>
+            <span class="arr">↗</span>
+        </a>
+        {% endif %}
+        {% if not build_time and not git_commit_sha %}
+        <div class="row-item">
+            <span class="k">build</span>
+            <span class="v" style="color:var(--fg-4)">not available</span>
+            <span class="arr"></span>
+        </div>
+        {% endif %}
+        <div class="row-item">
+            <span class="k">license</span>
+            <span class="v">BSD 2-Clause</span>
+            <span class="arr"></span>
         </div>
     </div>
+</div>
 
-    <div id="wechat-dialog" class="wechat-dialog" onclick="if(event.target === this) this.classList.remove('show')">
-        <div class="wechat-dialog-content">
-            <h3>微信公众号</h3>
-            <img src="/assets/wechat.jpg" alt="WeChat QR Code">
-            <div>
-                <button onclick="document.getElementById('wechat-dialog').classList.remove('show')">Close</button>
-            </div>
-        </div>
+<footer class="footer">
+    <div>
+        <p>inspired by <a href="https://kidozh.com" target="_blank" rel="noopener noreferrer">jiduo zhang</a>'s
+            西北工业大学ACM查询系统 (npuacm.info).</p>
     </div>
+    <div class="ascii">┌─────────────┐
+│ ojhunt-lite │
+└─────────────┘</div>
+</footer>
+
+<!-- WeChat QR dialog -->
+<dialog id="wechat-dialog">
+    <div class="dlg-hd">
+        <span>wechat_qr</span>
+        <span class="title"><span>微信公众号</span></span>
+    </div>
+    <div class="dlg-bd" style="text-align:center;">
+        <img src="/assets/wechat.jpg" alt="WeChat QR Code" style="max-width:250px; width:100%;">
+    </div>
+    <div class="dlg-ft">
+        <button class="btn" onclick="document.getElementById('wechat-dialog').close()">close</button>
+    </div>
+</dialog>
 {% endblock %}

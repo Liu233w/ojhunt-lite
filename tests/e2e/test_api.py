@@ -3,7 +3,7 @@ import json
 import pytest
 from playwright.sync_api import BrowserContext
 
-BASE_URL = "http://localhost:8080"
+from e2e.helpers import BASE_URL
 
 
 @pytest.mark.playwright
