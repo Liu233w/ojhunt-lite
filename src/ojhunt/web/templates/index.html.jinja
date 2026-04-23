@@ -306,6 +306,9 @@ function dismissLegacyBanner() {
         <span class="hash">##</span>
         <span>queries</span>
         <span class="count" x-text="queries.length + ' rows'"></span>
+        <button type="button" class="btn xs ghost danger"
+                x-show="queries.length > 0"
+                @click="clearAll()">clear all</button>
         <span class="rule"></span>
     </div>
 
