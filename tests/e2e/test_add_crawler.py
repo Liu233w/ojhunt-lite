@@ -61,3 +61,21 @@ def test_add_empty_username_shows_alert(page: Page):
     page.on("dialog", lambda dialog: dialog.accept())
     page.click("button.btn:has-text('add')")
     expect(page.locator("#queries-tbl tbody tr.r-pend")).to_have_count(0, timeout=5000)
+
+
+@pytest.mark.playwright
+def test_enter_key_adds_query_from_username_field(page: Page):
+    page.goto(BASE_URL)
+    page.fill("input[placeholder='username']", "tourist")
+    page.select_option("select[x-model='selectedCrawler']", "codeforces")
+    page.locator("input[placeholder='username']").press("Enter")
+    expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
+
+
+@pytest.mark.playwright
+def test_enter_key_adds_query_from_crawler_select(page: Page):
+    page.goto(BASE_URL)
+    page.fill("input[placeholder='username']", "tourist")
+    page.select_option("select[x-model='selectedCrawler']", "codeforces")
+    page.locator("select[x-model='selectedCrawler']").press("Enter")
+    expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
