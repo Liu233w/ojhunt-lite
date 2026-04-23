@@ -2,44 +2,54 @@
 
 {% block title %}Merge History - OJHunt Lite{% endblock %}
 
-{% block pdf_content %}
-    <h1>Merge Two PDF Reports</h1>
-    <p class="subtitle">Combine the history from two OJHunt Lite PDF reports into one</p>
+{% block pdf_heading %}merge-history{% endblock %}
+{% block pdf_meta %}combine history from multiple PDFs{% endblock %}
 
-    <div class="info-box">
-        Useful when you have history spread across multiple PDFs — for example, if you've been using
-        two different devices, or you want to combine a
-        <a href="/pdf/legacy">legacy history PDF</a> with your current OJHunt Lite report.
-        <br><br>
-        <strong>How it works:</strong> Both PDFs' history entries are merged. For days present in
-        both, the entry with the higher solved count is kept. Crawler settings and username come
-        from PDF A.
+{% block pdf_content %}
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-hd"><span class="prompt">&gt;</span> how_it_works</div>
+        <div style="padding:0.85rem 1rem; color:var(--fg-2); font-size:var(--fs-s); line-height:1.7;">
+            Useful when you have history spread across multiple PDFs — for example, if you've been using
+            two different devices, or you want to combine a
+            <a href="/pdf/legacy">legacy history PDF</a> with your current OJHunt Lite report.
+            <br><br>
+            <strong style="color:var(--fg);">How it works:</strong> Both PDFs' history entries are merged. For days present in
+            both, the entry with the higher solved count is kept. Crawler settings and username come
+            from PDF A.
+        </div>
     </div>
 
     {% if error %}
-        <div class="error-box">{{ error }}</div>
+        <div class="banner" style="border-left-color:var(--err);">
+            <span class="tag" style="color:var(--err);">error</span>
+            <span>{{ error }}</span>
+        </div>
     {% endif %}
 
     <form method="POST" action="/pdf/merge" enctype="multipart/form-data">
         <div class="form-group">
             <label for="pdf_a">
-                PDF A
-                <span class="hint">— <strong>crawler settings and username from this file will be used</strong></span>
+                pdf a
+                <span class="hint"> — <strong>crawler settings and username from this file will be used</strong></span>
             </label>
-            <input type="file" id="pdf_a" name="pdf_a" accept=".pdf" required>
+            <div class="field field-file">
+                <input type="file" id="pdf_a" name="pdf_a" accept=".pdf" required>
+            </div>
         </div>
         <div class="form-group">
             <label for="pdf_b">
-                PDF B
-                <span class="hint">— history from this file will be merged into PDF A</span>
+                pdf b
+                <span class="hint"> — history from this file will be merged into PDF A</span>
             </label>
-            <input type="file" id="pdf_b" name="pdf_b" accept=".pdf" required>
+            <div class="field field-file">
+                <input type="file" id="pdf_b" name="pdf_b" accept=".pdf" required>
+            </div>
         </div>
-        <button type="submit" class="btn-primary">Merge &amp; Download</button>
+        <button type="submit" class="btn primary">merge &amp; download</button>
     </form>
 
     <div class="help-text">
-        <strong>Store the merged PDF on your own device</strong> — don't rely on browser storage,
+        <strong style="color:var(--fg);">Store the merged PDF on your own device</strong> — don't rely on browser storage,
         which can be cleared at any time. To continue tracking progress, upload the merged PDF on
         the <a href="/">home page</a> before your next query session.
         <br><br>
