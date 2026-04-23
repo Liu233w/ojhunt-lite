@@ -1,5 +1,52 @@
 {% extends "base.html.jinja" %}
 
+{% block extra_head %}
+<style>
+  @media (max-width: 640px) {
+    /* ── HOME: table → card layout ── */
+    #page-home .tbl-wrap { border: 0; background: transparent; }
+    #page-home .tbl,
+    #page-home .tbl thead,
+    #page-home .tbl tbody,
+    #page-home .tbl tr,
+    #page-home .tbl td,
+    #page-home .tbl th { display: block; }
+    #page-home .tbl thead { display: none; }
+    #page-home .tbl tbody tr {
+      border: 1px solid var(--line); background: var(--bg-1);
+      margin-bottom: 0.5rem; padding: 0.2rem 0;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    }
+    /* bar variant: border on card (tr), not on td:first-child */
+    [data-row-style="bar"] #page-home .tbl tbody tr.r-ok   { border-left: 3px solid var(--ok); }
+    [data-row-style="bar"] #page-home .tbl tbody tr.r-err  { border-left: 3px solid var(--err); }
+    [data-row-style="bar"] #page-home .tbl tbody tr.r-load { border-left: 3px solid var(--load); }
+    [data-row-style="bar"] #page-home .tbl tbody tr.r-pend { border-left: 3px solid var(--line-2); }
+    /* cancel desktop td:first-child bar for home */
+    [data-row-style="bar"] #page-home .tbl tbody tr td:first-child { border-left: 0 !important; }
+
+    #page-home .tbl tbody td {
+      border-bottom: 0; padding: 0.3rem 0.75rem;
+      display: flex; align-items: flex-start; gap: 0.5rem; font-size: var(--fs-s);
+    }
+    #page-home .tbl tbody td::before {
+      content: attr(data-lbl);
+      color: var(--fg-4); font-size: var(--fs-xs); text-transform: uppercase;
+      letter-spacing: 0.08em; min-width: 72px; flex-shrink: 0;
+    }
+    #page-home .tbl tbody td.crawler {
+      grid-column: 1 / -1; border-bottom: 1px solid var(--line);
+      padding-bottom: 0.5rem; margin-bottom: 0.25rem; font-size: var(--fs);
+    }
+    #page-home .tbl tbody td.crawler::before { display: none; }
+    #page-home .tbl tbody td.actions { grid-column: 1 / -1; justify-content: flex-end; }
+    #page-home .tbl tbody td.actions::before { display: none; }
+    #page-home .tbl tbody td[colspan] { grid-column: 1 / -1; }
+    #page-home .tbl tbody tr { position: relative; }
+  }
+</style>
+{% endblock %}
+
 {% block title %}OJHunt Lite{% endblock %}
 
 {% block page_id %}page-home{% endblock %}

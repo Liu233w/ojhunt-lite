@@ -1,5 +1,43 @@
 {% extends "base.html.jinja" %}
 
+{% block extra_head %}
+<style>
+  @media (max-width: 640px) {
+    /* ── CRAWLERS: table → card layout ── */
+    #page-crawlers .tbl-wrap { border: 0; background: transparent; }
+    #page-crawlers .tbl,
+    #page-crawlers .tbl thead,
+    #page-crawlers .tbl tbody,
+    #page-crawlers .tbl tr,
+    #page-crawlers .tbl td,
+    #page-crawlers .tbl th { display: block; }
+    #page-crawlers .tbl thead { display: none; }
+    #page-crawlers .tbl tbody tr {
+      border: 1px solid var(--line); background: var(--bg-1);
+      margin-bottom: 0.5rem; padding: 0.5rem 0.75rem;
+      display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.75rem;
+    }
+    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-ok   { border-left: 3px solid var(--ok); }
+    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-err  { border-left: 3px solid var(--err); }
+    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-pend { border-left: 3px solid var(--line-2); }
+    /* cancel desktop td:first-child bar for crawlers */
+    [data-row-style="bar"] #page-crawlers .tbl tbody tr td:first-child,
+    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-ok   td:first-child,
+    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-err  td:first-child,
+    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-pend td:first-child { border-left: 0 !important; }
+
+    #page-crawlers .tbl tbody td { border-bottom: 0; padding: 0; font-size: var(--fs-s); }
+    #page-crawlers .tbl tbody td:nth-child(1) {
+      color: var(--acc); font-size: var(--fs-xs);
+      text-transform: uppercase; letter-spacing: 0.08em; align-self: center;
+    }
+    #page-crawlers .tbl tbody td:nth-child(2) { color: var(--fg); font-weight: 500; }
+    #page-crawlers .tbl tbody td:nth-child(3) { grid-column: 1 / -1; color: var(--fg-3); }
+    #page-crawlers .tbl tbody td:nth-child(4) { grid-column: 1 / -1; }
+  }
+</style>
+{% endblock %}
+
 {% block title %}Supported Crawlers - OJHunt Lite{% endblock %}
 
 {% block page_id %}page-crawlers{% endblock %}
