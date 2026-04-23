@@ -280,7 +280,7 @@ function dismissLegacyBanner() {
             </div>
             <div class="field field-crawler">
                 <span class="prefix">crawler</span>
-                <select x-model="selectedCrawler">
+                <select x-model="selectedCrawler" @keydown.enter="addQuery()">
                     <option value="">-- select --</option>
                     <template x-for="[name, info] in Object.entries(crawlers)" :key="name">
                         <option :value="name" x-text="info.title"></option>
