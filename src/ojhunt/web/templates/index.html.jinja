@@ -1,62 +1,7 @@
 {% extends "base.html.jinja" %}
 
 {% block extra_head %}
-<style>
-  /* ── COMPOSER (home-page only) ── */
-  .composer {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 0.55rem;
-    padding: 0.85rem 0.95rem;
-    background: var(--bg-1);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-  }
-  .composer .crawler-hint {
-    grid-column: 1 / -1;
-    font-size: var(--fs-xs); color: var(--fg-4); padding: 0 0.1rem;
-  }
-  .composer .crawler-hint::before { content: "ℹ "; color: var(--fg-4); }
-
-  .field {
-    display: flex; align-items: center;
-    border: 1px solid var(--line-2);
-    background: var(--bg); padding: 0 0.75rem; height: 38px; border-radius: 3px;
-  }
-  .field:focus-within { border-color: var(--acc); box-shadow: 0 0 0 2px color-mix(in oklab, var(--acc) 10%, var(--bg)); }
-  .field .prefix { color: var(--fg-4); user-select: none; margin-right: 0.45rem; font-size: var(--fs-xs); }
-  .field select, .field input { background: transparent; border: 0; outline: none; color: var(--fg); font: inherit; width: 100%; padding: 0; }
-  .field select option { background: var(--bg-1); color: var(--fg); }
-  .field input::placeholder { color: var(--fg-4); }
-  .field .at { color: var(--acc); margin: 0 0.3rem; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    background: var(--bg-2); color: var(--fg);
-    border: 1px solid var(--line-2);
-    padding: 0 0.9rem; height: 38px;
-    font: inherit; white-space: nowrap; border-radius: 3px;
-  }
-  .btn:hover { border-color: var(--acc); color: var(--acc); }
-  .btn.primary { background: var(--acc); color: #0a0b0d; border-color: var(--acc); font-weight: 600; }
-  .btn.primary:hover { background: var(--fg); border-color: var(--fg); color: var(--bg); }
-  .btn.ghost { background: transparent; }
-  .btn.danger:hover { border-color: var(--err); color: var(--err); }
-  .btn .kbd { margin-left: 0.3rem; color: var(--fg-4); font-size: 10px; border: 1px solid var(--line); padding: 1px 4px; border-radius: 2px; }
-  .btn.primary .kbd { color: rgba(10,11,13,0.7); border-color: rgba(10,11,13,0.3); }
-  .btn.sm { height: 32px; padding: 0 0.75rem; font-size: var(--fs-s); }
-  .btn.xs { height: 26px; padding: 0 0.55rem; font-size: var(--fs-xs); }
-
-  .step-actions { display: flex; gap: 0.5rem; align-items: center; }
-
-  @media (max-width: 640px) {
-    .composer { grid-template-columns: 1fr; }
-    .btn .kbd { display: none; }
-    .step { flex-wrap: wrap; }
-    .step .hint { order: 10; flex: 0 0 100%; margin-top: 0.1rem; }
-    .step-actions { flex: 0 0 100%; }
-  }
-</style>
+<link rel="stylesheet" href="/assets/index.css?v={{ static_version }}">
 {% endblock %}
 
 {% block title %}OJHunt Lite{% endblock %}
