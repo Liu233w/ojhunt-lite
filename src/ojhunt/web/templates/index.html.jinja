@@ -126,10 +126,9 @@
 
     <!-- Legacy + merge links -->
     <div class="slot-aux">
-        <span id="legacy-banner" style="display:none">
+        <span id="legacy-banner">
             Coming from <em style="font-style:normal;color:var(--fg)">acm-statistics</em>?
             <a href="/pdf/legacy">download your legacy history →</a>
-            <button class="x" style="background:none;border:0;color:var(--fg-4);cursor:pointer" onclick="dismissLegacyBanner()">×</button>
         </span>
         <span>Have history in two PDFs? <a href="/pdf/merge">merge them →</a></span>
     </div>
@@ -312,20 +311,6 @@
     </template>
 
 </div>{# end x-data #}
-
-<!-- Legacy banner script — kept for e2e test compat (shows hidden element) -->
-<script>
-(function () {
-    var el = document.getElementById('legacy-banner');
-    if (el && localStorage.getItem('legacy-banner-dismissed') !== '1') {
-        el.style.display = '';
-    }
-})();
-function dismissLegacyBanner() {
-    localStorage.setItem('legacy-banner-dismissed', '1');
-    document.getElementById('legacy-banner').style.display = 'none';
-}
-</script>
 
 <footer class="footer">
     <p>inspired by <a href="https://kidozh.com" target="_blank" rel="noopener noreferrer">jiduo zhang</a>'s
