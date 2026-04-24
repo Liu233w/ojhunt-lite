@@ -20,6 +20,7 @@
 const STORAGE_KEY = 'ojhunt-queries';
 const PDF_CACHE_KEY = 'ojhunt-report-pdf';
 const PDF_CACHE_DATE_KEY = 'ojhunt-report-date';
+const PDF_CACHE_FILENAME_KEY = 'ojhunt-report-filename';
 
 /**
  * Creates a new Query object with default values
@@ -77,6 +78,9 @@ function ojhunt() {
 
         /** @type {string|null} Date (YYYY-MM-DD) of the cached previous report, or null */
         cachedPdfDate: null,
+
+        /** @type {string|null} Filename of the uploaded PDF, or null */
+        cachedPdfFilename: null,
 
         /**
          * Check if a query with given crawler/username already exists
@@ -315,6 +319,8 @@ function ojhunt() {
 
             const savedDate = localStorage.getItem(PDF_CACHE_DATE_KEY);
             if (savedDate) this.cachedPdfDate = savedDate;
+            const savedFilename = localStorage.getItem(PDF_CACHE_FILENAME_KEY);
+            if (savedFilename) this.cachedPdfFilename = savedFilename;
         },
 
         /**
@@ -323,7 +329,9 @@ function ojhunt() {
          */
         clearCachedPdf() {
             localStorage.removeItem(PDF_CACHE_KEY);
+            localStorage.removeItem(PDF_CACHE_FILENAME_KEY);
             this.cachedPdfDate = null; // $watch handles PDF_CACHE_DATE_KEY removal
+            this.cachedPdfFilename = null;
         },
 
         /**
@@ -393,6 +401,8 @@ function ojhunt() {
             if (data.report_date) {
                 this.cachedPdfDate = data.report_date;
             }
+            this.cachedPdfFilename = file.name;
+            localStorage.setItem(PDF_CACHE_FILENAME_KEY, file.name);
 
             // Apply settings to the live UI
             if (this.queries.length === 0) {
