@@ -1,4 +1,3 @@
-import re
 import time
 
 import pytest
@@ -22,7 +21,7 @@ def test_cancel_query(page: Page):
     row.locator("button.iconbtn[title='query']").click()
     expect(row.locator("button.iconbtn[title='stop']")).to_be_visible(timeout=2000)
     row.locator("button.iconbtn[title='stop']").click()
-    expect(row).to_have_class(re.compile(r"r-pend"), timeout=2000)
+    expect(row).to_have_class("card r-pend", timeout=2000)
     expect(row.locator("button.iconbtn[title='query']")).to_be_visible()
     page.unroute("**/*", delay_response)
 
@@ -42,7 +41,7 @@ def test_cancel_shows_immediately(page: Page):
     row.locator("button.iconbtn[title='query']").click()
     expect(row.locator("button.iconbtn[title='stop']")).to_be_visible(timeout=1000)
     row.locator("button.iconbtn[title='stop']").click()
-    expect(row).to_have_class(re.compile(r"r-pend"), timeout=500)
+    expect(row).to_have_class("card r-pend", timeout=500)
     page.unroute("**/*", delay_response)
 
 
@@ -65,7 +64,7 @@ def test_retry_after_cancel(page: Page):
     row.locator("button.iconbtn[title='query']").click()
     expect(row.locator("button.iconbtn[title='stop']")).to_be_visible(timeout=2000)
     row.locator("button.iconbtn[title='stop']").click()
-    expect(row).to_have_class(re.compile(r"r-pend"), timeout=2000)
+    expect(row).to_have_class("card r-pend", timeout=2000)
     row.locator("button.iconbtn[title='query']").click()
-    expect(row).to_have_class(re.compile(r"r-ok"), timeout=30000)
+    expect(row).to_have_class("card r-ok", timeout=30000)
     page.unroute("**/*", delay_then_respond)

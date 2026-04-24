@@ -3,7 +3,6 @@
 import base64
 import json
 import os
-import re
 import tempfile
 
 import pytest
@@ -211,7 +210,7 @@ def test_download_report_updates_date_indicator(
     _add_query(page, "codeforces", "tourist")
     page.click("button.btn.primary:has-text('query all')")
     row = _row(page, "CodeForces")
-    expect(row).to_have_class(re.compile(r"r-ok"), timeout=30000)
+    expect(row).to_have_class("card r-ok", timeout=30000)
 
     # Download report and intercept the download
     with page.expect_download() as dl_info:
@@ -236,7 +235,7 @@ def test_download_then_upload_shows_date_and_merges(
     _add_query(page, "codeforces", "tourist")
     page.click("button.btn.primary:has-text('query all')")
     row = _row(page, "CodeForces")
-    expect(row).to_have_class(re.compile(r"r-ok"), timeout=30000)
+    expect(row).to_have_class("card r-ok", timeout=30000)
 
     # Download report — download.path() is already on disk, use it directly
     with page.expect_download() as dl_info:
@@ -271,7 +270,7 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
 
     # Query and download a new report (today's date ~2026)
     page.click("button.btn.primary:has-text('query all')")
-    expect(_row(page, "CodeForces")).to_have_class(re.compile(r"r-ok"), timeout=30000)
+    expect(_row(page, "CodeForces")).to_have_class("card r-ok", timeout=30000)
     with page.expect_download() as dl_info:
         page.click("button.btn.primary:has-text('download report.pdf')")
     download = dl_info.value
