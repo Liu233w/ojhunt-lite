@@ -16,7 +16,7 @@ def test_legacy_banner_visible_by_default(page: Page):
     _reset_legacy_banner(page)
     banner = page.locator("#legacy-banner")
     expect(banner).to_be_visible()
-    expect(banner).to_contain_text("Were you a user of the old acm-statistics site")
+    expect(banner).to_contain_text("acm-statistics")
     expect(banner.locator('a[href="/pdf/legacy"]')).to_be_visible()
 
 

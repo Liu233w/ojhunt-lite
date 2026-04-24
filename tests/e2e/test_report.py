@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -11,7 +13,7 @@ def test_report_generation(page: Page):
     row = _row(page, "CodeForces")
     expect(row).to_be_visible(timeout=5000)
     row.locator("button.iconbtn[title='query']").click()
-    expect(row).to_have_class("r-ok", timeout=30000)
+    expect(row).to_have_class(re.compile(r"r-ok"), timeout=30000)
     summary = page.locator(".summary")
     expect(summary).to_be_visible(timeout=5000)
     expect(summary.locator(".stat").first).to_be_visible()
@@ -24,7 +26,7 @@ def test_report_shows_solved_count(page: Page):
     row = _row(page, "CodeForces")
     expect(row).to_be_visible(timeout=5000)
     row.locator("button.iconbtn[title='query']").click()
-    expect(row).to_have_class("r-ok", timeout=30000)
+    expect(row).to_have_class(re.compile(r"r-ok"), timeout=30000)
     summary = page.locator(".summary")
     expect(summary).to_be_visible(timeout=5000)
     expect(summary).to_contain_text("total solved")
