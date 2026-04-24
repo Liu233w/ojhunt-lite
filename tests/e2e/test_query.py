@@ -1,5 +1,3 @@
-import re
-
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -13,7 +11,7 @@ def test_query_success(page: Page):
     row = _row(page, "CodeForces")
     expect(row).to_be_visible(timeout=5000)
     row.locator("button.iconbtn[title='query']").click()
-    expect(row).to_have_class(re.compile(r"r-ok"), timeout=30000)
+    expect(row).to_have_class("card r-ok", timeout=30000)
     expect(row.locator("a.solved-link")).to_be_visible(timeout=30000)
 
 
@@ -24,7 +22,7 @@ def test_query_user_not_found(page: Page):
     row = _row(page, "nonexistentuser12345xyz")
     expect(row).to_be_visible(timeout=5000)
     row.locator("button.iconbtn[title='query']").click()
-    expect(row).to_have_class(re.compile(r"r-err"), timeout=30000)
+    expect(row).to_have_class("card r-err", timeout=30000)
 
 
 @pytest.mark.playwright
@@ -37,8 +35,8 @@ def test_query_multiple(page: Page):
     row2 = _row(page, "AtCoder")
     expect(row2).to_be_visible(timeout=5000)
     page.click("button.btn.primary:has-text('query all')")
-    expect(row1).to_have_class(re.compile(r"r-ok"), timeout=30000)
-    expect(row2).to_have_class(re.compile(r"r-ok"), timeout=30000)
+    expect(row1).to_have_class("card r-ok", timeout=30000)
+    expect(row2).to_have_class("card r-ok", timeout=30000)
 
 
 @pytest.mark.playwright
@@ -48,7 +46,7 @@ def test_retry_after_error(page: Page):
     row = _row(page, "nonexistentuser12345xyz")
     expect(row).to_be_visible(timeout=5000)
     row.locator("button.iconbtn[title='query']").click()
-    expect(row).to_have_class(re.compile(r"r-err"), timeout=30000)
+    expect(row).to_have_class("card r-err", timeout=30000)
     expect(row.locator("button.iconbtn[title='retry']")).to_be_visible()
     row.locator("button.iconbtn[title='retry']").click()
-    expect(row).to_have_class(re.compile(r"r-err"), timeout=30000)
+    expect(row).to_have_class("card r-err", timeout=30000)
