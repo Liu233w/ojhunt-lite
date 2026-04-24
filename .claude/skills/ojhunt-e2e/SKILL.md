@@ -28,6 +28,11 @@ See also the **ojhunt-testing** skill for shared pytest fixture and assertion co
   visible again for retry
 - **Button locators**: Use `.first` when multiple buttons exist in a row, e.g.:
   `row.locator("button.remove-btn").first`
+- **`to_have_class` matching**: Playwright's `to_have_class(string)` does **exact**
+  matching on the full class attribute, not CSS-token matching. Card elements always
+  carry exactly two classes (`"card"` + one status class), so use the full string:
+  `to_have_class("card r-ok")`, `to_have_class("card r-err")`, etc. Do not use
+  `re.compile(r"r-ok")` — it would also match unrelated classes like `"foo-ok"`.
 - **Mocking external APIs**: When a test exercises logic *around* a crawler (e.g. PDF
   history merging), use `page.route("**/api/crawlers/<name>/<user>", handler)` with
   `route.fulfill(...)` instead of hitting the real API. Real crawler integration is
