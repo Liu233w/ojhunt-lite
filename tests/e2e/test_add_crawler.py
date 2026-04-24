@@ -35,7 +35,7 @@ def test_add_multiple_crawlers(page: Page):
 def test_add_all_crawlers(page: Page):
     page.goto(BASE_URL)
     _add_query(page, "*", "tourist")
-    rows = page.locator("#queries-tbl tbody tr.r-pend")
+    rows = page.locator("#queries-tbl .card.r-pend")
     expect(rows.first).to_be_visible(timeout=5000)
     count = rows.count()
     assert count > 1, "Should add multiple rows for 'All Crawlers'"
@@ -49,7 +49,7 @@ def test_add_duplicate_crawler_shows_alert(page: Page):
     page.on("dialog", lambda dialog: dialog.accept())
     _add_query(page, "codeforces", "tourist")
     expect(
-        page.locator("#queries-tbl tbody tr").filter(has_text="CodeForces")
+        page.locator("#queries-tbl .card").filter(has_text="CodeForces")
     ).to_have_count(1, timeout=5000)
 
 
@@ -60,7 +60,7 @@ def test_add_empty_username_shows_alert(page: Page):
     page.fill("input[placeholder='username']", "")
     page.on("dialog", lambda dialog: dialog.accept())
     page.click("button.btn:has-text('add')")
-    expect(page.locator("#queries-tbl tbody tr.r-pend")).to_have_count(0, timeout=5000)
+    expect(page.locator("#queries-tbl .card.r-pend")).to_have_count(0, timeout=5000)
 
 
 @pytest.mark.playwright
