@@ -79,6 +79,7 @@ jinja_env = Environment(
     loader=FileSystemLoader(TEMPLATES_DIR),
     autoescape=select_autoescape(["html", "xml"]),
 )
+jinja_env.globals["static_version"] = STATIC_VERSION
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -93,7 +94,7 @@ async def index() -> str:
         for name, info in sorted(crawlers.items())
     }
     template = jinja_env.get_template("index.html.jinja")
-    return template.render(crawlers=crawler_data, static_version=STATIC_VERSION)
+    return template.render(crawlers=crawler_data)
 
 
 @router.get("/about", response_class=HTMLResponse)
