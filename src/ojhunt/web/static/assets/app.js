@@ -82,6 +82,9 @@ function ojhunt() {
         /** @type {string|null} Filename of the uploaded PDF, or null */
         cachedPdfFilename: null,
 
+        /** @type {boolean} True while the user is dragging a file over the report slot */
+        isDragging: false,
+
         /**
          * Check if a query with given crawler/username already exists
          * @param {string} crawler
