@@ -224,6 +224,42 @@ def test_download_report_updates_date_indicator(
 
 
 @pytest.mark.playwright
+def test_download_updates_report_slot_filename_and_persists(
+    page: Page, context: BrowserContext, mock_codeforces_api
+):
+    """After download, report slot shows correct filename; loaded state persists after reload."""
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _add_query(page, "codeforces", "tourist")
+    page.click("button.btn.primary:has-text('query all')")
+    expect(_row(page, "CodeForces")).to_have_class("card r-ok", timeout=30000)
+
+    with page.expect_download() as dl_info:
+        page.click("button.btn.primary:has-text('download report.pdf')")
+    download = dl_info.value
+    expected_filename = (
+        download.suggested_filename
+    )  # e.g. "ojhunt-report-2026-04-24.pdf"
+    expected_date = expected_filename.removeprefix("ojhunt-report-").removesuffix(
+        ".pdf"
+    )
+
+    # Report slot should switch to loaded state with correct filename and date
+    slot = page.locator(".report-slot.loaded")
+    expect(slot).to_be_visible(timeout=5000)
+    expect(slot.locator(".title")).to_have_text(expected_filename, timeout=5000)
+    expect(slot.locator(".date")).to_have_text(expected_date, timeout=5000)
+
+    # Loaded state should survive a page reload (localStorage persisted)
+    page.reload()
+    expect(page.locator(".report-slot.loaded")).to_be_visible(timeout=5000)
+    expect(page.locator(".report-slot.loaded .date")).to_have_text(
+        expected_date, timeout=5000
+    )
+
+
+@pytest.mark.playwright
 def test_download_then_upload_shows_date_and_merges(
     page: Page, context: BrowserContext, mock_codeforces_api
 ):
