@@ -11,9 +11,12 @@ See also the **ojhunt-testing** skill for shared pytest fixture and assertion co
 
 - Tests use `test_*.py` naming convention (crawler unit tests use `*_test.py`)
 - Marked with `@pytest.mark.playwright` — excluded from regular CI
-- **Running:** Load the **ojhunt-web** skill to start the dev server, then run tests — both
-  require `dangerouslyDisableSandbox: true`. Or have the user run directly:
-  `! uv run pytest -m playwright tests/e2e/`
+- **Running:** The dev server must be running at `localhost:8080` before tests execute.
+  If you are the **coordinator agent**, invoke the **ojhunt-web** skill before touching
+  port 8080 — it has the exact start command and sandbox requirements.
+  If you are a **subagent** investigating e2e tests, remind the coordinator to invoke
+  the **ojhunt-web** skill to start the server before running any test commands.
+  Or have the user run directly: `! uv run pytest -m playwright tests/e2e/`
 - Install browsers first: `uv run playwright install --with-deps chromium`
 - Always run e2e tests after writing or modifying them — don't mark done until they pass
 
@@ -25,6 +28,11 @@ See also the **ojhunt-testing** skill for shared pytest fixture and assertion co
   visible again for retry
 - **Button locators**: Use `.first` when multiple buttons exist in a row, e.g.:
   `row.locator("button.remove-btn").first`
+- **`to_have_class` matching**: Playwright's `to_have_class(string)` does **exact**
+  matching on the full class attribute, not CSS-token matching. Card elements always
+  carry exactly two classes (`"card"` + one status class), so use the full string:
+  `to_have_class("card r-ok")`, `to_have_class("card r-err")`, etc. Do not use
+  `re.compile(r"r-ok")` — it would also match unrelated classes like `"foo-ok"`.
 - **Mocking external APIs**: When a test exercises logic *around* a crawler (e.g. PDF
   history merging), use `page.route("**/api/crawlers/<name>/<user>", handler)` with
   `route.fulfill(...)` instead of hitting the real API. Real crawler integration is

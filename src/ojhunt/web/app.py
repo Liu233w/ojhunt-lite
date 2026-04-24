@@ -22,7 +22,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from ojhunt.web.http_client import close_http_client, get_http_client, init_http_client
 from ojhunt.web.api import router as api_router
-from ojhunt.web.pages import router as pages_router, jinja_env, STATIC_VERSION
+from ojhunt.web.pages import router as pages_router, jinja_env
 from ojhunt.web.crawler_status import start_checker, stop_checker
 
 load_dotenv()
@@ -67,9 +67,7 @@ async def http_exception_handler(
         image_filename = random.choice(["cat.jpg", "man.jpg", "metro.jpg"])
         template = jinja_env.get_template("404.html.jinja")
         return HTMLResponse(
-            template.render(
-                image_filename=image_filename, static_version=STATIC_VERSION
-            ),
+            template.render(image_filename=image_filename),
             status_code=404,
         )
     return await _default_http_exception_handler(request, exc)

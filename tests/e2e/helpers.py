@@ -12,7 +12,7 @@ def _add_query(page: Page, crawler: str, username: str) -> None:
 
 
 def _row(page: Page, text: str):
-    return page.locator("#queries-tbl tbody tr").filter(has_text=text)
+    return page.locator("#queries-tbl .card").filter(has_text=text)
 
 
 def _clear_storage(page: Page) -> None:

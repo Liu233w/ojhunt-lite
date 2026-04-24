@@ -79,6 +79,7 @@ jinja_env = Environment(
     loader=FileSystemLoader(TEMPLATES_DIR),
     autoescape=select_autoescape(["html", "xml"]),
 )
+jinja_env.globals["static_version"] = STATIC_VERSION
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -93,7 +94,7 @@ async def index() -> str:
         for name, info in sorted(crawlers.items())
     }
     template = jinja_env.get_template("index.html.jinja")
-    return template.render(crawlers=crawler_data, static_version=STATIC_VERSION)
+    return template.render(crawlers=crawler_data)
 
 
 @router.get("/about", response_class=HTMLResponse)
@@ -223,9 +224,22 @@ async def pdf_merge_post(
 
 
 @router.get("/crawlers", response_class=HTMLResponse)
-async def crawlers_page() -> str:
+async def crawlers_page(test_availability: str | None = None) -> str:
+    import json
+
     crawlers = discover_crawlers()
-    availability = get_all_status()
+    if test_availability is not None:
+        try:
+            raw: dict[str, str] = json.loads(test_availability)
+            availability: dict[str, CrawlerAvailability] = {
+                name: CrawlerAvailability(CheckStatus(status))
+                for name, status in raw.items()
+                if status in {s.value for s in CheckStatus}
+            }
+        except (json.JSONDecodeError, ValueError):
+            availability = get_all_status()
+    else:
+        availability = get_all_status()
     crawler_list = []
     for name, info in sorted(crawlers.items()):
         crawler_list.append(

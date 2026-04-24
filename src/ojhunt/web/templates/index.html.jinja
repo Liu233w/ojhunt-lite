@@ -1,205 +1,7 @@
 {% extends "base.html.jinja" %}
 
 {% block extra_head %}
-<style>
-  /* ── SECTION HEAD ── */
-  .section-head {
-    display: flex; align-items: baseline; gap: 0.75rem;
-    color: var(--fg-4); font-size: var(--fs-xs);
-    text-transform: uppercase; letter-spacing: 0.12em;
-    margin: 1.5rem 0 0.75rem;
-  }
-  .section-head .hash { color: var(--acc); }
-  .section-head .rule { flex: 1; border-bottom: 1px dashed var(--line); }
-  .section-head .count { color: var(--fg-3); font-variant-numeric: tabular-nums; }
-
-  /* ── BANNERS ── */
-  .banner {
-    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-    padding: 0.7rem 1rem;
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--acc);
-    background: var(--bg-1);
-    font-size: var(--fs-s);
-    color: var(--fg-2);
-    margin-bottom: 1rem;
-  }
-  .banner .tag {
-    color: var(--acc); font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase; font-size: var(--fs-xs);
-  }
-  .banner .date { color: var(--fg); font-weight: 500; }
-  .banner .help { color: var(--fg-4); font-size: var(--fs-xs); }
-  .banner .spacer { flex: 1 1 auto; }
-  .banner.legacy { border-left-color: var(--fg-4); }
-  .banner.legacy .tag { color: var(--fg-3); }
-  .banner button.x {
-    background: none; border: 0; color: var(--fg-4);
-    padding: 0.25rem 0.5rem; font-size: 1rem; line-height: 1;
-  }
-  .banner button.x:hover { color: var(--fg); }
-
-  /* ── COMPOSER ── */
-  .composer {
-    border: 1px solid var(--line);
-    background: var(--bg-1);
-    margin-bottom: 1.5rem;
-  }
-  .composer .c-label {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--line);
-    background: var(--bg-2);
-    font-size: var(--fs-xs); color: var(--fg-3);
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
-  .composer .c-label .dot { color: var(--acc); }
-  .composer .c-body {
-    padding: 0.9rem 1rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr auto auto;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .field {
-    display: flex; align-items: center;
-    border: 1px solid var(--line);
-    background: var(--bg);
-    padding: 0 0.6rem;
-    height: 36px;
-    position: relative;
-  }
-  .field:focus-within { border-color: var(--acc); box-shadow: 0 0 0 2px var(--acc-dimmer); }
-  .field .prefix { color: var(--fg-4); user-select: none; margin-right: 0.45rem; }
-  .field select, .field input {
-    background: transparent; border: 0; outline: none;
-    color: var(--fg); font: inherit; width: 100%; padding: 0;
-  }
-  .field select option { background: var(--bg-1); color: var(--fg); }
-  .field input::placeholder { color: var(--fg-4); }
-  .field .at { color: var(--acc); margin: 0 0.3rem; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    background: var(--bg-2); color: var(--fg);
-    border: 1px solid var(--line-2);
-    padding: 0 0.85rem; height: 36px;
-    font: inherit; letter-spacing: 0.04em;
-    text-transform: lowercase; white-space: nowrap;
-  }
-  .btn:hover { border-color: var(--acc); color: var(--acc); }
-  .btn.primary { background: var(--acc); color: #0c0d0e; border-color: var(--acc); font-weight: 600; }
-  .btn.primary:hover { background: var(--fg); border-color: var(--fg); color: var(--bg); }
-  .btn.ghost { background: transparent; }
-  .btn.danger:hover { border-color: var(--err); color: var(--err); }
-  .btn .kbd {
-    margin-left: 0.3rem; color: var(--fg-4); font-size: 10px;
-    letter-spacing: 0.05em; border: 1px solid var(--line); padding: 0 0.3rem; border-radius: 2px;
-  }
-  .btn.primary .kbd { color: rgba(12,13,14,0.75); border-color: rgba(12,13,14,0.35); }
-  .btn.xs { height: 26px; padding: 0 0.55rem; font-size: var(--fs-xs); }
-
-  .crawler-hint {
-    grid-column: 1 / -1;
-    font-size: var(--fs-xs); color: var(--fg-3); padding-left: 0.1rem;
-  }
-  .crawler-hint::before { content: "ℹ "; color: var(--fg-4); }
-
-  /* ── SUMMARY ── */
-  .summary {
-    margin-top: 1.5rem;
-    border: 1px solid var(--line);
-    background: var(--bg-1);
-    display: grid; grid-template-columns: 1fr auto; align-items: center;
-  }
-  .summary-left {
-    padding: 1rem 1.25rem;
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: 1.5rem;
-  }
-  .summary .stat { display: flex; flex-direction: column; }
-  .summary .stat .n {
-    font-size: 1.75rem; font-weight: 600; color: var(--acc);
-    letter-spacing: -0.01em; line-height: 1.1;
-  }
-  .summary .stat .l {
-    font-size: var(--fs-xs); color: var(--fg-4);
-    text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.2rem;
-  }
-  .summary .sep { color: var(--fg-4); font-size: 1.5rem; line-height: 1; align-self: center; }
-  .summary-right {
-    padding: 1rem 1.25rem;
-    border-left: 1px solid var(--line);
-    display: flex; flex-direction: row-reverse; gap: 1rem; align-items: center;
-  }
-  .summary-right .note {
-    font-size: var(--fs-xs); color: var(--fg-4); max-width: 28ch; line-height: 1.4;
-    text-align: right;
-  }
-
-  @media (max-width: 640px) {
-    .banner { gap: 0.4rem 0.75rem; padding: 0.6rem 0.75rem; }
-    .banner .spacer { flex-basis: 100%; height: 0; }
-
-    .composer .c-body {
-      grid-template-columns: 1fr 1fr; gap: 0.4rem; padding: 0.7rem 0.75rem;
-    }
-    .composer .c-label { padding: 0.45rem 0.75rem; }
-    .composer .c-body .field-user,
-    .composer .c-body .field-crawler { grid-column: 1 / -1; }
-    .btn { padding: 0 0.65rem; }
-    .btn .kbd { display: none; }
-
-    /* ── SUMMARY ── */
-    .summary { grid-template-columns: 1fr; }
-    .summary-left { padding: 0.85rem 1rem; gap: 0.75rem 1.25rem; }
-    .summary .stat .n { font-size: 1.5rem; }
-    .summary .sep { display: none; }
-    .summary-right { border-left: 0; border-top: 1px solid var(--line); padding: 0.85rem 1rem; }
-
-    /* ── HOME: table → card layout ── */
-    #page-home .tbl-wrap { border: 0; background: transparent; }
-    #page-home .tbl,
-    #page-home .tbl thead,
-    #page-home .tbl tbody,
-    #page-home .tbl tr,
-    #page-home .tbl td,
-    #page-home .tbl th { display: block; }
-    #page-home .tbl thead { display: none; }
-    #page-home .tbl tbody tr {
-      border: 1px solid var(--line); background: var(--bg-1);
-      margin-bottom: 0.5rem; padding: 0.2rem 0;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-    }
-    /* bar variant: border on card (tr), not on td:first-child */
-    [data-row-style="bar"] #page-home .tbl tbody tr.r-ok   { border-left: 3px solid var(--ok); }
-    [data-row-style="bar"] #page-home .tbl tbody tr.r-err  { border-left: 3px solid var(--err); }
-    [data-row-style="bar"] #page-home .tbl tbody tr.r-load { border-left: 3px solid var(--load); }
-    [data-row-style="bar"] #page-home .tbl tbody tr.r-pend { border-left: 3px solid var(--line-2); }
-    /* cancel desktop td:first-child bar for home */
-    [data-row-style="bar"] #page-home .tbl tbody tr td:first-child { border-left: 0 !important; }
-
-    #page-home .tbl tbody td {
-      border-bottom: 0; padding: 0.3rem 0.75rem;
-      display: flex; align-items: flex-start; gap: 0.5rem; font-size: var(--fs-s);
-      min-width: 0;
-    }
-    #page-home .tbl tbody td::before {
-      content: attr(data-lbl);
-      color: var(--fg-4); font-size: var(--fs-xs); text-transform: uppercase;
-      letter-spacing: 0.08em; min-width: 72px; flex-shrink: 0;
-    }
-    #page-home .tbl tbody td.crawler {
-      grid-column: 1 / -1; border-bottom: 1px solid var(--line);
-      padding-bottom: 0.5rem; margin-bottom: 0.25rem; font-size: var(--fs);
-    }
-    #page-home .tbl tbody td.crawler::before { display: none; }
-    #page-home .tbl tbody td.actions { grid-column: 1 / -1; justify-content: flex-end; }
-    #page-home .tbl tbody td.actions::before { display: none; }
-    #page-home .tbl tbody td[colspan] { grid-column: 1 / -1; }
-    #page-home .tbl tbody tr { position: relative; }
-  }
-</style>
+<link rel="stylesheet" href="/assets/index.css?v={{ static_version }}">
 {% endblock %}
 
 {% block title %}OJHunt Lite{% endblock %}
@@ -217,186 +19,218 @@
     </div>
     <div class="subtitle">
         <span class="prompt">$</span> pip install ojhunt<br>
-        <span class="prompt">$</span> ojhunt username@crawler
+        <span class="prompt">$</span> ojhunt username<span style="color:var(--acc)">@</span>crawler
     </div>
 </header>
 
-<!-- Legacy banner — plain JS, no Alpine dependency -->
-<div id="legacy-banner" class="banner legacy" style="display: none;">
-    <span class="tag">legacy</span>
-    <span>Were you a user of the old <span style="color:var(--fg)">acm-statistics</span> site?</span>
-    <a href="/pdf/legacy">Download your progress history →</a>
-    <span class="spacer"></span>
-    <button class="x" aria-label="dismiss" onclick="dismissLegacyBanner()">×</button>
-</div>
-<script>
-(function () {
-    if (localStorage.getItem('legacy-banner-dismissed') !== '1') {
-        document.getElementById('legacy-banner').style.display = '';
-    }
-})();
-function dismissLegacyBanner() {
-    localStorage.setItem('legacy-banner-dismissed', '1');
-    document.getElementById('legacy-banner').style.display = 'none';
-}
-</script>
-
 <div x-data="ojhunt()" x-init="init()">
 
-    <!-- Report restore banner (always visible after Alpine init) -->
-    <div class="banner" x-cloak>
-        <span class="tag" x-show="cachedPdfDate">report</span>
-        <span class="tag" x-show="!cachedPdfDate" style="color:var(--fg-4)">pdf</span>
-        <span x-show="cachedPdfDate">
-            previous: <span class="date" x-text="cachedPdfDate"></span>
-            <span class="help">loaded from pdf</span>
-        </span>
-        <span x-show="!cachedPdfDate" style="color:var(--fg-4)">no saved pdf</span>
-        <span class="spacer"></span>
-        <label>
-            <input type="file" accept=".pdf" x-ref="pdfUploadInput"
-                   @change="uploadReport($event.target.files[0]); $event.target.value=''"
-                   style="display:none">
-            <button type="button" class="btn xs ghost"
-                    @click="$refs.pdfUploadInput.click()"
-                    x-text="cachedPdfDate ? 'load different' : 'load pdf'"></button>
-        </label>
-        <button type="button" class="btn xs ghost danger" x-show="cachedPdfDate" @click="clearCachedPdf()">delete</button>
+    <!-- ═══ STEP 1 — LOAD REPORT ═══ -->
+    <div class="step">
+        <span class="n">01</span>
+        <h2>Load your report</h2>
+        <span class="hint">(optional — your PDF carries your crawler list and history)</span>
     </div>
 
-    <!-- Query composer -->
-    <div class="composer">
-        <div class="c-label">
-            <span><span class="dot">●</span> add_query</span>
-            <span>username @ crawler</span>
+    <!-- Report slot: loaded state -->
+    <div class="report-slot loaded" x-show="cachedPdfDate" x-cloak
+         :class="{ 'drag-over': isDragging }"
+         @dragover.prevent="isDragging = true"
+         @dragleave="isDragging = false"
+         @drop.prevent="isDragging = false; $event.dataTransfer.files[0] && uploadReport($event.dataTransfer.files[0])">
+        <div class="icon">PDF</div>
+        <div class="rs-body">
+            <div class="title" x-text="cachedPdfFilename || 'report.pdf'"></div>
+            <div class="meta">
+                <span><span class="k" x-text="queries.length"></span> crawlers</span>
+                <span class="sep">·</span>
+                <span>last queried <span class="k date" x-text="cachedPdfDate"></span></span>
+            </div>
         </div>
-        <div class="c-body">
-            <div class="field field-user">
-                <span class="prefix">user</span>
-                <input type="text" placeholder="username"
-                       x-model="username"
-                       @keydown.enter="addQuery()">
-                <span class="at">@</span>
+        <div class="rs-actions">
+            <label>
+                <input type="file" accept=".pdf" x-ref="pdfUploadInput"
+                       @change="uploadReport($event.target.files[0]); $event.target.value=''"
+                       style="display:none">
+                <button type="button" class="btn sm ghost" @click="$refs.pdfUploadInput.click()">replace</button>
+            </label>
+            <button type="button" class="iconbtn danger" title="remove pdf" @click="clearCachedPdf()">×</button>
+        </div>
+    </div>
+
+    <!-- Report slot: empty state -->
+    <div class="report-slot" x-show="!cachedPdfDate" x-cloak
+         :class="{ 'drag-over': isDragging }"
+         @dragover.prevent="isDragging = true"
+         @dragleave="isDragging = false"
+         @drop.prevent="isDragging = false; $event.dataTransfer.files[0] && uploadReport($event.dataTransfer.files[0])">
+        <div class="icon">PDF</div>
+        <div class="rs-body">
+            <div class="title">No report loaded</div>
+            <div class="meta" style="color:var(--fg-4)">
+                Drop a report.pdf here, or start fresh — crawler list will use defaults.
             </div>
-            <div class="field field-crawler">
-                <span class="prefix">crawler</span>
-                <select x-model="selectedCrawler" @keydown.enter="addQuery()">
-                    <option value="">-- select --</option>
-                    <template x-for="[name, info] in Object.entries(crawlers)" :key="name">
-                        <option :value="name" x-text="info.title"></option>
-                    </template>
-                    <option value="*">* all crawlers</option>
-                </select>
-            </div>
-            <button type="button" class="btn" @click="addQuery()">
-                add <span class="kbd">↵</span>
-            </button>
-            <button type="button" class="btn primary" @click="queryAll()" title="Ctrl/Cmd+Enter">
+        </div>
+        <div class="rs-actions">
+            <label>
+                <input type="file" accept=".pdf" x-ref="pdfUploadInput2"
+                       @change="uploadReport($event.target.files[0]); $event.target.value=''"
+                       style="display:none">
+                <button type="button" class="btn sm primary" @click="$refs.pdfUploadInput2.click()">choose pdf</button>
+            </label>
+        </div>
+    </div>
+
+    <!-- Legacy + merge links -->
+    <div class="slot-aux">
+        <span id="legacy-banner">
+            Coming from <em style="font-style:normal;color:var(--fg)">acm-statistics</em>?
+            <a href="/pdf/legacy">download your legacy history →</a>
+        </span>
+        <span>Have history in two PDFs? <a href="/pdf/merge">merge them →</a></span>
+    </div>
+
+    <!-- ═══ STEP 2 — EDIT CRAWLERS ═══ -->
+    <div class="step">
+        <span class="n">02</span>
+        <h2>Edit your crawlers</h2>
+        <span class="hint">add or remove the online judges you want to track</span>
+    </div>
+
+    <div class="composer">
+        <div class="field field-user">
+            <span class="prefix">user</span>
+            <input type="text" placeholder="username"
+                   x-model="username"
+                   @keydown.enter="addQuery()">
+            <span class="at">@</span>
+        </div>
+        <div class="field field-crawler">
+            <span class="prefix">crawler</span>
+            <select x-model="selectedCrawler" @keydown.enter="addQuery()">
+                <option value="">-- select --</option>
+                <template x-for="[name, info] in Object.entries(crawlers)" :key="name">
+                    <option :value="name" x-text="info.title"></option>
+                </template>
+                <option value="*">* all crawlers</option>
+            </select>
+        </div>
+        <button type="button" class="btn" @click="addQuery()">
+            add <span class="kbd">↵</span>
+        </button>
+        <div class="crawler-hint"
+             x-show="selectedCrawler && selectedCrawler !== '*' && crawlers[selectedCrawler]?.description"
+             x-text="(crawlers[selectedCrawler]?.title || '') + ' — ' + (crawlers[selectedCrawler]?.description || '')">
+        </div>
+    </div>
+
+    <!-- ═══ STEP 3 — RUN QUERIES ═══ -->
+    <div class="step">
+        <span class="n">03</span>
+        <h2>Run your queries</h2>
+        <span class="hint">click ▶ on each card or use query all</span>
+        <div class="step-actions">
+            <button type="button" class="btn primary sm" @click="queryAll()" title="Ctrl/Cmd+Enter">
                 query all <span class="kbd" x-text="isMac ? '⌘↵' : '^↵'"></span>
             </button>
-            <div class="crawler-hint"
-                 x-show="selectedCrawler && selectedCrawler !== '*' && crawlers[selectedCrawler]?.description"
-                 x-text="(crawlers[selectedCrawler]?.title || '') + ' — ' + (crawlers[selectedCrawler]?.description || '')">
-            </div>
+            <button type="button" class="btn sm ghost danger"
+                    x-show="queries.length > 0"
+                    @click="clearAll()">clear all</button>
         </div>
     </div>
 
-    <!-- Queries section -->
-    <div class="section-head">
-        <span class="hash">##</span>
-        <span>queries</span>
-        <span class="count" x-text="queries.length + ' rows'"></span>
-        <button type="button" class="btn xs ghost danger"
-                x-show="queries.length > 0"
-                @click="clearAll()">clear all</button>
-        <span class="rule"></span>
+    <!-- Card grid -->
+    <div class="grid" id="queries-tbl">
+        <div class="card-empty" x-show="queries.length === 0">
+            <pre>  no queries yet.</pre>
+            <span>add a <span style="color:var(--fg-2)"><span style="color:var(--acc)">username@crawler</span></span> above to start.</span>
+        </div>
+
+        <template x-for="q in queries" :key="q.id">
+            <div class="card" :class="{
+                    'r-ok':   q.status === 'success',
+                    'r-err':  q.status === 'error',
+                    'r-load': q.status === 'loading',
+                    'r-pend': q.status === 'pending'
+                 }">
+
+                <div class="c-hd">
+                    <span class="title" x-text="crawlers[q.crawler]?.title || q.crawler"></span>
+                    <span class="ident">
+                        <span x-text="q.username"></span><span class="at">@</span><span class="crawler" x-text="q.crawler"></span>
+                    </span>
+                </div>
+
+                <!-- OK / loading / pending: show stats -->
+                <div class="c-body-row" x-show="q.status !== 'error'">
+                    <div class="solved-wrap">
+                        <span class="lbl">Solved</span>
+                        <a href="#" class="solved-link"
+                           x-show="q.status === 'success'"
+                           @click.prevent="showDialog(q)"
+                           x-text="q.solved?.toLocaleString('en-US')"></a>
+                        <span class="dash" x-show="q.status !== 'success'">—</span>
+                    </div>
+                    <div class="subs-wrap" x-show="q.status === 'success'">
+                        <span class="lbl">Submissions</span>
+                        <span class="subs-val" x-text="q.submissions?.toLocaleString('en-US')"></span>
+                    </div>
+                </div>
+
+                <!-- Error: show message -->
+                <div class="c-err-msg" x-show="q.status === 'error'">
+                    <a href="#" class="err-link"
+                       @click.prevent="document.getElementById('dialog-error-' + q.id)?.showModal()"
+                       x-text="q.error"></a>
+                </div>
+
+                <div class="c-ft">
+                    <span class="status s-ok" x-show="q.status === 'success'">
+                        ok<span class="t" x-text="' · ' + q.duration?.toFixed(2) + 's'"></span>
+                    </span>
+                    <span class="status s-err" x-show="q.status === 'error'">error</span>
+                    <span class="status s-load" x-show="q.status === 'loading'">fetching<span class="loading-dots"></span></span>
+                    <span class="status s-pend" x-show="q.status === 'pending'">pending</span>
+                    <span class="actions">
+                        <button class="iconbtn" x-show="q.status === 'pending'" title="query" @click="queryOne(q.id)">▶</button>
+                        <button class="iconbtn" x-show="q.status === 'success' || q.status === 'error'" title="retry" @click="retryQuery(q.id)">↻</button>
+                        <button class="iconbtn danger" x-show="q.status === 'loading'" title="stop" @click="stopQuery(q.id)">■</button>
+                        <button class="iconbtn danger" x-show="q.status !== 'loading'" title="remove" @click="removeQuery(q.id)">×</button>
+                    </span>
+                </div>
+            </div>
+        </template>
     </div>
 
-    <div class="tbl-wrap">
-        <table class="tbl" id="queries-tbl">
-            <thead>
-                <tr>
-                    <th style="width:25%">username</th>
-                    <th style="width:16%">crawler</th>
-                    <th style="width:14%">solved</th>
-                    <th style="width:19%">submissions</th>
-                    <th style="width:10%">status</th>
-                    <th style="width:80px; text-align:right">actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr x-show="queries.length === 0">
-                    <td colspan="6" class="empty">
-                        <pre>  no queries yet.</pre>
-                        <span>add a <span class="hint-cmd"><span class="hl">username@crawler</span></span> above to start.</span>
-                    </td>
-                </tr>
-                <template x-for="q in queries" :key="q.id">
-                    <tr :class="{
-                        'r-ok':   q.status === 'success',
-                        'r-err':  q.status === 'error',
-                        'r-load': q.status === 'loading',
-                        'r-pend': q.status === 'pending'
-                    }">
-                        <td data-lbl="user"><span class="user" x-text="q.username"></span></td>
-                        <td class="crawler" data-lbl="crawler">
-                            <div x-text="crawlers[q.crawler]?.title || q.crawler"></div>
-                            <div class="tag" x-text="q.crawler"></div>
-                        </td>
-                        <td data-lbl="solved" :colspan="q.status === 'error' ? 2 : null">
-                            <a href="#" class="err-link" x-show="q.status === 'error'"
-                               @click.prevent="document.getElementById('dialog-error-' + q.id)?.showModal()"
-                               x-text="q.error"></a>
-                            <a href="#" class="solved-link" x-show="q.status === 'success'"
-                               @click.prevent="showDialog(q)"
-                               x-text="q.solved?.toLocaleString('en-US')"></a>
-                            <span class="num dim" x-show="q.status === 'loading'">—</span>
-                            <span class="num dim" x-show="q.status === 'pending'">—</span>
-                        </td>
-                        <td data-lbl="subs" x-show="q.status !== 'error'">
-                            <span class="num dim" x-show="q.status === 'success'" x-text="q.submissions?.toLocaleString('en-US')"></span>
-                            <span class="num dim" x-show="q.status !== 'success'">—</span>
-                        </td>
-                        <td data-lbl="status">
-                            <span class="status s-ok" x-show="q.status === 'success'">ok<span class="t" x-text="'  ' + q.duration?.toFixed(2) + 's'"></span></span>
-                            <span class="status s-err" x-show="q.status === 'error'">error</span>
-                            <span class="status s-load" x-show="q.status === 'loading'">fetching<span class="loading-dots"></span></span>
-                            <span class="status s-pend" x-show="q.status === 'pending'">pending</span>
-                        </td>
-                        <td class="actions">
-                            <button class="iconbtn" x-show="q.status === 'pending'" title="query" @click="queryOne(q.id)">▶</button>
-                            <button class="iconbtn" x-show="q.status === 'success' || q.status === 'error'" title="retry" @click="retryQuery(q.id)">↻</button>
-                            <button class="iconbtn danger" x-show="q.status === 'loading'" title="stop" @click="stopQuery(q.id)">■</button>
-                            <button class="iconbtn danger" x-show="q.status !== 'loading'" title="remove" @click="removeQuery(q.id)">×</button>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
+    <!-- ═══ STEP 4 — SAVE REPORT ═══ -->
+    <div class="step" x-show="report.totalSolved !== null" x-cloak>
+        <span class="n">04</span>
+        <h2>Save your report</h2>
+        <span class="hint">your pdf carries all crawler settings and history</span>
     </div>
 
-    <!-- Report summary -->
-    <div class="summary" x-show="report.totalSolved !== null" x-cloak>
-        <div class="summary-left">
-            <div class="stat">
+    <div class="download-card summary" x-show="report.totalSolved !== null" x-cloak>
+        <div class="dc-left summary-left">
+            <div class="stat accent">
                 <span class="n" x-text="report.totalSolved?.toLocaleString('en-US')"></span>
                 <span class="l">total solved</span>
             </div>
-            <span class="sep">/</span>
             <div class="stat">
-                <span class="n" style="color:var(--fg)"
-                      x-text="report.totalSubmissions?.toLocaleString('en-US')"></span>
+                <span class="n" x-text="report.totalSubmissions?.toLocaleString('en-US')"></span>
                 <span class="l">total submissions</span>
             </div>
+            <div class="stat">
+                <span class="n">
+                    <span x-text="queries.filter(q => q.status === 'success').length"></span><span style="color:var(--fg-4);font-size:1.1rem;font-weight:400" x-text="'/' + queries.length"></span>
+                </span>
+                <span class="l">crawlers ok</span>
+            </div>
         </div>
-        <div class="summary-right">
+        <div class="dc-right summary-right">
             <button type="button" class="btn primary" @click="downloadReport()">
                 download report.pdf
             </button>
-            <span class="note">
-                Saves your crawler list and history.
-                Store the PDF on your device — browser storage may be cleared.
-            </span>
+            <span class="note">Store the PDF on your device — browser storage may be cleared at any time.</span>
         </div>
     </div>
 
@@ -419,7 +253,6 @@ function dismissLegacyBanner() {
             </div>
         </dialog>
     </template>
-    <!-- Error detail dialogs -->
     <template x-for="q in queries" :key="'err-' + q.id">
         <dialog :id="'dialog-error-' + q.id">
             <div class="dlg-hd">
@@ -439,17 +272,12 @@ function dismissLegacyBanner() {
 </div>{# end x-data #}
 
 <footer class="footer">
-    <div>
-        <p>inspired by <a href="https://kidozh.com" target="_blank" rel="noopener noreferrer">jiduo zhang</a>'s
-            西北工业大学ACM查询系统 (npuacm.info).</p>
-        <p>a from-scratch rewrite of
-            <a href="https://github.com/Liu233w/acm-statistics" target="_blank" rel="noopener noreferrer">acm-statistics</a>,
-            no server-side storage — everything lives in your browser and your pdf.</p>
-        <p>ai agent? <a href="/llms.txt">read the guide for llm →</a></p>
-    </div>
-    <div class="ascii">┌─────────────┐
-│ ojhunt-lite │
-└─────────────┘</div>
+    <p>inspired by <a href="https://kidozh.com" target="_blank" rel="noopener noreferrer">jiduo zhang</a>'s
+        西北工业大学ACM查询系统 (npuacm.info).</p>
+    <p>a from-scratch rewrite of
+        <a href="https://github.com/Liu233w/acm-statistics" target="_blank" rel="noopener noreferrer">acm-statistics</a>,
+        no server-side storage — everything lives in your browser and your pdf.</p>
+    <p>ai agent? <a href="/llms.txt">read the guide for llm →</a></p>
 </footer>
 {% endblock %}
 

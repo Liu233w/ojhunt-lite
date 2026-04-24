@@ -108,6 +108,26 @@ def _write_temp_pdf(pdf_bytes: bytes) -> str:
     return tmp.name
 
 
+def _drag_drop_pdf(page: Page, pdf_bytes: bytes, filename: str = "report.pdf") -> None:
+    """Simulate dragging a PDF onto the (visible) report slot via synthetic events."""
+    pdf_b64 = base64.b64encode(pdf_bytes).decode()
+    data_transfer = page.evaluate_handle(
+        """([b64, name]) => {
+            const dt = new DataTransfer();
+            const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+            const file = new File([bytes], name, {type: 'application/pdf'});
+            dt.items.add(file);
+            return dt;
+        }""",
+        [pdf_b64, filename],
+    )
+    # Target the empty slot specifically — both slots are in the DOM (x-show only
+    # toggles display), so the strict-mode locator needs a disambiguating selector.
+    slot = page.locator(".report-slot:not(.loaded)")
+    slot.dispatch_event("dragover", {"dataTransfer": data_transfer})
+    slot.dispatch_event("drop", {"dataTransfer": data_transfer})
+
+
 @pytest.fixture
 def mock_codeforces_api(page: Page):
     """Intercept codeforces/tourist API calls and return a mock success response.
@@ -149,8 +169,8 @@ def test_upload_pdf_restores_queries_when_table_empty(
         )
         # A codeforces row should appear
         expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
-        # Date indicator in the PDF banner should be shown
-        expect(page.locator(".banner .date")).to_be_visible(timeout=5000)
+        # Date indicator in the report slot should be shown
+        expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
     finally:
         os.unlink(pdf_path)
 
@@ -210,7 +230,7 @@ def test_download_report_updates_date_indicator(
     _add_query(page, "codeforces", "tourist")
     page.click("button.btn.primary:has-text('query all')")
     row = _row(page, "CodeForces")
-    expect(row).to_have_class("r-ok", timeout=30000)
+    expect(row).to_have_class("card r-ok", timeout=30000)
 
     # Download report and intercept the download
     with page.expect_download() as dl_info:
@@ -219,8 +239,44 @@ def test_download_report_updates_date_indicator(
     assert download.suggested_filename.startswith("ojhunt-report-")
     assert download.suggested_filename.endswith(".pdf")
 
-    # Date indicator should be updated
-    expect(page.locator(".banner .date")).to_be_visible(timeout=5000)
+    # Date indicator should be updated (report slot switches to loaded state)
+    expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
+
+
+@pytest.mark.playwright
+def test_download_updates_report_slot_filename_and_persists(
+    page: Page, context: BrowserContext, mock_codeforces_api
+):
+    """After download, report slot shows correct filename; loaded state persists after reload."""
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _add_query(page, "codeforces", "tourist")
+    page.click("button.btn.primary:has-text('query all')")
+    expect(_row(page, "CodeForces")).to_have_class("card r-ok", timeout=30000)
+
+    with page.expect_download() as dl_info:
+        page.click("button.btn.primary:has-text('download report.pdf')")
+    download = dl_info.value
+    expected_filename = (
+        download.suggested_filename
+    )  # e.g. "ojhunt-report-2026-04-24.pdf"
+    expected_date = expected_filename.removeprefix("ojhunt-report-").removesuffix(
+        ".pdf"
+    )
+
+    # Report slot should switch to loaded state with correct filename and date
+    slot = page.locator(".report-slot.loaded")
+    expect(slot).to_be_visible(timeout=5000)
+    expect(slot.locator(".title")).to_have_text(expected_filename, timeout=5000)
+    expect(slot.locator(".date")).to_have_text(expected_date, timeout=5000)
+
+    # Loaded state should survive a page reload (localStorage persisted)
+    page.reload()
+    expect(page.locator(".report-slot.loaded")).to_be_visible(timeout=5000)
+    expect(page.locator(".report-slot.loaded .date")).to_have_text(
+        expected_date, timeout=5000
+    )
 
 
 @pytest.mark.playwright
@@ -235,20 +291,22 @@ def test_download_then_upload_shows_date_and_merges(
     _add_query(page, "codeforces", "tourist")
     page.click("button.btn.primary:has-text('query all')")
     row = _row(page, "CodeForces")
-    expect(row).to_have_class("r-ok", timeout=30000)
+    expect(row).to_have_class("card r-ok", timeout=30000)
 
     # Download report — download.path() is already on disk, use it directly
     with page.expect_download() as dl_info:
         page.click("button.btn.primary:has-text('download report.pdf')")
     download = dl_info.value
-    date_text = page.locator(".banner .date").inner_text(timeout=5000)
+    date_text = page.locator(".report-slot.loaded .date").inner_text(timeout=5000)
 
     # Clear storage and reload, then re-upload the downloaded file
     _clear_storage(page)
     page.set_input_files("input[type='file']", download.path())
 
     # Date should match what was shown after download
-    expect(page.locator(".banner .date")).to_have_text(date_text, timeout=5000)
+    expect(page.locator(".report-slot.loaded .date")).to_have_text(
+        date_text, timeout=5000
+    )
     # Queries should be restored
     expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
 
@@ -263,12 +321,12 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
 
     # Upload the historical PDF (3 entries from 2020)
     page.set_input_files("input[type='file']", historical_pdf_path)
-    expect(page.locator(".banner .date")).to_be_visible(timeout=5000)
+    expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
     expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
 
     # Query and download a new report (today's date ~2026)
     page.click("button.btn.primary:has-text('query all')")
-    expect(_row(page, "CodeForces")).to_have_class("r-ok", timeout=30000)
+    expect(_row(page, "CodeForces")).to_have_class("card r-ok", timeout=30000)
     with page.expect_download() as dl_info:
         page.click("button.btn.primary:has-text('download report.pdf')")
     download = dl_info.value
@@ -285,3 +343,34 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
     assert any(k.startswith("202") and k > "2020" for k in keys), (
         f"No recent entry found; keys: {keys}"
     )
+
+
+@pytest.mark.playwright
+def test_drag_and_drop_pdf_onto_empty_slot(page: Page, context: BrowserContext):
+    """Dragging a valid OJHunt PDF onto the empty report slot loads it."""
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    pdf_bytes = _make_ojhunt_pdf(context, username="tourist")
+    _drag_drop_pdf(page, pdf_bytes, filename="my-report.pdf")
+
+    expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
+    expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
+    expect(page.locator(".report-slot.loaded .title")).to_have_text(
+        "my-report.pdf", timeout=5000
+    )
+
+
+@pytest.mark.playwright
+def test_drag_over_shows_visual_feedback(page: Page):
+    """Dragging over the report slot applies drag-over class; dragleave removes it."""
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    # Both slots are in the DOM; target the empty one (no .loaded class).
+    slot = page.locator(".report-slot:not(.loaded)")
+    slot.dispatch_event("dragover", {})
+    expect(slot).to_have_class("report-slot drag-over", timeout=2000)
+
+    slot.dispatch_event("dragleave", {})
+    expect(slot).to_have_class("report-slot", timeout=2000)
