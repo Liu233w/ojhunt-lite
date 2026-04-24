@@ -11,16 +11,18 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
     <style>
       :root {
-        --bg:    #0c0d0e;
+        --bg:    #0b0c0e;
         --bg-1:  #101214;
-        --bg-2:  #14161a;
-        --bg-3:  #191c21;
-        --line:  #23262b;
-        --line-2:#2e3238;
-        --fg:    #e6e6e3;
-        --fg-2:  #b7b9b8;
+        --bg-2:  #15181c;
+        --bg-3:  #1c2026;
+        --line:  #22262c;
+        --line-2:#2f343c;
+        --fg:    #ededea;
+        --fg-2:  #a9adb0;
         --fg-3:  #8c9096;
-        --fg-4:  #787c82;
+        --fg-4:  #6b7077;
+        --fg-dim:  var(--fg-2);
+        --fg-mute: var(--fg-4);
 
         --acc-green:   oklch(0.82 0.17 148);
         --acc-amber:   oklch(0.82 0.17  72);
@@ -39,9 +41,9 @@
         --row-py: 0.7rem;
         --row-px: 1rem;
         --gap:    1rem;
-        --fs:     13px;
-        --fs-s:   12px;
-        --fs-xs:  11px;
+        --fs:     15px;
+        --fs-s:   13px;
+        --fs-xs:  12px;
 
         --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas,
                 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', monospace;
@@ -51,15 +53,6 @@
       [data-accent="amber"]   { --acc: var(--acc-amber); }
       [data-accent="cyan"]    { --acc: var(--acc-cyan); }
       [data-accent="magenta"] { --acc: var(--acc-magenta); }
-
-      [data-density="compact"] {
-        --row-py: 0.4rem; --row-px: 0.75rem; --gap: 0.75rem;
-        --fs: 12px; --fs-s: 11px; --fs-xs: 10px;
-      }
-      [data-density="roomy"] {
-        --row-py: 1rem; --row-px: 1.25rem; --gap: 1.5rem;
-        --fs: 14px; --fs-s: 13px; --fs-xs: 12px;
-      }
 
       * { box-sizing: border-box; }
       html, body { background: var(--bg); color: var(--fg); }
@@ -76,18 +69,6 @@
       a { color: var(--acc); text-decoration: none; }
       a:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
       button { font: inherit; color: inherit; cursor: pointer; }
-
-      /* subtle CRT scanline */
-      body::before {
-        content: "";
-        position: fixed; inset: 0;
-        pointer-events: none; z-index: 1000;
-        background: repeating-linear-gradient(
-          to bottom,
-          transparent 0px, transparent 2px,
-          rgba(255,255,255,0.012) 2px, rgba(255,255,255,0.012) 3px
-        );
-      }
 
       /* ── TOP BAR ── */
       .topbar {
@@ -121,10 +102,10 @@
         text-transform: lowercase;
         border-radius: 2px;
         text-decoration: none;
+        font-family: var(--sans);
       }
       .tb-nav a:hover { color: var(--fg); background: var(--bg-2); text-decoration: none; }
       .tb-nav a.active { color: var(--acc); }
-      .tb-nav a.active::before { content: "> "; color: var(--acc); }
       .tb-star {
         display: inline-flex; align-items: center; gap: 0.4rem;
         border: 1px solid var(--line-2);
@@ -148,11 +129,9 @@
       .header {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        align-items: end;
+        align-items: center;
         gap: 1.5rem 2rem;
-        padding: 1rem 0 1.5rem;
-        border-bottom: 1px dashed var(--line);
-        margin-bottom: 2rem;
+        padding: 1rem 0 1.25rem;
       }
       .header h1 { white-space: nowrap; }
       .header .mark {
@@ -291,16 +270,12 @@
 
       /* ── FOOTER ── */
       .footer {
-        margin-top: 4rem; padding-top: 1.5rem;
-        border-top: 1px dashed var(--line);
+        margin-top: 2.5rem; padding-top: 1.1rem;
+        border-top: 1px solid var(--line);
         color: var(--fg-4); font-size: var(--fs-xs);
-        display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: end;
+        line-height: 1.7;
       }
-      .footer p { margin: 0 0 0.4rem; line-height: 1.6; }
-      .footer .ascii {
-        color: var(--fg-4); white-space: pre; font-size: 10px;
-        line-height: 1.1; text-align: right; opacity: 0.7;
-      }
+      .footer p { margin: 0 0 0.3rem; }
 
       /* ── DIALOG ── */
       dialog {
@@ -354,17 +329,12 @@
         .header .mark img { height: 36px; }
         .header .subtitle { justify-self: start; text-align: left; font-size: var(--fs-xs); max-width: none; }
 
-        /* ── FOOTER ── */
-        .footer { grid-template-columns: 1fr; }
-        .footer .ascii { display: none; }
-
-        /* scanline: disable on mobile */
-        body::before { display: none; }
+        /* (footer is single-column already) */
       }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body data-accent="green" data-density="comfortable" data-row-style="bar">
+<body data-accent="green">
 
 <nav class="topbar">
     <a href="/" class="tb-brand">
