@@ -47,10 +47,14 @@
   .btn.sm { height: 32px; padding: 0 0.75rem; font-size: var(--fs-s); }
   .btn.xs { height: 26px; padding: 0 0.55rem; font-size: var(--fs-xs); }
 
+  .step-actions { display: flex; gap: 0.5rem; align-items: center; }
+
   @media (max-width: 640px) {
     .composer { grid-template-columns: 1fr; }
     .btn .kbd { display: none; }
     .step { flex-wrap: wrap; }
+    .step .hint { order: 10; flex: 0 0 100%; margin-top: 0.1rem; }
+    .step-actions { flex: 0 0 100%; }
   }
 </style>
 {% endblock %}
@@ -180,12 +184,14 @@
         <span class="n">03</span>
         <h2>Run your queries</h2>
         <span class="hint">click ▶ on each card or use query all</span>
-        <button type="button" class="btn primary sm" @click="queryAll()" title="Ctrl/Cmd+Enter">
-            query all <span class="kbd" x-text="isMac ? '⌘↵' : '^↵'"></span>
-        </button>
-        <button type="button" class="btn sm ghost danger"
-                x-show="queries.length > 0"
-                @click="clearAll()">clear all</button>
+        <div class="step-actions">
+            <button type="button" class="btn primary sm" @click="queryAll()" title="Ctrl/Cmd+Enter">
+                query all <span class="kbd" x-text="isMac ? '⌘↵' : '^↵'"></span>
+            </button>
+            <button type="button" class="btn sm ghost danger"
+                    x-show="queries.length > 0"
+                    @click="clearAll()">clear all</button>
+        </div>
     </div>
 
     <!-- Card grid -->
