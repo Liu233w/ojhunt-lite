@@ -108,6 +108,26 @@ def _write_temp_pdf(pdf_bytes: bytes) -> str:
     return tmp.name
 
 
+def _drag_drop_pdf(page: Page, pdf_bytes: bytes, filename: str = "report.pdf") -> None:
+    """Simulate dragging a PDF onto the (visible) report slot via synthetic events."""
+    pdf_b64 = base64.b64encode(pdf_bytes).decode()
+    data_transfer = page.evaluate_handle(
+        """([b64, name]) => {
+            const dt = new DataTransfer();
+            const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+            const file = new File([bytes], name, {type: 'application/pdf'});
+            dt.items.add(file);
+            return dt;
+        }""",
+        [pdf_b64, filename],
+    )
+    # Target the empty slot specifically — both slots are in the DOM (x-show only
+    # toggles display), so the strict-mode locator needs a disambiguating selector.
+    slot = page.locator(".report-slot:not(.loaded)")
+    slot.dispatch_event("dragover", {"dataTransfer": data_transfer})
+    slot.dispatch_event("drop", {"dataTransfer": data_transfer})
+
+
 @pytest.fixture
 def mock_codeforces_api(page: Page):
     """Intercept codeforces/tourist API calls and return a mock success response.
@@ -323,3 +343,34 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
     assert any(k.startswith("202") and k > "2020" for k in keys), (
         f"No recent entry found; keys: {keys}"
     )
+
+
+@pytest.mark.playwright
+def test_drag_and_drop_pdf_onto_empty_slot(page: Page, context: BrowserContext):
+    """Dragging a valid OJHunt PDF onto the empty report slot loads it."""
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    pdf_bytes = _make_ojhunt_pdf(context, username="tourist")
+    _drag_drop_pdf(page, pdf_bytes, filename="my-report.pdf")
+
+    expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
+    expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
+    expect(page.locator(".report-slot.loaded .title")).to_have_text(
+        "my-report.pdf", timeout=5000
+    )
+
+
+@pytest.mark.playwright
+def test_drag_over_shows_visual_feedback(page: Page):
+    """Dragging over the report slot applies drag-over class; dragleave removes it."""
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    # Both slots are in the DOM; target the empty one (no .loaded class).
+    slot = page.locator(".report-slot:not(.loaded)")
+    slot.dispatch_event("dragover", {})
+    expect(slot).to_have_class("report-slot drag-over", timeout=2000)
+
+    slot.dispatch_event("dragleave", {})
+    expect(slot).to_have_class("report-slot", timeout=2000)

@@ -84,7 +84,11 @@
     </div>
 
     <!-- Report slot: loaded state -->
-    <div class="report-slot loaded" x-show="cachedPdfDate" x-cloak>
+    <div class="report-slot loaded" x-show="cachedPdfDate" x-cloak
+         :class="{ 'drag-over': isDragging }"
+         @dragover.prevent="isDragging = true"
+         @dragleave="isDragging = false"
+         @drop.prevent="isDragging = false; $event.dataTransfer.files[0] && uploadReport($event.dataTransfer.files[0])">
         <div class="icon">PDF</div>
         <div class="rs-body">
             <div class="title" x-text="cachedPdfFilename || 'report.pdf'"></div>
@@ -106,7 +110,11 @@
     </div>
 
     <!-- Report slot: empty state -->
-    <div class="report-slot" x-show="!cachedPdfDate" x-cloak>
+    <div class="report-slot" x-show="!cachedPdfDate" x-cloak
+         :class="{ 'drag-over': isDragging }"
+         @dragover.prevent="isDragging = true"
+         @dragleave="isDragging = false"
+         @drop.prevent="isDragging = false; $event.dataTransfer.files[0] && uploadReport($event.dataTransfer.files[0])">
         <div class="icon">PDF</div>
         <div class="rs-body">
             <div class="title">No report loaded</div>
