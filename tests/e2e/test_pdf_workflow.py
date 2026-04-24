@@ -3,6 +3,7 @@
 import base64
 import json
 import os
+import re
 import tempfile
 
 import pytest
@@ -149,8 +150,8 @@ def test_upload_pdf_restores_queries_when_table_empty(
         )
         # A codeforces row should appear
         expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
-        # Date indicator in the PDF banner should be shown
-        expect(page.locator(".banner .date")).to_be_visible(timeout=5000)
+        # Date indicator in the report slot should be shown
+        expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
     finally:
         os.unlink(pdf_path)
 
@@ -210,7 +211,7 @@ def test_download_report_updates_date_indicator(
     _add_query(page, "codeforces", "tourist")
     page.click("button.btn.primary:has-text('query all')")
     row = _row(page, "CodeForces")
-    expect(row).to_have_class("r-ok", timeout=30000)
+    expect(row).to_have_class(re.compile(r"r-ok"), timeout=30000)
 
     # Download report and intercept the download
     with page.expect_download() as dl_info:
@@ -219,8 +220,8 @@ def test_download_report_updates_date_indicator(
     assert download.suggested_filename.startswith("ojhunt-report-")
     assert download.suggested_filename.endswith(".pdf")
 
-    # Date indicator should be updated
-    expect(page.locator(".banner .date")).to_be_visible(timeout=5000)
+    # Date indicator should be updated (report slot switches to loaded state)
+    expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
 
 
 @pytest.mark.playwright
@@ -235,20 +236,22 @@ def test_download_then_upload_shows_date_and_merges(
     _add_query(page, "codeforces", "tourist")
     page.click("button.btn.primary:has-text('query all')")
     row = _row(page, "CodeForces")
-    expect(row).to_have_class("r-ok", timeout=30000)
+    expect(row).to_have_class(re.compile(r"r-ok"), timeout=30000)
 
     # Download report — download.path() is already on disk, use it directly
     with page.expect_download() as dl_info:
         page.click("button.btn.primary:has-text('download report.pdf')")
     download = dl_info.value
-    date_text = page.locator(".banner .date").inner_text(timeout=5000)
+    date_text = page.locator(".report-slot.loaded .date").inner_text(timeout=5000)
 
     # Clear storage and reload, then re-upload the downloaded file
     _clear_storage(page)
     page.set_input_files("input[type='file']", download.path())
 
     # Date should match what was shown after download
-    expect(page.locator(".banner .date")).to_have_text(date_text, timeout=5000)
+    expect(page.locator(".report-slot.loaded .date")).to_have_text(
+        date_text, timeout=5000
+    )
     # Queries should be restored
     expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
 
@@ -263,12 +266,12 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
 
     # Upload the historical PDF (3 entries from 2020)
     page.set_input_files("input[type='file']", historical_pdf_path)
-    expect(page.locator(".banner .date")).to_be_visible(timeout=5000)
+    expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
     expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
 
     # Query and download a new report (today's date ~2026)
     page.click("button.btn.primary:has-text('query all')")
-    expect(_row(page, "CodeForces")).to_have_class("r-ok", timeout=30000)
+    expect(_row(page, "CodeForces")).to_have_class(re.compile(r"r-ok"), timeout=30000)
     with page.expect_download() as dl_info:
         page.click("button.btn.primary:has-text('download report.pdf')")
     download = dl_info.value
