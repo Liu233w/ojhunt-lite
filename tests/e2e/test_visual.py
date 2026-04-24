@@ -18,11 +18,18 @@ sufficient for a pure extract-with-no-style-changes refactor.
 
 import json
 import os
+import urllib.parse
 
 import pytest
 from playwright.sync_api import Page, Route, expect
 
 from e2e.helpers import BASE_URL, _add_query, _clear_storage, _row
+
+# Deterministic availability fixture: a few crawlers in each state so all
+# three CSS variants (r-ok / r-err / r-pend) are visible in the snapshot.
+_CRAWLERS_TEST_AVAILABILITY = urllib.parse.quote(
+    json.dumps({"codeforces": "online", "atcoder": "offline"})
+)
 
 pytestmark = [
     pytest.mark.playwright,
@@ -144,7 +151,6 @@ def test_home_err_card(page: Page, assert_snapshot):
 
 
 # ── Other pages ───────────────────────────────────────────────────────────────
-# /crawlers omitted — page shows live availability checks that change between runs.
 
 
 def test_about_page(page: Page, assert_snapshot):
@@ -153,15 +159,22 @@ def test_about_page(page: Page, assert_snapshot):
     _snap(page, assert_snapshot, "about-desktop.png")
 
 
-def test_crawlers_page(page: Page, assert_snapshot):
-    page.set_viewport_size({"width": 1280, "height": 900})
-    page.goto(f"{BASE_URL}/crawlers")
-    page.wait_for_load_state("networkidle")
-    # Mask the availability table — its content changes as crawlers are polled.
-    # The mask replaces the area with a solid rectangle so the surrounding
-    # base-CSS layout (nav, header, footer) is still verified.
-    screenshot = page.screenshot(full_page=True, mask=[page.locator(".tbl-wrap")])
-    assert_snapshot(screenshot, name="crawlers-desktop.png")
+@pytest.mark.parametrize(
+    "width,height,label",
+    [
+        (1280, 900, "desktop"),
+        (820, 900, "tablet"),
+        (375, 812, "mobile"),
+    ],
+)
+def test_crawlers_page(
+    page: Page, assert_snapshot, width: int, height: int, label: str
+):
+    page.set_viewport_size({"width": width, "height": height})
+    # Inject deterministic availability via test_availability JSON parameter so
+    # the full table renders with all three states (r-ok / r-err / r-pend).
+    page.goto(f"{BASE_URL}/crawlers?test_availability={_CRAWLERS_TEST_AVAILABILITY}")
+    _snap(page, assert_snapshot, name=f"crawlers-{label}.png")
 
 
 def test_pdf_legacy_page(page: Page, assert_snapshot):
