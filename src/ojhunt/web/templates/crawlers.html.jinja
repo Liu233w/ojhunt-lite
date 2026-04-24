@@ -2,6 +2,22 @@
 
 {% block extra_head %}
 <style>
+  /* ── TABLE BASE (crawlers-only; removed from base.html in cards redesign) ── */
+  .tbl-wrap { border: 1px solid var(--line); background: var(--bg-1); overflow-x: auto; }
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl thead th {
+    padding: 0.5rem 0.85rem; text-align: left;
+    font-size: var(--fs-xs); color: var(--fg-4);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+    border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  .tbl tbody tr { border-bottom: 1px solid var(--line); }
+  .tbl tbody tr:last-child { border-bottom: 0; }
+  .tbl tbody td { padding: 0.5rem 0.85rem; color: var(--fg-2); vertical-align: middle; }
+  .tbl tbody tr.r-ok   td:first-child { border-left: 3px solid var(--ok); }
+  .tbl tbody tr.r-err  td:first-child { border-left: 3px solid var(--err); }
+  .tbl tbody tr.r-pend td:first-child { border-left: 3px solid var(--line-2); }
+
   /* ── CRAWLERS TABLE ── */
   .clw-tbl .tag-cell { color: var(--acc); letter-spacing: 0.04em; }
   .clw-tbl .desc { color: var(--fg-3); font-size: var(--fs-s); }
@@ -24,14 +40,9 @@
       margin-bottom: 0.5rem; padding: 0.5rem 0.75rem;
       display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.75rem;
     }
-    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-ok   { border-left: 3px solid var(--ok); }
-    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-err  { border-left: 3px solid var(--err); }
-    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-pend { border-left: 3px solid var(--line-2); }
-    /* cancel desktop td:first-child bar for crawlers */
-    [data-row-style="bar"] #page-crawlers .tbl tbody tr td:first-child,
-    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-ok   td:first-child,
-    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-err  td:first-child,
-    [data-row-style="bar"] #page-crawlers .tbl tbody tr.r-pend td:first-child { border-left: 0 !important; }
+    #page-crawlers .tbl tbody tr.r-ok   { border-left: 3px solid var(--ok); }
+    #page-crawlers .tbl tbody tr.r-err  { border-left: 3px solid var(--err); }
+    #page-crawlers .tbl tbody tr.r-pend { border-left: 3px solid var(--line-2); }
 
     #page-crawlers .tbl tbody td { border-bottom: 0; padding: 0; font-size: var(--fs-s); }
     #page-crawlers .tbl tbody td:nth-child(1) {
@@ -101,12 +112,7 @@
 </div>
 
 <footer class="footer">
-    <div>
-        <p>status is checked live from the server; offline crawlers are usually temporary — the site might be down or the crawler's endpoint may have changed.</p>
-        <p>want to add a crawler? <a href="https://github.com/Liu233w/ojhunt-lite/blob/main/docs/development.md" target="_blank" rel="noopener noreferrer">see docs/development.md →</a></p>
-    </div>
-    <div class="ascii">┌─────────────┐
-│ ojhunt-lite │
-└─────────────┘</div>
+    <p>status is checked live from the server; offline crawlers are usually temporary — the site might be down or the crawler's endpoint may have changed.</p>
+    <p>want to add a crawler? <a href="https://github.com/Liu233w/ojhunt-lite/blob/main/docs/development.md" target="_blank" rel="noopener noreferrer">see docs/development.md →</a></p>
 </footer>
 {% endblock %}
