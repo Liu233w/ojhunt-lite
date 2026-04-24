@@ -360,6 +360,8 @@
         line-height: 1.7;
       }
       .footer p { margin: 0 0 0.3rem; }
+      .footer a { color: var(--fg-dim); border-bottom: 1px dotted var(--fg-mute); }
+      .footer a:hover { color: var(--acc); border-bottom-color: var(--acc); text-decoration: none; }
 
       /* ── DIALOG ── */
       dialog {
@@ -403,10 +405,8 @@
         .download-card, .summary { grid-template-columns: 1fr; }
         .dc-right, .summary-right { border-left: 0; border-top: 1px solid var(--line); min-width: 0; }
       }
-      @media (max-width: 540px) {
-        .grid { grid-template-columns: 1fr; }
-      }
       @media (max-width: 640px) {
+        .grid { grid-template-columns: 1fr; }
         .topbar {
           height: auto; padding: 0.5rem 0.75rem;
           grid-template-columns: 1fr; gap: 0.4rem;
