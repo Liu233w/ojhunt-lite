@@ -68,6 +68,39 @@ the redirect never fires.
 - HTML `href` attributes are harmless (browsers follow 307 redirects), but `fetch()` calls
   can silently fail because StaticFiles returns a non-JSON 404 body that breaks `response.json()`
 
+## CSS conventions
+
+CSS files live at `src/ojhunt/web/static/assets/`:
+
+| File | What belongs here |
+|------|-------------------|
+| `base.css` | Design-system tokens (`:root`, `[data-accent=...]`), page resets, `.topbar`, `.page`, `.header`, `.footer`, `dialog`/`.dlg-*`, `.card` base layout (including `::before` stripe and `:hover`), `[x-cloak]`, `:focus-visible`, responsive media queries for shared components |
+| `index.css` | Everything used *only* by the home page: `.step`, `.report-slot`, `.grid`, card internals (`.c-hd`, `.c-body-row`, `.c-ft`, `.c-err-msg`, `.solved-link`, `.subs-val`, `.iconbtn`, `.loading-dots`, `.card-empty`), card status variants (`.card.r-ok::before` etc.), `.download-card`/`.summary`/`.dc-*`/`.stat`, `.composer`, `.field`, `.btn` (all variants), `.step-actions` |
+
+**Short templates** (crawlers, about, pdf pages) keep their inline `<style>` blocks — only extract when a template's styles grow long.
+
+**The critical rule:** anything from the original `base.html.jinja` `<style>` block that *any* page besides `index.html` uses must stay in `base.css`. The `about` page uses `.card`, `.card::before`, and `.card:hover` — these are in `base.css`.
+
+**Referencing CSS in templates:**
+
+```html
+<link rel="stylesheet" href="/assets/base.css?v={{ static_version }}">
+```
+
+`static_version` is a Jinja2 global injected via `jinja_env.globals["static_version"] = STATIC_VERSION` in `pages.py` — no need to pass it in individual `.render()` calls.
+
+**Visual regression tests** live in `tests/e2e/test_visual.py` (local-only, skipped in CI). After any CSS change:
+
+```bash
+# Capture new baselines (run against the original state first, or use --update-snapshots after verifying the change is intentional)
+uv run pytest tests/e2e/test_visual.py --update-snapshots
+
+# Verify no unintended visual diff
+uv run pytest tests/e2e/test_visual.py
+```
+
+Baselines are stored in `tests/e2e/__snapshots__/`. Commit baseline PNGs alongside the test or CSS change that necessitates them.
+
 ## Project history context (for UI copy)
 
 When writing UI copy that refers to "the old site":
