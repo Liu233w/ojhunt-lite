@@ -465,6 +465,8 @@ function ojhunt() {
                 localStorage.setItem(PDF_CACHE_KEY, data.pdf_b64);
             } catch (_) {}
             this.cachedPdfDate = data.date;
+            this.cachedPdfFilename = `ojhunt-report-${data.date}.pdf`;
+            localStorage.setItem(PDF_CACHE_FILENAME_KEY, this.cachedPdfFilename);
 
             // Download via data URL — no Blob/createObjectURL needed
             const a = document.createElement('a');
