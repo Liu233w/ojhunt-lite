@@ -151,3 +151,26 @@ def test_about_page(page: Page, assert_snapshot):
     page.set_viewport_size({"width": 1280, "height": 900})
     page.goto(f"{BASE_URL}/about")
     _snap(page, assert_snapshot, "about-desktop.png")
+
+
+def test_crawlers_page(page: Page, assert_snapshot):
+    page.set_viewport_size({"width": 1280, "height": 900})
+    page.goto(f"{BASE_URL}/crawlers")
+    page.wait_for_load_state("networkidle")
+    # Mask the availability table — its content changes as crawlers are polled.
+    # The mask replaces the area with a solid rectangle so the surrounding
+    # base-CSS layout (nav, header, footer) is still verified.
+    screenshot = page.screenshot(full_page=True, mask=[page.locator(".tbl-wrap")])
+    assert_snapshot(screenshot, name="crawlers-desktop.png")
+
+
+def test_pdf_legacy_page(page: Page, assert_snapshot):
+    page.set_viewport_size({"width": 1280, "height": 900})
+    page.goto(f"{BASE_URL}/pdf/legacy")
+    _snap(page, assert_snapshot, "pdf-legacy-desktop.png")
+
+
+def test_pdf_merge_page(page: Page, assert_snapshot):
+    page.set_viewport_size({"width": 1280, "height": 900})
+    page.goto(f"{BASE_URL}/pdf/merge")
+    _snap(page, assert_snapshot, "pdf-merge-desktop.png")
