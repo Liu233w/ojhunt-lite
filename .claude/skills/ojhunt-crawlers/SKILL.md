@@ -116,17 +116,13 @@ uv run pytest tests/crawlers/<name>_test.py -v --log-cli-level=DEBUG -s
 The crawler's own `logger.debug()` calls reveal which HTTP call failed and what the response
 looked like. Drop to manual `curl` only if the failure is opaque.
 
-**Sandbox networking:** aiohttp does not pick up the agent sandbox's HTTP proxy from env
-vars. Test fixtures must pass `trust_env=True`, otherwise allowlisted hosts fail DNS from
-Python while `curl` still works:
-
-```python
-async with aiohttp.ClientSession(trust_env=True) as s:
-    yield s
-```
+**Sandbox networking:** the shared `session` fixture in `tests/crawlers/conftest.py` already
+passes `trust_env=True` so aiohttp routes through the sandbox HTTP proxy. Don't redefine the
+fixture per file — just take `session` as a test parameter.
 
 **Login crawlers + captcha:** Sites like VJudge trigger captchas on repeated rapid logins
-from the same IP. Use a module-scoped session fixture so the cookie is reused across tests:
+from the same IP. Override the conftest fixture in your test file with a module-scoped one
+so the cookie is reused across tests:
 
 ```python
 @pytest_asyncio.fixture(scope="module", loop_scope="module")
@@ -135,7 +131,8 @@ async def session():
         yield s
 ```
 
-Match it with `@pytest.mark.asyncio(loop_scope="module")` on every test in the file.
+Match it with `@pytest.mark.asyncio(loop_scope="module")` on every test in the file. See
+`tests/crawlers/vjudge_test.py` for the canonical example.
 
 ### Decision Tree
 
@@ -212,17 +209,14 @@ async def query(session, username):
 
 ### Test Template
 
+The `session` fixture is provided by `tests/crawlers/conftest.py` — don't redefine it.
+
 ```python
-import pytest, pytest_asyncio, aiohttp
+import pytest
 from ojhunt.crawlers.example import query, __crawler_meta__
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu_notexist"
-
-@pytest_asyncio.fixture
-async def session():
-    async with aiohttp.ClientSession(trust_env=True) as s:
-        yield s
 
 @pytest.mark.asyncio
 async def test_user_not_exist(session):

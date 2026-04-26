@@ -3,8 +3,6 @@ Tests for NIT crawler
 """
 
 import pytest
-import pytest_asyncio
-import aiohttp
 from selectolax.lexbor import LexborHTMLParser
 from ojhunt.crawlers.nit import __crawler_meta__, query, _extract_number_from_cell
 
@@ -12,12 +10,6 @@ pytestmark = pytest.mark.network
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
-
-
-@pytest_asyncio.fixture
-async def session():
-    async with aiohttp.ClientSession() as s:
-        yield s
 
 
 def test_extract_number_from_cell_with_link():
