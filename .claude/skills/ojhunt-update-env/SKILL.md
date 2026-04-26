@@ -9,6 +9,11 @@ description: Project environment structure — where each type of knowledge belo
 documentation, point to the authoritative source — don't inline definitions that already exist
 elsewhere. Duplication causes drift.
 
+**Route between sibling skills, don't append to the most-used one:** When adding to a skill,
+name what the new section is *about* in one phrase and check whether a sibling `ojhunt-*`
+skill owns that phrase. The dominant skill tends to absorb content from neighbouring domains
+because authors append where they're already editing — resist the easy append.
+
 ## README.md
 Entry-level documentation: setup, usage examples, CLI flags, supported OJs.
 Update when something operational changes (a command, a new crawler, a setup step).
