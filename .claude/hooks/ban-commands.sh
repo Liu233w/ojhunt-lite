@@ -8,7 +8,7 @@ if echo "$COMMAND" | grep -qE '^[[:space:]]*(sudo[[:space:]]+)?gh[[:space:]]'; t
     exit 2
 fi
 
-if echo "$COMMAND" | grep -qE '(^|[;&|[:space:]])pip[[:space:]]+install'; then
+if echo "$COMMAND" | grep -qE '^[[:space:]]*(sudo[[:space:]]+)?pip[[:space:]]+install'; then
     echo "ERROR: 'pip install' is banned. Use 'uv add <package>' instead." >&2
     exit 2
 fi

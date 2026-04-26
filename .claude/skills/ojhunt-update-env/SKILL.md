@@ -1,6 +1,6 @@
 ---
 name: ojhunt-update-env
-description: Project environment structure — where each type of knowledge belongs across docs/, skills, hooks, commands, and CLAUDE.md. Load whenever the task involves documentation, creating or updating skills, adding hooks or commands, updating CLAUDE.md, or deciding where a new piece of knowledge should live.
+description: Project environment structure — where each type of knowledge belongs across docs/, skills, hooks, commands, and CLAUDE.md. Load whenever the task involves documentation, creating or updating skills, adding hooks or commands, updating CLAUDE.md, deciding where a new piece of knowledge should live, or capturing session learnings.
 ---
 
 # Where knowledge lives in this project's environment
@@ -58,7 +58,15 @@ Update when you need mechanical enforcement, not just reminders. See **ojhunt-ho
 Project-level slash commands that override global ones.
 Create a command when the global equivalent needs project-specific context injected.
 
-`/update-learnings` — captures session learnings and routes them to the right layer.
+Skills can also embed `!`shell command`` substitutions and `$ARGUMENTS` directly,
+so prefer extending an existing skill (e.g. **ojhunt-commit** owns `/commit`-style
+behavior) over adding a parallel command file.
+
+**Gotcha when documenting these features in prose:** the arguments placeholder
+gets substituted on render even inside inline-code spans, so writing it
+literally in skill prose erases it. Describe it ("the arguments placeholder")
+rather than using the literal token, and reserve the literal token for the
+section that should actually receive the user's input.
 
 ## `docs/adr/`
 Significant architectural decisions and their rationale. See the **ojhunt-commit** skill for
@@ -89,3 +97,37 @@ put it in a skill, not here.
 - Significant architectural decision (multiple approaches considered, choice non-obvious from code) → `docs/adr/`
 - Small tactical change → commit message intent (no doc needed)
 - Project-wide invariant every agent must know, regardless of task → `CLAUDE.md`
+
+---
+
+## Capturing session learnings
+
+When the user asks to capture session learnings (e.g. "what did we learn",
+"update the docs"), follow this flow. The first two steps are silent — only
+start outputting at step 3.
+
+### Step 1 (silent): Reflect
+
+Identify what was non-obvious, missing, or corrected that would help future
+sessions:
+- Workflows, conventions, or gotchas not yet documented
+- Feedback or corrections from the user on how to approach work
+- Project state changes: features shipped, decisions made, bugs resolved
+
+### Step 2 (silent): Route changes
+
+Use the routing rules above to decide where each learning belongs. Do not
+route from memory — re-read the relevant section if unsure.
+
+### Step 3: Show proposed changes
+
+For each learning, show the target file and a concise diff. Keep additions
+brief — skill files are loaded into every prompt.
+
+### Step 4: Apply with approval
+
+Ask the user which changes to apply. Only edit the files they approve.
+
+**Important:** Documentation updates (skill files, README, `docs/`) are the
+primary output — always propose at least one. Memory updates are optional
+and secondary; never substitute memory for documentation.
