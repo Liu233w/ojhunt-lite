@@ -62,6 +62,12 @@ Skills can also embed `!`shell command`` substitutions and `$ARGUMENTS` directly
 so prefer extending an existing skill (e.g. **ojhunt-commit** owns `/commit`-style
 behavior) over adding a parallel command file.
 
+**Gotcha when documenting these features in prose:** the arguments placeholder
+gets substituted on render even inside inline-code spans, so writing it
+literally in skill prose erases it. Describe it ("the arguments placeholder")
+rather than using the literal token, and reserve the literal token for the
+section that should actually receive the user's input.
+
 ## `docs/adr/`
 Significant architectural decisions and their rationale. See the **ojhunt-commit** skill for
 when a decision warrants an ADR vs a commit message.
