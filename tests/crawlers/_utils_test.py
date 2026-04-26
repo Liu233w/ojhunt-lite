@@ -5,17 +5,10 @@ Tests for crawlers._utils module
 from typing import Optional
 
 import pytest
-import pytest_asyncio
 import aiohttp
 from ojhunt.crawlers import _utils
 
 pytestmark = pytest.mark.network
-
-
-@pytest_asyncio.fixture
-async def session():
-    async with aiohttp.ClientSession() as s:
-        yield s
 
 
 async def _mock_resolver(

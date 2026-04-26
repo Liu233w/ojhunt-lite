@@ -8,8 +8,6 @@ Set LOGIN_USERNAME__CSES and LOGIN_PASSWORD__CSES environment variables to run t
 
 import os
 import pytest
-import pytest_asyncio
-import aiohttp
 from ojhunt.crawlers.cses import query, __crawler_meta__
 
 TEST_USERNAME = __crawler_meta__["test_username"]
@@ -25,12 +23,6 @@ pytestmark = [
         reason="CSES credentials not configured. Set LOGIN_USERNAME__CSES and LOGIN_PASSWORD__CSES environment variables.",
     ),
 ]
-
-
-@pytest_asyncio.fixture
-async def session():
-    async with aiohttp.ClientSession() as s:
-        yield s
 
 
 @pytest.mark.asyncio

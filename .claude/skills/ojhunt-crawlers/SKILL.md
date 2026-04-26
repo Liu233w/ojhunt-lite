@@ -6,7 +6,7 @@ description: Crawlers - file locations, metadata schema, login types, and conven
 # Crawlers
 
 For `__crawler_meta__` field reference and login type concepts, see **`docs/development.md`**.
-For test assertion conventions, invoke the **ojhunt-testing** skill.
+For general pytest conventions (CI scope, markdown doc tests), see the **ojhunt-testing** skill.
 For ADR guidance on significant design decisions, invoke the **ojhunt-commit** skill.
 
 ## Implementing a New Crawler
@@ -97,13 +97,42 @@ Use the appropriate template from "Crawler Templates" below.
 
 ### Step 6: Verification Checklist
 
-- [ ] `TMPDIR=/private/tmp/claude-503 uv run pytest tests/crawlers/<name>_test.py` — all 3 standard tests pass
+- [ ] `uv run pytest tests/crawlers/<name>_test.py` — all 3 standard tests pass
 - [ ] `uv run ruff check .` — no lint errors
 - [ ] `__crawler_meta__` has all required fields: `title`, `url`, `test_username`
 - [ ] BSD-2 license header present (only in `src/ojhunt/crawlers/` files, not tests)
 - [ ] `solved_list` is `None` (not `[]`) when unavailable
 - [ ] Error messages match exactly: `"Please enter username"`, `"The user does not exist"`
 - [ ] If crawler was previously archived: remove its files from `archived_crawlers/` and remove its entry from `archived_crawlers/README.md`
+
+### Debugging a Broken Crawler
+
+Start with the existing test harness — don't probe with `curl` first:
+
+```bash
+uv run pytest tests/crawlers/<name>_test.py -v --log-cli-level=DEBUG -s
+```
+
+The crawler's own `logger.debug()` calls reveal which HTTP call failed and what the response
+looked like. Drop to manual `curl` only if the failure is opaque.
+
+**Sandbox networking:** the shared `session` fixture in `tests/crawlers/conftest.py` already
+passes `trust_env=True` so aiohttp routes through the sandbox HTTP proxy. Don't redefine the
+fixture per file — just take `session` as a test parameter.
+
+**Login crawlers + captcha:** Sites like VJudge trigger captchas on repeated rapid logins
+from the same IP. Override the conftest fixture in your test file with a module-scoped one
+so the cookie is reused across tests:
+
+```python
+@pytest_asyncio.fixture(scope="module", loop_scope="module")
+async def session():
+    async with aiohttp.ClientSession(trust_env=True) as s:
+        yield s
+```
+
+Match it with `@pytest.mark.asyncio(loop_scope="module")` on every test in the file. See
+`tests/crawlers/vjudge_test.py` for the canonical example.
 
 ### Decision Tree
 
@@ -180,17 +209,14 @@ async def query(session, username):
 
 ### Test Template
 
+The `session` fixture is provided by `tests/crawlers/conftest.py` — don't redefine it.
+
 ```python
-import pytest, pytest_asyncio, aiohttp
+import pytest
 from ojhunt.crawlers.example import query, __crawler_meta__
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu_notexist"
-
-@pytest_asyncio.fixture
-async def session():
-    async with aiohttp.ClientSession() as s:
-        yield s
 
 @pytest.mark.asyncio
 async def test_user_not_exist(session):
@@ -215,6 +241,62 @@ async def test_valid_user(session):
 - API-based crawler: `src/ojhunt/crawlers/codeforces.py`
 - HTML-scraping crawler: `src/ojhunt/crawlers/hdu.py`
 - Test example: `tests/crawlers/codeforces_test.py`
+
+---
+
+## Testing crawlers
+
+For general pytest conventions (CI scope, markdown doc tests, web TestClient patterns), see
+the **ojhunt-testing** skill.
+
+### Standard test cases
+
+Every crawler test file must have all three:
+
+```python
+TEST_USERNAME = __crawler_meta__["test_username"]  # import, don't hardcode
+NOT_EXIST_USERNAME = "fmv84zcq3hwu_notexist"
+
+async def test_user_not_exist(session): ...
+async def test_username_with_space(session): ...
+async def test_valid_user(session): ...
+```
+
+The `session` fixture comes from `tests/crawlers/conftest.py` — don't redefine it. For login
+crawlers that need module-scoped cookie reuse (captcha avoidance), see "Login crawlers +
+captcha" in the Debugging section above.
+
+### Test assertions
+
+Assert all three fields in `test_valid_user`:
+
+**When all fields are available:**
+```python
+assert result["solved"] > 0
+assert result["submissions"] >= result["solved"]
+assert len(result["solved_list"]) == result["solved"]
+```
+
+**When a field is unavailable from the site:**
+- `solved_list`: use `None` (not `[]`); add a comment explaining why
+- `submissions`: use `0`; add a comment explaining why
+
+If `len(solved_list) < solved` (uncategorized problems not in the problem list), add a
+comment in the test explaining the discrepancy.
+
+### Login-required crawler testing (CLI)
+
+For `shared_account` crawlers, tests read credentials from `.env` automatically — create
+`.env` first if it doesn't exist. The CLI test pattern:
+
+```bash
+uv run ojhunt -l username:password@<crawler> -- target_user@<crawler>
+```
+
+To discover which crawlers require login:
+```bash
+uv run ojhunt --list --json | jq 'with_entries(select(.value.login_type | contains("account")))'
+```
 
 ---
 

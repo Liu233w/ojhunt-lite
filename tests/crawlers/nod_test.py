@@ -3,18 +3,10 @@ Tests for 51Nod crawler
 """
 
 import pytest
-import pytest_asyncio
-import aiohttp
 from ojhunt.crawlers.nod import query, __crawler_meta__
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_ID = "9999999999"
-
-
-@pytest_asyncio.fixture
-async def session():
-    async with aiohttp.ClientSession() as s:
-        yield s
 
 
 @pytest.mark.network

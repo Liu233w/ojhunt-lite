@@ -3,20 +3,12 @@ Tests for CSG crawler
 """
 
 import pytest
-import pytest_asyncio
-import aiohttp
 from ojhunt.crawlers.csg import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "nonexistentuserxyz12345"
-
-
-@pytest_asyncio.fixture
-async def session():
-    async with aiohttp.ClientSession() as s:
-        yield s
 
 
 @pytest.mark.asyncio

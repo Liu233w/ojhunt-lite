@@ -17,9 +17,11 @@ NOT_EXIST_USERNAME = "fmv84zcq3hwu"
 USERNAME_WITHOUT_SUBMISSIONS = "nwpuacm"
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="module", loop_scope="module")
 async def session():
-    async with aiohttp.ClientSession() as s:
+    """Module-scoped session so the login cookie is reused across tests.
+    VJudge triggers a captcha after a few logins in quick succession."""
+    async with aiohttp.ClientSession(trust_env=True) as s:
         yield s
 
 
@@ -36,7 +38,7 @@ pytestmark = [
 ]
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.timeout(50)
 async def test_user_not_exist(session):
     """Test that non-existent user raises ValueError"""
@@ -49,7 +51,7 @@ async def test_user_not_exist(session):
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.timeout(50)
 async def test_username_with_space(session):
     """Test that username with space is handled correctly"""
@@ -62,7 +64,7 @@ async def test_username_with_space(session):
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.timeout(50)
 async def test_valid_user_with_embedded_password(session):
     """Test valid user with embedded password (login as target user)"""
@@ -86,7 +88,7 @@ async def test_valid_user_with_embedded_password(session):
     assert result["submissions"] >= result["solved"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.timeout(50)
 async def test_valid_user_with_separate_login(session):
     """Test valid user with separate login credentials (query another user)"""
@@ -114,7 +116,7 @@ async def test_valid_user_with_separate_login(session):
     assert "codeforces-436B" in result["solved_list"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.timeout(50)
 async def test_missing_credentials(session):
     """Test that missing credentials raises ValueError"""
@@ -122,7 +124,7 @@ async def test_missing_credentials(session):
         await query(session, TEST_USERNAME)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.timeout(50)
 async def test_user_with_no_submissions(session):
     """Test user with no submissions returns zero stats"""
