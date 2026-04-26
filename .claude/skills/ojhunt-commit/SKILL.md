@@ -1,6 +1,38 @@
 ---
 name: ojhunt-commit
 description: Git operations, commit conventions, and ADRs. Load when preparing to commit, writing agent/worker prompts that include git steps, planning a change that may warrant an ADR, or evaluating whether a design decision needs documentation.
+allowed-tools: Read, Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Bash(git commit:*)
+---
+
+# Running a commit
+
+When invoked to perform a commit (e.g. via `/ojhunt-commit` or when the user
+asks to commit), use this flow. The conventions below apply.
+
+## User instruction
+
+$ARGUMENTS
+
+## Context
+
+- Current git status: !`git status 2>&1 || echo "(git status unavailable — possibly a fresh repo or missing config; proceed without status context)"`
+- Current git diff (staged and unstaged changes): !`git diff HEAD 2>&1 || git diff 2>&1 || echo "(no diff available — possibly no commits yet)"`
+- Current branch: !`git branch --show-current 2>&1 || echo "(no branch — possibly no commits yet)"`
+- Recent commits: !`git log --oneline -10 2>&1 || echo "(no commits yet)"`
+
+## Task
+
+Create a single git commit using the conventions below, based on the user
+instruction and the changes shown above.
+
+If the user instruction is empty, infer intent from the diff. If intent is
+unclear, ask before committing.
+
+If `git status` reported config errors (e.g. missing `user.email`), surface
+that to the user and stop — do NOT silently set git config.
+
+Stage and commit in a single message with parallel tool calls. Do not push.
+
 ---
 
 # Commit conventions

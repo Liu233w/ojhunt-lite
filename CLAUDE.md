@@ -21,5 +21,5 @@ Don't silently let project knowledge go undocumented.
 When you fail on the same command or action more than once in a session, treat it as a
 missing environment guardrail — not just a one-time mistake. After resolving the immediate
 failure, propose a concrete fix: a hook (for "never do X"), a skill update (for "how to do
-X correctly"), or a docs update (for reference material). Use `/update-learnings` or raise
-it directly with the user.
+X correctly"), or a docs update (for reference material). Invoke the `ojhunt-update-env`
+skill or raise it directly with the user.
