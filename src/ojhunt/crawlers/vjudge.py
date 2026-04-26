@@ -26,6 +26,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+import json
 import logging
 import aiohttp
 from typing import Dict, List, Union, Optional
@@ -97,6 +98,19 @@ def _map_oj_name(name_in_vjudge: str) -> str:
         return name_in_vjudge
 
 
+def _error_text(err: object) -> str:
+    """Flatten VJudge's error envelope to a lowercase searchable string.
+
+    Historically `error` was a plain string; it is now a dict shaped like
+    `{"i18nKey": "user.error.login_required", "trustable": false}`.
+    """
+    if isinstance(err, dict):
+        return str(err.get("i18nKey", "")).lower()
+    if isinstance(err, str):
+        return err.lower()
+    return ""
+
+
 async def _fetch_page(
     session: aiohttp.ClientSession, username: str, max_id: Optional[int]
 ) -> List:
@@ -116,10 +130,11 @@ async def _fetch_page(
             raise RuntimeError(f"Server Response Error: {response.status}")
         data = await response.json()
 
-    if data.get("error") and "login" in data.get("error", "").lower():
+    err = _error_text(data.get("error"))
+    if err and ("login" in err or "auth" in err):
         logger.debug("vjudge: auth required (not logged in or session expired)")
         raise _AuthRequired()
-    if data.get("error") and "does not exist" in data.get("error", ""):
+    if err and ("not_exist" in err or "does not exist" in err or "not_found" in err):
         raise ValueError("The user does not exist")
     if "data" not in data:
         raise RuntimeError(f"Cannot process vjudge data, body: {data}")
@@ -166,8 +181,19 @@ async def _try_login(
             text = await response.text()
     except aiohttp.ClientError as e:
         raise RuntimeError(f"vjudge login failed: {str(e)}")
-    if text != "success":
-        raise RuntimeError(f"vjudge login failed: {text}")
+    # Login response used to be the literal string "success". It is now an
+    # empty 200 body on success, or JSON like
+    # {"i18nKey":"user.auth.error.invalid_credentials","trustable":false} on failure.
+    stripped = text.strip()
+    if not stripped or stripped == "success":
+        logger.debug("vjudge: login successful as %s", login_user)
+        return
+    try:
+        body = json.loads(stripped)
+    except ValueError:
+        raise RuntimeError(f"vjudge login failed: {stripped}")
+    if isinstance(body, dict) and body.get("i18nKey"):
+        raise RuntimeError(f"vjudge login failed: {body['i18nKey']}")
     logger.debug("vjudge: login successful as %s", login_user)
 
 
@@ -237,8 +263,9 @@ async def query(
             raise RuntimeError(f"Request failed: {str(e)}")
         except ValueError:
             raise
-        except Exception:
-            raise RuntimeError("Error while parsing")
+        except Exception as e:
+            logger.exception("vjudge: unexpected error while parsing")
+            raise RuntimeError(f"Error while parsing: {e}")
         break
     else:
         raise ValueError("VJudge login failed after multiple attempts")
