@@ -6,6 +6,9 @@ import os
 from pathlib import Path
 
 import pytest
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 _DB_PATH = Path(__file__).parent.parent.parent / "problem_labels.db"
 
