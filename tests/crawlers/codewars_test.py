@@ -3,8 +3,6 @@ Tests for Codewars crawler
 """
 
 import pytest
-import pytest_asyncio
-import aiohttp
 from ojhunt.crawlers.codewars import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
@@ -12,12 +10,6 @@ pytestmark = pytest.mark.network
 # Test username from ojhunt.crawlers.test.js - username is case sensitive
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
-
-
-@pytest_asyncio.fixture
-async def session():
-    async with aiohttp.ClientSession() as s:
-        yield s
 
 
 @pytest.mark.asyncio
