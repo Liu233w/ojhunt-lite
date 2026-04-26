@@ -105,6 +105,38 @@ Use the appropriate template from "Crawler Templates" below.
 - [ ] Error messages match exactly: `"Please enter username"`, `"The user does not exist"`
 - [ ] If crawler was previously archived: remove its files from `archived_crawlers/` and remove its entry from `archived_crawlers/README.md`
 
+### Debugging a Broken Crawler
+
+Start with the existing test harness — don't probe with `curl` first:
+
+```bash
+uv run pytest tests/crawlers/<name>_test.py -v --log-cli-level=DEBUG -s
+```
+
+The crawler's own `logger.debug()` calls reveal which HTTP call failed and what the response
+looked like. Drop to manual `curl` only if the failure is opaque.
+
+**Sandbox networking:** aiohttp does not pick up the agent sandbox's HTTP proxy from env
+vars. Test fixtures must pass `trust_env=True`, otherwise allowlisted hosts fail DNS from
+Python while `curl` still works:
+
+```python
+async with aiohttp.ClientSession(trust_env=True) as s:
+    yield s
+```
+
+**Login crawlers + captcha:** Sites like VJudge trigger captchas on repeated rapid logins
+from the same IP. Use a module-scoped session fixture so the cookie is reused across tests:
+
+```python
+@pytest_asyncio.fixture(scope="module", loop_scope="module")
+async def session():
+    async with aiohttp.ClientSession(trust_env=True) as s:
+        yield s
+```
+
+Match it with `@pytest.mark.asyncio(loop_scope="module")` on every test in the file.
+
 ### Decision Tree
 
 ```
@@ -189,7 +221,7 @@ NOT_EXIST_USERNAME = "fmv84zcq3hwu_notexist"
 
 @pytest_asyncio.fixture
 async def session():
-    async with aiohttp.ClientSession() as s:
+    async with aiohttp.ClientSession(trust_env=True) as s:
         yield s
 
 @pytest.mark.asyncio
