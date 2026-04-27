@@ -33,7 +33,17 @@ See also the **ojhunt-testing** skill for shared pytest fixture and assertion co
   carry exactly two classes (`"card"` + one status class), so use the full string:
   `to_have_class("card r-ok")`, `to_have_class("card r-err")`, etc. Do not use
   `re.compile(r"r-ok")` — it would also match unrelated classes like `"foo-ok"`.
-- **Mocking external APIs**: When a test exercises logic *around* a crawler (e.g. PDF
-  history merging), use `page.route("**/api/crawlers/<name>/<user>", handler)` with
-  `route.fulfill(...)` instead of hitting the real API. Real crawler integration is
-  covered by `test_query.py`. Multiple consecutive live calls can hit rate limits in CI.
+- **Always intercept crawler API calls**: Any test that needs a query result (even as
+  setup to test something else) must intercept `**/api/crawlers/<name>/<user>` with
+  `page.route(...)` and `route.fulfill(...)`. Never let e2e tests hit the real crawler
+  network — live calls are flaky and can hit rate limits. Real crawler integration is
+  covered by `test_query.py`. The success response shape is:
+  ```python
+  {
+      "crawler": "<name>", "username": "<user>", "error": False,
+      "data": {"solved": 100, "submissions": 200, "solvedList": ["1A"], "duration": 0.1},
+      "message": None,
+  }
+  ```
+  Register the route **before** clicking the query button. With a mock the `r-ok`
+  timeout can be short (10 s); the old 30 s was only needed for real network calls.
