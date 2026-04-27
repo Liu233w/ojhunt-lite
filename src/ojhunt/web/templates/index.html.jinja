@@ -227,8 +227,8 @@
             </div>
         </div>
         <div class="dc-right summary-right">
-            <button type="button" class="btn primary" @click="downloadReport()">
-                download report.pdf
+            <button type="button" class="btn primary" :disabled="isDownloading" @click="downloadReport()">
+                download report.pdf<span class="loading-dots" x-show="isDownloading" x-cloak></span>
             </button>
             <span class="note">Store the PDF on your device — browser storage may be cleared at any time.</span>
         </div>
