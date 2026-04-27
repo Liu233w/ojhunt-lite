@@ -56,6 +56,12 @@ Commit locally; the user handles push and PR creation.
 - When UI/nav elements change, scan `tests/e2e/` for selectors referencing the old element
   and include the test fix in the same commit.
 
+## Closing GitHub issues
+
+When a commit fixes a GitHub issue, include `Resolves #N` on its own line in the
+commit body. GitHub will auto-close the issue when the commit lands on the default
+branch.
+
 ## Commit messages should capture intent
 
 The diff already shows *what* changed. The message should explain *why* — the motivation,
