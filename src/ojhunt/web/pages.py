@@ -146,6 +146,11 @@ async def pdf_root():
     return RedirectResponse("/pdf/legacy", status_code=302)
 
 
+@router.get("/statistics")
+async def statistics_redirect():
+    return RedirectResponse("/", status_code=302)
+
+
 @router.get("/pdf/legacy", response_class=HTMLResponse)
 async def pdf_legacy_get() -> str:
     template = jinja_env.get_template("pdf_legacy.html.jinja")
