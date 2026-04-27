@@ -33,6 +33,23 @@ that to the user and stop — do NOT silently set git config.
 
 Stage and commit in a single message with parallel tool calls. Do not push.
 
+### Squash workflow (when instruction contains "squash with")
+
+The preferred workflow is **fixup-first, squash-last** — never squash immediately:
+
+1. **Create fixup! commit(s)**: Stage the relevant files and run
+   `git commit --fixup=<sha>` (requires `dangerouslyDisableSandbox: true`).
+   If the commit message also needs changing, additionally run
+   `git commit --fixup=reword:<sha>` (git ≥ 2.32) — no content, just a message edit.
+   Show the user `git log --oneline -5` so they can review.
+2. **Stop and wait** for the user to confirm they are happy. Do not proceed to
+   rebase without explicit user approval.
+3. **Squash**: Once the user is satisfied, run
+   `GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash <target-sha>^`
+   (requires `dangerouslyDisableSandbox: true`). `-i` is required because
+   `--autosquash` only works in interactive mode; `GIT_SEQUENCE_EDITOR=true`
+   suppresses the editor so no prompt appears.
+
 ---
 
 # Commit conventions
@@ -41,6 +58,9 @@ Stage and commit in a single message with parallel tool calls. Do not push.
 
 Always use `dangerouslyDisableSandbox: true` for any git write operation (add, commit, reset,
 rebase, etc.) — the sandbox blocks writes to `.git/`.
+
+Git **read** operations (`git log`, `git status`, `git diff`, `git branch`, `git show`) do
+NOT need sandbox bypass — run them in the sandbox like any other read command.
 
 ## Do not push to remote
 
@@ -51,10 +71,16 @@ Commit locally; the user handles push and PR creation.
 - **pyproject.toml and uv.lock must be in the same commit.** If they end up in separate
   commits during a session, squash them via interactive rebase before the session ends.
 - **Corrections go in new fixup commits, not amends.** Use `git commit --fixup=<sha>` so the
-  user can review what changed. To squash fixups: `GIT_SEQUENCE_EDITOR=true git rebase -i
-  --autosquash <base-sha>` (requires `dangerouslyDisableSandbox: true`).
+  user can review what changed. Follow the squash workflow above — create the fixup!, wait
+  for approval, then `GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash <base-sha>`.
 - When UI/nav elements change, scan `tests/e2e/` for selectors referencing the old element
   and include the test fix in the same commit.
+
+## Closing GitHub issues
+
+When a commit fixes a GitHub issue, include `Resolves #N` on its own line in the
+commit body. GitHub will auto-close the issue when the commit lands on the default
+branch.
 
 ## Commit messages should capture intent
 

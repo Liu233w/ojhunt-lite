@@ -9,6 +9,11 @@ description: Project environment structure — where each type of knowledge belo
 documentation, point to the authoritative source — don't inline definitions that already exist
 elsewhere. Duplication causes drift.
 
+**Command docs span multiple layers — search before changing.** Shell commands (e.g. how to
+run tests, start the server, add a dependency) can be documented in skills, READMEs, `docs/`,
+and referenced inside hook error messages. When a command changes, search all four locations
+before closing the task: `grep -r "the old command" .claude/skills/ README.md docs/ .claude/hooks/`
+
 **Route between sibling skills, don't append to the most-used one:** When adding to a skill,
 name what the new section is *about* in one phrase and check whether a sibling `ojhunt-*`
 skill owns that phrase. The dominant skill tends to absorb content from neighbouring domains

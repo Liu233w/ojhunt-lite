@@ -124,6 +124,13 @@
         </div>
     </div>
 
+    <div class="slot-aux">
+        <span>Not finding your crawler?
+            <a href="https://github.com/Liu233w/ojhunt-lite/issues/new?title=Add%20crawler%20for%20%5BOJ%20Name%5D&body=%23%23%20Crawler%20Request%0A%0A**OJ%20URL%3A**%20%3C%21--%20paste%20the%20URL%20to%20the%20OJ%20here%2C%20e.g.%20https%3A%2F%2Fcodeforces.com%20--%3E%0A%0A**Username%20for%20testing%20(optional)%3A**"
+               target="_blank" rel="noopener noreferrer">raise a ticket on GitHub →</a>
+        </span>
+    </div>
+
     <!-- ═══ STEP 3 — RUN QUERIES ═══ -->
     <div class="step">
         <span class="n">03</span>
@@ -227,8 +234,8 @@
             </div>
         </div>
         <div class="dc-right summary-right">
-            <button type="button" class="btn primary" @click="downloadReport()">
-                download report.pdf
+            <button type="button" class="btn primary" :disabled="isDownloading" @click="downloadReport()">
+                download report.pdf<span class="loading-dots" x-show="isDownloading" x-cloak></span>
             </button>
             <span class="note">Store the PDF on your device — browser storage may be cleared at any time.</span>
         </div>
