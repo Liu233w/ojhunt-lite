@@ -38,6 +38,14 @@ resolve. This applies to all packages including FastAPI, uvicorn, etc.
 
 `uv add` writes to `uv.lock` — use `dangerouslyDisableSandbox: true`, same as git write operations.
 
+## Ruff removes imports before their usage
+
+Ruff (pre-commit hook) runs between edits and strips imports that appear unused at
+that moment. If you add an import in one `Edit` call and the code that uses it in a
+second call, ruff will delete the import between the two calls.
+
+**Fix:** always add new imports and the code that uses them in the same `Edit` call.
+
 ## Parallel execution
 
 When editing multiple crawlers or running independent tasks, spawn sub-agents to work in
