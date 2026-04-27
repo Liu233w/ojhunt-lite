@@ -85,6 +85,9 @@ function ojhunt() {
         /** @type {boolean} True while the user is dragging a file over the report slot */
         isDragging: false,
 
+        /** @type {boolean} True while a PDF is being generated */
+        isDownloading: false,
+
         /**
          * Check if a query with given crawler/username already exists
          * @param {string} crawler
@@ -429,53 +432,58 @@ function ojhunt() {
          * @returns {Promise<void>}
          */
         async downloadReport() {
-            const request = {
-                snapshot: {
-                    totalSolved: this.report.totalSolved,
-                    totalSubmissions: this.report.totalSubmissions,
-                    username: this.username,
-                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    results: this.queries
-                        .filter(q => q.status === 'success')
-                        .map(q => ({ crawler: q.crawler, username: q.username, solved: q.solved, submissions: q.submissions })),
-                },
-                settings: {
-                    username: this.username,
-                    queries: this.queries.map(q => ({ crawler: q.crawler, username: q.username })),
-                },
-                previous_pdf_b64: localStorage.getItem(PDF_CACHE_KEY) || null,
-            };
-
-            let data;
+            this.isDownloading = true;
             try {
-                const response = await fetch('/api/pdf/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(request),
-                });
-                if (!response.ok) {
-                    const err = await response.json();
-                    alert(err.detail || 'Failed to generate PDF');
+                const request = {
+                    snapshot: {
+                        totalSolved: this.report.totalSolved,
+                        totalSubmissions: this.report.totalSubmissions,
+                        username: this.username,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        results: this.queries
+                            .filter(q => q.status === 'success')
+                            .map(q => ({ crawler: q.crawler, username: q.username, solved: q.solved, submissions: q.submissions })),
+                    },
+                    settings: {
+                        username: this.username,
+                        queries: this.queries.map(q => ({ crawler: q.crawler, username: q.username })),
+                    },
+                    previous_pdf_b64: localStorage.getItem(PDF_CACHE_KEY) || null,
+                };
+
+                let data;
+                try {
+                    const response = await fetch('/api/pdf/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(request),
+                    });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        alert(err.detail || 'Failed to generate PDF');
+                        return;
+                    }
+                    data = await response.json();
+                } catch (e) {
+                    alert('Failed to generate PDF: ' + e.message);
                     return;
                 }
-                data = await response.json();
-            } catch (e) {
-                alert('Failed to generate PDF: ' + e.message);
-                return;
+
+                try {
+                    localStorage.setItem(PDF_CACHE_KEY, data.pdf_b64);
+                } catch (_) {}
+                this.cachedPdfDate = data.date;
+                this.cachedPdfFilename = `ojhunt-report-${data.date}.pdf`;
+                localStorage.setItem(PDF_CACHE_FILENAME_KEY, this.cachedPdfFilename);
+
+                // Download via data URL — no Blob/createObjectURL needed
+                const a = document.createElement('a');
+                a.href = 'data:application/pdf;base64,' + data.pdf_b64;
+                a.download = `ojhunt-report-${data.date}.pdf`;
+                a.click();
+            } finally {
+                this.isDownloading = false;
             }
-
-            try {
-                localStorage.setItem(PDF_CACHE_KEY, data.pdf_b64);
-            } catch (_) {}
-            this.cachedPdfDate = data.date;
-            this.cachedPdfFilename = `ojhunt-report-${data.date}.pdf`;
-            localStorage.setItem(PDF_CACHE_FILENAME_KEY, this.cachedPdfFilename);
-
-            // Download via data URL — no Blob/createObjectURL needed
-            const a = document.createElement('a');
-            a.href = 'data:application/pdf;base64,' + data.pdf_b64;
-            a.download = `ojhunt-report-${data.date}.pdf`;
-            a.click();
         },
 
         /**
