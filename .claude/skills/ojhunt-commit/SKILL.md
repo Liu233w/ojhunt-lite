@@ -42,6 +42,9 @@ Stage and commit in a single message with parallel tool calls. Do not push.
 Always use `dangerouslyDisableSandbox: true` for any git write operation (add, commit, reset,
 rebase, etc.) — the sandbox blocks writes to `.git/`.
 
+Git **read** operations (`git log`, `git status`, `git diff`, `git branch`, `git show`) do
+NOT need sandbox bypass — run them in the sandbox like any other read command.
+
 ## Do not push to remote
 
 Commit locally; the user handles push and PR creation.
