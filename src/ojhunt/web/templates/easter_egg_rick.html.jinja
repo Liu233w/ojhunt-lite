@@ -1,0 +1,44 @@
+{% extends "base.html.jinja" %}
+
+{% block title %}Never Gonna Give You Up — OJHunt Lite{% endblock %}
+
+{% block extra_head %}
+<style>
+    .easter-egg-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        text-align: center;
+        gap: 1.5rem;
+        padding: 2rem 0;
+    }
+    .easter-egg-page p {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .easter-egg-page img {
+        max-width: 480px;
+        width: 100%;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="easter-egg-page">
+    <img src="/assets/rick.png" alt="Never Gonna Give You Up">
+    <p>
+        Never gonna give you up<br>
+        Never gonna let you down<br>
+        Never gonna run around<br>
+        And desert you<br>
+        Never gonna make you cry<br>
+        Never gonna say goodbye<br>
+        Never gonna tell a lie<br>
+        And hurt you<br>
+    </p>
+</div>
+{% endblock %}
