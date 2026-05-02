@@ -3,6 +3,7 @@ HTML page routes for OJHunt Lite web application.
 """
 
 import os
+import random
 import secrets
 from datetime import datetime
 from pathlib import Path
@@ -263,7 +264,10 @@ async def crawlers_page(test_availability: str | None = None) -> str:
 
 
 async def _easter_egg_handler(request: Request) -> HTMLResponse:
-    template = jinja_env.get_template("easter_egg.html.jinja")
+    easter_egg_path = random.choice(
+        ["easter_egg.html.jinja", "easter_egg_rick.html.jinja"]
+    )
+    template = jinja_env.get_template(easter_egg_path)
     return HTMLResponse(template.render(path=request.url.path))
 
 
