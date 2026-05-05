@@ -11,6 +11,7 @@ SERVER_LOG="$RUN_DIR/server.log"
 SERVER_PORT=8080
 
 is-alive() { [[ -f "$1" ]] && command kill -0 "$(cat "$1")" 2>/dev/null; }
+server-ready() { curl -s -o /dev/null "http://localhost:${SERVER_PORT}/"; }
 
 evict-port() {
   local port="$1" pids
@@ -40,7 +41,7 @@ start() {
     >"$SERVER_LOG" 2>&1 &
   echo $! >"$SERVER_PID"
   echo "server started (pid $!) — waiting for port $SERVER_PORT..."
-  until curl -s -o /dev/null "http://localhost:${SERVER_PORT}/"; do sleep 0.3; done
+  until server-ready; do sleep 0.3; done
   echo "server ready — logs: $SERVER_LOG"
 }
 
@@ -75,8 +76,43 @@ status() {
 
 logs() { tail -F "$SERVER_LOG"; }
 
+lint() {
+  ( cd "$ROOT_DIR" && uv run ruff check . )
+}
+
+test-unit() {
+  ( cd "$ROOT_DIR" && uv run pytest -m "not network and not playwright" "$@" )
+}
+
+test-e2e() {
+  if ! server-ready && ! is-alive "$SERVER_PID"; then
+    echo "Starting server for e2e tests..."
+    start
+  fi
+  ( cd "$ROOT_DIR" && uv run pytest -m playwright tests/e2e/ --ignore=tests/e2e/test_visual.py "$@" )
+}
+
+test-visual() {
+  if ! server-ready && ! is-alive "$SERVER_PID"; then
+    echo "Starting server for snapshot capture..."
+    start
+  fi
+  ( cd "$ROOT_DIR" && uv run pytest -m playwright tests/e2e/test_visual.py "$@" )
+}
+
+test-crawler() {
+  local name="${1:?usage: ./doit.sh test-crawler <crawler-name> [pytest-args...]}"
+  shift
+  local test_file="$ROOT_DIR/tests/crawlers/${name}_test.py"
+  if [[ ! -f "$test_file" ]]; then
+    echo "error: no test file found for crawler '${name}' (looked for tests/crawlers/${name}_test.py)" >&2
+    return 1
+  fi
+  ( cd "$ROOT_DIR" && uv run pytest "$test_file" "$@" )
+}
+
 update-snapshots() {
-  if ! is-alive "$SERVER_PID"; then
+  if ! server-ready && ! is-alive "$SERVER_PID"; then
     echo "Starting server for snapshot capture..."
     start
   fi
@@ -85,25 +121,23 @@ update-snapshots() {
   echo "Done — commit tests/e2e/__snapshots__/ alongside the change that required the update."
 }
 
-test-visual() {
-  if ! is-alive "$SERVER_PID"; then
-    echo "Starting server for visual tests..."
-    start
-  fi
-  ( cd "$ROOT_DIR" && uv run pytest -m playwright tests/e2e/test_visual.py )
-}
-
 help() {
   cat <<EOF
-Usage: ./doit.sh <task>
+Usage: ./doit.sh <task> [args...]
 
-Tasks:
+Server:
   start              start the dev server on port $SERVER_PORT (waits until ready)
   kill               stop the server
   status             show if server is running
   logs               tail server log
+
+Tests:
+  lint               run ruff linter
+  test-unit          run unit tests (no network, no playwright) [pytest-args...]
+  test-e2e           run e2e tests excluding visual (starts server if needed) [pytest-args...]
+  test-visual        run visual regression tests (starts server if needed) [pytest-args...]
+  test-crawler NAME  run tests for a specific crawler by name [pytest-args...]
   update-snapshots   update visual regression snapshots (starts server if needed)
-  test-visual        run visual regression tests (starts server if needed)
 EOF
 }
 
