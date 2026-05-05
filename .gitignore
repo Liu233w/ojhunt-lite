@@ -272,6 +272,9 @@ problem_labels.db
 .playwright
 .playwright-cli
 
+# doit.sh runtime files (PIDs, logs)
+.doit/
+
 # Others
 /.claude/settings.local.json
 archived_crawlers/test_accounts.md
