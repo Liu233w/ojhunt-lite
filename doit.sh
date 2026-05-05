@@ -85,6 +85,14 @@ update-snapshots() {
   echo "Done — commit tests/e2e/__snapshots__/ alongside the change that required the update."
 }
 
+test-visual() {
+  if ! is-alive "$SERVER_PID"; then
+    echo "Starting server for visual tests..."
+    start
+  fi
+  ( cd "$ROOT_DIR" && uv run pytest -m playwright tests/e2e/test_visual.py )
+}
+
 help() {
   cat <<EOF
 Usage: ./doit.sh <task>
@@ -95,6 +103,7 @@ Tasks:
   status             show if server is running
   logs               tail server log
   update-snapshots   update visual regression snapshots (starts server if needed)
+  test-visual        run visual regression tests (starts server if needed)
 EOF
 }
 
