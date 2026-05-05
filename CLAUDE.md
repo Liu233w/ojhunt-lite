@@ -1,5 +1,16 @@
 # CLAUDE.md
 
+## Common commands
+
+Run `./doit.sh help` for the full list. Key tasks:
+
+- `./doit.sh lint` — ruff linter
+- `./doit.sh test-unit` — unit tests (fast, no network, no browser)
+- `./doit.sh test-e2e` — browser e2e tests, excluding visual (starts dev server if needed)
+- `./doit.sh test-crawler <name>` — network tests for one crawler (e.g. `codeforces`)
+- `./doit.sh test-visual` / `update-snapshots` — visual regression tests
+- `./doit.sh start` / `kill` / `status` / `logs` — dev server lifecycle
+
 ## Where to find documentation
 
 - **Setup, usage, project structure** → [README.md](README.md)
