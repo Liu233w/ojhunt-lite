@@ -96,11 +96,11 @@ CSS files live at `src/ojhunt/web/static/assets/`:
 **Visual regression tests** live in `tests/e2e/test_visual.py` (local-only, skipped in CI). After any CSS change:
 
 ```bash
-# Update baselines — starts server automatically if needed (dangerouslyDisableSandbox: true)
+# Update baselines (dangerouslyDisableSandbox: true)
 ./doit.sh update-snapshots
 
-# Verify no unintended visual diff (server must be running)
-uv run pytest tests/e2e/test_visual.py
+# Verify no unintended visual diff (dangerouslyDisableSandbox: true)
+./doit.sh test-visual
 ```
 
 Baselines are stored in `tests/e2e/__snapshots__/`. Commit baseline PNGs alongside the test or CSS change that necessitates them.

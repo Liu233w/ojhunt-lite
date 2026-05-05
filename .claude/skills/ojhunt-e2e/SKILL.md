@@ -13,7 +13,8 @@ See also the **ojhunt-testing** skill for shared pytest fixture and assertion co
 - Marked with `@pytest.mark.playwright` — excluded from regular CI
 - **Running:** The dev server must be running at `localhost:8080` before tests execute.
   Start it with `./doit.sh start` (`dangerouslyDisableSandbox: true`; idempotent).
-  To update visual snapshots: `./doit.sh update-snapshots`.
+  Run visual tests: `./doit.sh test-visual` (starts server if needed; `dangerouslyDisableSandbox: true`).
+  Update visual snapshots: `./doit.sh update-snapshots` (same sandbox requirement).
 - **Visual diff on failure:** `conftest.py` writes `actual.png`, `expected.png`, `diff.png`
   to `test-results/visual/<name>/` when a snapshot mismatch occurs.
   Or have the user run directly: `! uv run pytest -m playwright tests/e2e/`
