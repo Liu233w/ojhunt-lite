@@ -15,9 +15,9 @@ $ARGUMENTS
 
 ## Context
 
-- Current git status: !`git status 2>&1 || echo "(git status unavailable — possibly a fresh repo or missing config; proceed without status context)"`
-- Current git diff (staged and unstaged changes): !`git diff HEAD 2>&1 || git diff 2>&1 || echo "(no diff available — possibly no commits yet)"`
-- Current branch: !`git branch --show-current 2>&1 || echo "(no branch — possibly no commits yet)"`
+- Current git status (trimmed): !
+  `git status --short 2>&1 | awk 'NR<=10{print} END{if(NR>10) print "... ("NR" files total, showing first 10)"}' || echo "(git status unavailable)"`
+- Current branch: !`git branch --show-current 2>&1 || echo "(no branch)"`
 - Recent commits: !`git log --oneline -10 2>&1 || echo "(no commits yet)"`
 
 ## Task

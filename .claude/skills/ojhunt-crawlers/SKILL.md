@@ -13,6 +13,9 @@ For ADR guidance on significant design decisions, invoke the **ojhunt-commit** s
 
 ### Step 1: Accessibility Check
 
+**Read `archived_crawlers/README.md` first.** It lists every platform already known to be
+dead, WAF-blocked, or unfixable. If the site is already there, stop — don't re-investigate.
+
 Verify the site is alive before doing anything else:
 
 **Common dead-site signals:**
@@ -25,6 +28,12 @@ Verify the site is alive before doing anything else:
 - Cloudflare `cf-mitigated: challenge` header (403/200 with JS challenge)
 - Cerberus JS PoW challenge (`data-app="Hydro"` or similar)
 - Akamai WAF 403 response
+
+**SSL caveat:** Tools like WebFetch validate certificates and will report an SSL error as if
+the site is unreachable. Before concluding a site is dead due to an expired cert, verify
+with `curl -skI https://example.com/user/1` (`-k` bypasses cert validation). If the server
+responds, the crawler may still work with `ssl=False` — but also check that the response
+body contains actual data and not a server-side error page (see "Parsing failures" below).
 
 If the site is dead → update `archived_crawlers/README.md` with the accurate reason and stop.
 
@@ -115,6 +124,14 @@ uv run pytest tests/crawlers/<name>_test.py -v --log-cli-level=DEBUG -s
 
 The crawler's own `logger.debug()` calls reveal which HTTP call failed and what the response
 looked like. Drop to manual `curl` only if the failure is opaque.
+
+**Parsing failures after a successful connection:** If the crawler raises
+`RuntimeError("Error while parsing")`, the site may be returning a server error page rather
+than a changed HTML structure. Check the raw response before updating selectors:
+`curl -sk --user-agent "Mozilla/5.0" https://example.com/user/2 | head -c 500`. A ~700-byte
+response with a PHP stack trace is a server-side issue — no selector change will fix it.
+Spawn a background sonnet agent to probe alternate endpoints rather than probing inline
+(avoids flooding the main context with large HTML responses).
 
 **Sandbox networking:** the shared `session` fixture in `tests/crawlers/conftest.py` already
 passes `trust_env=True` so aiohttp routes through the sandbox HTTP proxy. Don't redefine the

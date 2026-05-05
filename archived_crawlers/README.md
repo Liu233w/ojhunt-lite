@@ -17,7 +17,8 @@ These crawlers have been archived due to:
 | dashiye (HYSBZ) | Site dead (2010-2020) |
 | eljudge (EIJudge) | Domain repurposed (acm.mipt.ru is now MIPT CS department homepage, OJ no longer exists) |
 | fzu | Site dead (2012-2021) |
-| hihocoder | Site dead (HTTPS SSL certificate expired, connection fails) |
+| baekjoon | Platform shut down (acmicpc.net terminated service 2026-04-28; solved.ac API also returns 403) |
+| hihocoder | Two PHP fatal errors block all data: `/user/{id}` crashes before stats render (null avatarUrl); `/api/*` crashes on missing Duoshuo vendor class (Duoshuo shut down 2017). No working endpoint. |
 | hit | Site unreachable |
 | hrbust | Site unreachable |
 | jisuanke | Alibaba Cloud WAF blocks all automated requests (HTTP 405 for all paths) |
@@ -35,5 +36,7 @@ These crawlers have been archived due to:
 | hackerearth | Cloudflare WAF blocks all non-browser automated requests; profile page is a React SPA with API calls blocked by Cloudflare bot protection |
 | hackerrank | Akamai WAF blocks all non-browser automated requests (403 Forbidden); API is accessible via real browser but not aiohttp |
 | uestc (CDOJ) | Migrated from Lutece to Hydro at cdoj.site; old oj.uestc.edu.cn is dead; Cerberus JS PoW challenge likely protects API endpoints |
+| dmoj | Anti-bot protection — API and submissions page both return HTTP 403 (same pattern as hackerrank) |
+| kattis | Not solved/submission based — uses a difficulty-score system instead of problem count |
 
 These crawlers are kept for reference and may be restored if the issues are resolved.
