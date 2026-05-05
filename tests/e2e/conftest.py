@@ -2,12 +2,13 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
-from PIL import Image
+from PIL import Image, ImageChops
 from playwright.sync_api import Page
 
 from e2e.helpers import BASE_URL
 
 _SNAPSHOTS_DIR = Path(__file__).parent / "__snapshots__"
+_RESULTS_DIR = Path(__file__).parent.parent.parent / "test-results" / "visual"
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -31,6 +32,7 @@ def assert_snapshot(pytestconfig: pytest.Config):
 
     Run with ``--update-snapshots`` to create or overwrite baselines.
     Snapshots are stored in ``tests/e2e/__snapshots__/``.
+    On failure, actual/expected/diff PNGs are written to ``test-results/visual/``.
     """
     update: bool = pytestconfig.getoption("--update-snapshots")
 
@@ -48,7 +50,17 @@ def assert_snapshot(pytestconfig: pytest.Config):
                 f"Visual diff [{name}]: size changed {expected.size} → {actual.size}"
             )
         if actual.tobytes() != expected.tobytes():
-            pytest.fail(f"Visual diff [{name}]: pixel data differs")
+            stem = Path(name).stem
+            out = _RESULTS_DIR / stem
+            out.mkdir(parents=True, exist_ok=True)
+            actual.save(out / "actual.png")
+            expected.save(out / "expected.png")
+            diff = ImageChops.difference(expected, actual)
+            diff.save(out / "diff.png")
+            pytest.fail(
+                f"Visual diff [{name}]: pixel data differs"
+                f" — see test-results/visual/{stem}/"
+            )
 
     return _assert
 

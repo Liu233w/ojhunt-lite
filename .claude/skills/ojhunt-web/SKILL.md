@@ -9,18 +9,22 @@ See `docs/web.md` for production deployment, container usage, and API endpoint r
 
 ## Running the dev server
 
-Start as a background task with sandbox disabled (file watcher and loopback networking are
-sandbox-blocked):
+Use `doit.sh` — it starts the server, waits until it's ready, and manages the PID file:
 
 ```bash
-# Start (run_in_background: true, dangerouslyDisableSandbox: true)
-uv run fastapi dev src/ojhunt/web/app.py --port 8080
+# Start and wait until ready (dangerouslyDisableSandbox: true)
+./doit.sh start
+
+# Other tasks
+./doit.sh status          # check if running
+./doit.sh kill            # stop the server
+./doit.sh logs            # tail server log
+./doit.sh update-snapshots  # update visual regression snapshots
 ```
 
-- `curl` to localhost also requires `dangerouslyDisableSandbox: true`
+- All `doit.sh` commands require `dangerouslyDisableSandbox: true` (loopback networking + file watcher)
 - Background tasks don't persist between conversations — restart at the beginning of each session
-- To free the port: `lsof -ti :8080 | xargs kill -9` (no sandbox bypass needed)
-- Keep the server running after testing; the user will ask to stop it
+- `doit.sh start` is idempotent — safe to call if already running
 
 ## PDF internals
 
@@ -92,11 +96,11 @@ CSS files live at `src/ojhunt/web/static/assets/`:
 **Visual regression tests** live in `tests/e2e/test_visual.py` (local-only, skipped in CI). After any CSS change:
 
 ```bash
-# Capture new baselines (run against the original state first, or use --update-snapshots after verifying the change is intentional)
-uv run pytest tests/e2e/test_visual.py --update-snapshots
+# Update baselines (dangerouslyDisableSandbox: true)
+./doit.sh update-snapshots
 
-# Verify no unintended visual diff
-uv run pytest tests/e2e/test_visual.py
+# Verify no unintended visual diff (dangerouslyDisableSandbox: true)
+./doit.sh test-visual
 ```
 
 Baselines are stored in `tests/e2e/__snapshots__/`. Commit baseline PNGs alongside the test or CSS change that necessitates them.

@@ -18,9 +18,9 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Lint
-        run: uv run ruff check .
+        run: ./doit.sh lint
       - name: Unit tests
-        run: uv run pytest -m "not network and not playwright"
+        run: ./doit.sh test-unit
       - name: Install Playwright browsers
         run: uv run playwright install --with-deps chromium
       - name: Build container
@@ -35,4 +35,6 @@ jobs:
             curl -sf http://localhost:8080/ && break || sleep 1
           done
       - name: E2E tests
-        run: uv run pytest -m playwright tests/e2e/
+        run: ./doit.sh test-e2e
+      - name: Visual regression tests
+        run: ./doit.sh test-visual

@@ -12,10 +12,11 @@ See also the **ojhunt-testing** skill for shared pytest fixture and assertion co
 - Tests use `test_*.py` naming convention (crawler unit tests use `*_test.py`)
 - Marked with `@pytest.mark.playwright` — excluded from regular CI
 - **Running:** The dev server must be running at `localhost:8080` before tests execute.
-  If you are the **coordinator agent**, invoke the **ojhunt-web** skill before touching
-  port 8080 — it has the exact start command and sandbox requirements.
-  If you are a **subagent** investigating e2e tests, remind the coordinator to invoke
-  the **ojhunt-web** skill to start the server before running any test commands.
+  Start it with `./doit.sh start` (`dangerouslyDisableSandbox: true`; idempotent).
+  Run visual tests: `./doit.sh test-visual` (starts server if needed; `dangerouslyDisableSandbox: true`).
+  Update visual snapshots: `./doit.sh update-snapshots` (same sandbox requirement).
+- **Visual diff on failure:** `conftest.py` writes `actual.png`, `expected.png`, `diff.png`
+  to `test-results/visual/<name>/` when a snapshot mismatch occurs.
   Or have the user run directly: `! uv run pytest -m playwright tests/e2e/`
 - Install browsers first: `uv run playwright install --with-deps chromium`
 - Always run e2e tests after writing or modifying them — don't mark done until they pass
