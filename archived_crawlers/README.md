@@ -35,5 +35,6 @@ These crawlers have been archived due to:
 | hackerearth | Cloudflare WAF blocks all non-browser automated requests; profile page is a React SPA with API calls blocked by Cloudflare bot protection |
 | hackerrank | Akamai WAF blocks all non-browser automated requests (403 Forbidden); API is accessible via real browser but not aiohttp |
 | uestc (CDOJ) | Migrated from Lutece to Hydro at cdoj.site; old oj.uestc.edu.cn is dead; Cerberus JS PoW challenge likely protects API endpoints |
+| kattis | Not solved/submission based — uses a difficulty-score system instead of problem count |
 
 These crawlers are kept for reference and may be restored if the issues are resolved.
