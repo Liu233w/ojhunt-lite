@@ -18,6 +18,7 @@ These crawlers have been archived due to:
 | eljudge (EIJudge) | Domain repurposed (acm.mipt.ru is now MIPT CS department homepage, OJ no longer exists) |
 | fzu | Site dead (2012-2021) |
 | baekjoon | Platform shut down (acmicpc.net terminated service 2026-04-28; solved.ac API also returns 403) |
+| hihocoder | Server-side PHP fatal error on all user profile pages (avatarUrl() on null); ssl=False bypasses expired cert but application data is unavailable |
 | hit | Site unreachable |
 | hrbust | Site unreachable |
 | jisuanke | Alibaba Cloud WAF blocks all automated requests (HTTP 405 for all paths) |
