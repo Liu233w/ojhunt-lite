@@ -1,19 +1,17 @@
 """Visual regression tests — LOCAL ONLY, skipped in CI.
 
-These tests exist to verify that the CSS refactor (extracting inline styles
-to external files) produces zero visual change.
-
 Workflow:
   1. Start the dev server on port 8080.
-  2. Capture baselines BEFORE the CSS move:
-       uv run pytest tests/e2e/test_visual.py --update-snapshots
+  2. Capture baselines:
+       ./doit.sh update-snapshots
      Commit the generated __snapshots__ directory alongside this file.
-  3. After each CSS extraction step, verify zero diff:
-       uv run pytest tests/e2e/test_visual.py
+  3. After each CSS/layout change, verify no visual diff:
+       uv run pytest -m playwright tests/e2e/test_visual.py
+
+On failure, actual/expected/diff PNGs are written to test-results/visual/.
 
 Why not CI: Playwright screenshot comparisons are sensitive to font rendering
-differences across OS/machines, producing false failures. The local check is
-sufficient for a pure extract-with-no-style-changes refactor.
+differences across OS/machines, producing false failures on CI.
 """
 
 import json
