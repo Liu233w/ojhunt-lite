@@ -46,6 +46,12 @@ second call, ruff will delete the import between the two calls.
 
 **Fix:** always add new imports and the code that uses them in the same `Edit` call.
 
+When import and usage are far apart (can't fit in one `old_string`), edit in this order:
+1. Change the **usage** first — replace the call site to use the new symbol.
+2. Add the **import** second — the formatter sees the symbol in use and keeps it.
+
+Never add the import first: the formatter strips it before the next Edit lands.
+
 ## Parallel execution
 
 When editing multiple crawlers or running independent tasks, spawn sub-agents to work in
