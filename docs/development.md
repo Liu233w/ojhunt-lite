@@ -129,7 +129,7 @@ implementations.
 | `description` | No | Shown in web UI (default: `""`) |
 | `cli_description` | No | Shown in `--list` CLI output instead of `description`. Use when CLI usage differs significantly (e.g., login instructions, ID vs. username). |
 | `login_type` | No | `"shared_account"` or `"own_account"`; omit if no login required |
-| `is_aggregator` | No | Whether this crawler aggregates problems from other platforms (e.g. VJudge). Aggregator `solved_list` entries are already prefixed with the source platform, so `/api/merge` skips re-prefixing. |
+| `is_aggregator` | No | Whether this crawler aggregates problems from other platforms (e.g. VJudge, NIT). Aggregators mirror problems from source OJs and submit on behalf of users using their own shared accounts — not the user's personal accounts. Aggregator `solved_list` entries must be pre-prefixed with the source platform name (e.g. `codeforces-1A`), so `/api/merge` uses them as-is and skips re-prefixing. See [ADR 0008](./adr/0008-unique-solved-dedup-design.md) for the deduplication rationale. |
 
 ### Login types
 
@@ -217,3 +217,4 @@ Significant architectural decisions and their rationale are recorded in [`docs/a
 - [ADR 0005](./adr/0005-localstorage-watch-config-only.md) — localStorage sync via $watch (config-only persistence)
 - [ADR 0006](./adr/0006-legacy-lookup-abp-username-only.md) — legacy lookup restricted to ABP username only
 - [ADR 0007](./adr/0007-label-cache-is-load-bearing.md) — label cache in `nit`/`uva` is load-bearing; those crawlers require the full package
+- [ADR 0008](./adr/0008-unique-solved-dedup-design.md) — unique solved dedup is problem-level; listless crawlers add raw count directly
