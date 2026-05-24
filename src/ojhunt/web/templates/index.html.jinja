@@ -249,11 +249,21 @@
                 <span class="title">
                     <span x-text="crawlers[q.crawler]?.title || q.crawler"></span> /
                     <span x-text="q.username"></span> —
-                    <span x-text="(q.solvedList?.length || 0).toLocaleString('en-US')"></span> problems
+                    <template x-if="q.solvedList !== null">
+                        <span><span x-text="q.solvedList.length.toLocaleString('en-US')"></span> problems</span>
+                    </template>
+                    <template x-if="q.solvedList === null">
+                        <span>list not available</span>
+                    </template>
                 </span>
             </div>
             <div class="dlg-bd">
-                <span x-text="q.solvedList?.sort().join(', ') || ''"></span>
+                <template x-if="q.solvedList !== null">
+                    <span x-text="q.solvedList.sort().join(', ')"></span>
+                </template>
+                <template x-if="q.solvedList === null">
+                    <span class="note">This crawler only reports a solved count — it does not expose the list of individual problem IDs.</span>
+                </template>
             </div>
             <div class="dlg-ft">
                 <button class="btn" @click="closeDialog(q.id)">close <span class="kbd">esc</span></button>

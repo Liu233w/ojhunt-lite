@@ -468,6 +468,40 @@ class TestPrintReportJson:
         assert data["results"][0]["solved_list"] == ["1A", "2A"]
 
 
+class TestPrintReportShowProblems:
+    """Tests for print_report text-mode output with show_problems=True."""
+
+    def test_listless_crawler_shows_explanation(self, capsys):
+        """Listless crawler (solved_list=None) prints a note with its solved count."""
+        results = [
+            make_full_result("luogu", True, solved=42, solved_list=None, title="Luogu")
+        ]
+        print_report(results, show_problems=True, total_duration=1.0, json_output=False)
+        out = capsys.readouterr().out
+        assert "Luogu (testuser): (list not available — 42 solved)" in out
+
+    def test_crawler_with_list_prints_problems(self, capsys):
+        """Crawler with a solved_list still prints the comma-joined list."""
+        results = [
+            make_full_result(
+                "cf", True, solved=2, solved_list=["2A", "1A"], title="Codeforces"
+            )
+        ]
+        print_report(results, show_problems=True, total_duration=1.0, json_output=False)
+        out = capsys.readouterr().out
+        assert "Codeforces (testuser): 1A, 2A" in out
+
+    def test_empty_list_crawler_prints_no_problems_line(self, capsys):
+        """Crawler with empty solved_list ([]) prints no per-crawler line (current behavior)."""
+        results = [
+            make_full_result("cf", True, solved=0, solved_list=[], title="Codeforces")
+        ]
+        print_report(results, show_problems=True, total_duration=1.0, json_output=False)
+        out = capsys.readouterr().out
+        assert "Codeforces (testuser)" not in out
+        assert "list not available" not in out
+
+
 class TestPrintCrawlerListJson:
     """Tests for print_crawler_list with json_output=True."""
 

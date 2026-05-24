@@ -31,3 +31,12 @@ def collect_solved_problems(results: List[QueryResult]) -> Set[str]:
             else:
                 all_solved.add(f"{result.crawler.name}-{problem}")
     return all_solved
+
+
+def get_unique_solved(results: List[QueryResult]) -> int:
+    """
+    Total unique solved across all crawlers.
+    """
+    deduped = len(collect_solved_problems(results))
+    listless = sum(r.solved for r in results if r.success and not r.solved_list)
+    return deduped + listless
