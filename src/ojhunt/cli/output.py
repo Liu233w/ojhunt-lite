@@ -12,7 +12,7 @@ from rich.table import Table
 
 from ojhunt.cli.models import Query
 from ojhunt.core.models import CrawlerInfo, LoginType, QueryResult
-from ojhunt.core.stats import collect_solved_problems
+from ojhunt.core.stats import get_unique_solved
 from ojhunt.crawlers import discover_crawlers
 
 
@@ -117,7 +117,7 @@ def print_report(
     successful = [r for r in results if r.success]
     failed = [r for r in results if not r.success]
 
-    all_solved = collect_solved_problems(results)
+    unique_solved = get_unique_solved(results)
     total_submissions = sum(r.submissions for r in successful)
 
     if json_output:
@@ -142,7 +142,7 @@ def print_report(
         output = {
             "results": result_list,
             "summary": {
-                "unique_solved": len(all_solved),
+                "unique_solved": unique_solved,
                 "total_submissions": total_submissions,
                 "ok": len(successful),
                 "failed": len(failed),
@@ -153,7 +153,7 @@ def print_report(
         return 0 if not failed else 1
 
     print()
-    print(f"Total: {len(all_solved)} solved / {total_submissions} submissions")
+    print(f"Total: {unique_solved} solved / {total_submissions} submissions")
     print()
 
     console = Console()

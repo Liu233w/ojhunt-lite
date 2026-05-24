@@ -25,7 +25,7 @@ from ojhunt.core.models import LoginType
 from ojhunt.core.models import NullCrawler
 from ojhunt.core.models import QueryResult as CoreQueryResult
 from ojhunt.core.runner import run_crawler
-from ojhunt.core.stats import collect_solved_problems
+from ojhunt.core.stats import get_unique_solved
 from ojhunt.crawlers import discover_crawlers
 from ojhunt.web.http_client import HttpClientDep
 
@@ -211,10 +211,9 @@ class MergeResponse(BaseModel):
 )
 async def merge_results(results: List[CrawlerResult]) -> MergeResponse:
     core_results = [item.to_model() for item in results]
-    solved_set = collect_solved_problems(core_results)
     total_submissions = sum(r.submissions for r in core_results if r.success)
     return MergeResponse(
-        uniqueSolved=len(solved_set),
+        uniqueSolved=get_unique_solved(core_results),
         totalSubmissions=total_submissions,
     )
 

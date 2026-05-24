@@ -1,14 +1,15 @@
-"""Unit tests for core/stats.py — collect_solved_problems()."""
+"""Unit tests for core/stats.py — collect_solved_problems() and get_unique_solved()."""
 
 from types import SimpleNamespace
 
-from ojhunt.core.stats import collect_solved_problems
+from ojhunt.core.stats import collect_solved_problems, get_unique_solved
 
 
-def _result(*, success, solved_list, name="oj", is_aggregator=False):
+def _result(*, success, solved_list, name="oj", is_aggregator=False, solved=0):
     return SimpleNamespace(
         success=success,
         solved_list=solved_list,
+        solved=solved,
         crawler=SimpleNamespace(
             name=name,
             meta=SimpleNamespace(is_aggregator=is_aggregator),
@@ -55,3 +56,25 @@ def test_mix_success_and_failure():
     good = _result(success=True, solved_list=["1A"], name="cf")
     bad = _result(success=False, solved_list=["2B"], name="cf")
     assert collect_solved_problems([good, bad]) == {"cf-1A"}
+
+
+def test_unique_solved_adds_listless_count():
+    listed = _result(success=True, solved_list=["1A", "2B"], name="cf")
+    listless = _result(success=True, solved_list=None, solved=50, name="luogu")
+    assert get_unique_solved([listed, listless]) == 2 + 50
+
+
+def test_unique_solved_skips_failed_listless():
+    bad = _result(success=False, solved_list=None, solved=99, name="luogu")
+    assert get_unique_solved([bad]) == 0
+
+
+def test_unique_solved_dedupes_listed_but_adds_listless_raw():
+    agg = _result(success=True, solved_list=["hdu-1000"], is_aggregator=True)
+    hdu = _result(success=True, solved_list=["1000"], name="hdu")
+    luogu = _result(success=True, solved_list=None, solved=10, name="luogu")
+    assert get_unique_solved([agg, hdu, luogu]) == 1 + 10
+
+
+def test_unique_solved_empty():
+    assert get_unique_solved([]) == 0
