@@ -198,6 +198,10 @@ def print_report(
             if solved_list:
                 problems_str = ", ".join(sorted(solved_list))
                 print(f"{title} ({username}): {problems_str}")
+            elif solved_list is None:
+                print(
+                    f"{title} ({username}): (list not available — {result.solved} solved)"
+                )
             print()
 
     return 0 if not failed else 1
