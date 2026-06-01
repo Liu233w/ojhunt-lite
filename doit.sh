@@ -97,6 +97,7 @@ test-visual() {
     echo "Starting server for snapshot capture..."
     start
   fi
+  rm -rf "$ROOT_DIR/test-results"
   ( cd "$ROOT_DIR" && uv run pytest -m playwright tests/e2e/test_visual.py "$@" )
 }
 
@@ -117,7 +118,8 @@ update-snapshots() {
     start
   fi
   echo "Updating visual snapshots..."
-  ( cd "$ROOT_DIR" && uv run pytest tests/e2e/test_visual.py --update-snapshots )
+  rm -rf "$ROOT_DIR/test-results"
+  ( cd "$ROOT_DIR" && uv run pytest tests/e2e/test_visual.py --update-snapshots "$@" )
   echo "Done — commit tests/e2e/__snapshots__/ alongside the change that required the update."
 }
 
