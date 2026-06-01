@@ -21,7 +21,13 @@ import urllib.parse
 import pytest
 from playwright.sync_api import Page, Route, expect
 
-from e2e.helpers import BASE_URL, _add_query, _clear_storage, _row
+from e2e.helpers import (
+    BASE_URL,
+    _add_query,
+    _clear_storage,
+    _dismiss_cookie_banner,
+    _row,
+)
 
 # Deterministic availability fixture: a few crawlers in each state so all
 # three CSS variants (r-ok / r-err / r-pend) are visible in the snapshot.
@@ -65,7 +71,13 @@ _MOCK_ERR = json.dumps(
 
 
 def _snap(page: Page, assert_snapshot, name: str) -> None:
-    """Wait for network idle (fonts loaded) then take a full-page snapshot."""
+    """Wait for network idle (fonts loaded) then take a full-page snapshot.
+
+    Dismisses the cookie banner first: it is ``position: fixed`` and would
+    otherwise float over the middle of full-page screenshots, corrupting the
+    baseline. See ``test_about_page_cookie_banner`` for the banner's own snapshot.
+    """
+    _dismiss_cookie_banner(page)
     page.wait_for_load_state("networkidle")
     assert_snapshot(page.screenshot(full_page=True), name=name)
 
@@ -155,6 +167,21 @@ def test_about_page(page: Page, assert_snapshot):
     page.set_viewport_size({"width": 1280, "height": 900})
     page.goto(f"{BASE_URL}/about")
     _snap(page, assert_snapshot, "about-desktop.png")
+
+
+def test_about_page_cookie_banner(page: Page, assert_snapshot):
+    """Capture the cookie banner itself, pinned to the bottom of the viewport.
+
+    Uses a viewport (not full-page) screenshot: the banner is ``position: fixed``,
+    so a full-page capture would float it mid-page instead of at the bottom edge.
+    """
+    page.set_viewport_size({"width": 1280, "height": 900})
+    page.goto(f"{BASE_URL}/about")
+    expect(page.locator("#cookie-banner")).to_be_visible(timeout=5000)
+    page.wait_for_load_state("networkidle")
+    assert_snapshot(
+        page.screenshot(full_page=False), name="about-cookie-banner-desktop.png"
+    )
 
 
 @pytest.mark.parametrize(

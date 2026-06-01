@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 
 
 def _dev_server_port() -> str:
@@ -37,3 +37,11 @@ def _row(page: Page, text: str):
 def _clear_storage(page: Page) -> None:
     page.evaluate("localStorage.clear()")
     page.reload()
+
+
+def _dismiss_cookie_banner(page: Page) -> None:
+    """Click OK to dismiss the fixed cookie banner so it doesn't obscure snapshots."""
+    banner = page.locator("#cookie-banner")
+    if banner.is_visible():
+        page.click("#cookie-ok")
+        expect(banner).to_be_hidden()
