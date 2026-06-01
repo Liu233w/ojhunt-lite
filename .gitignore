@@ -284,3 +284,6 @@ archived_crawlers/test_accounts.md
 legacy-db.sql
 legacy.db
 *_legacy.pdf
+
+# Visual regression / Playwright generated artifacts
+/test-results/
