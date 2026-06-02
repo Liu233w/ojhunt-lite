@@ -45,6 +45,29 @@
     else if (p.startsWith('/docs')) document.querySelector('.nav-docs')?.classList.add('active');
 })();
 </script>
+
+<div id="cookie-banner" class="cookie-banner" hidden>
+    <p class="cookie-text">
+        This site is served through Cloudflare, which sets cookies needed for security and performance.
+        By using this website, you agree to our use of cookies.
+    </p>
+    <button type="button" id="cookie-ok" class="cookie-ok">OK</button>
+</div>
+<script>
+(function () {
+    var KEY = 'ojhunt-cookie-consent';
+    var banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+    try {
+        if (localStorage.getItem(KEY) === '1') return;
+    } catch (e) { /* localStorage unavailable — show the notice anyway */ }
+    banner.hidden = false;
+    document.getElementById('cookie-ok')?.addEventListener('click', function () {
+        try { localStorage.setItem(KEY, '1'); } catch (e) { /* ignore */ }
+        banner.hidden = true;
+    });
+})();
+</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>
