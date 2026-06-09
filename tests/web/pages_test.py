@@ -225,3 +225,24 @@ def test_pdf_merge_same_day_keeps_higher_score():
     merged = extract_data(response.content)
     assert len(merged.history) == 1
     assert merged.history[0].totalSolved == 50
+
+
+# ---------------------------------------------------------------------------
+# Security response headers (SecurityHeadersMiddleware)
+# ---------------------------------------------------------------------------
+
+
+def test_security_headers_present_on_page():
+    response = client.get("/")
+    headers = response.headers
+    assert headers["x-content-type-options"] == "nosniff"
+    assert headers["x-frame-options"] == "DENY"
+    assert headers["referrer-policy"] == "strict-origin-when-cross-origin"
+    assert headers["strict-transport-security"] == (
+        "max-age=63072000; includeSubDomains"
+    )
+    assert "camera=()" in headers["permissions-policy"]
+    csp = headers["content-security-policy"]
+    assert "default-src 'self'" in csp
+    assert "frame-ancestors 'none'" in csp
+    assert "upgrade-insecure-requests" in csp
