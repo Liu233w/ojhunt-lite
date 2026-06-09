@@ -1,6 +1,6 @@
 ---
 name: ojhunt-update-env
-description: Project environment structure — where each type of knowledge belongs across docs/, skills, hooks, commands, and CLAUDE.md. Load whenever the task involves documentation, creating or updating skills, adding hooks or commands, updating CLAUDE.md, deciding where a new piece of knowledge should live, or capturing session learnings.
+description: Single source of truth for where each piece of knowledge belongs (docs/, ADRs, skills, hooks, commands, CLAUDE.md) and what must NOT be documented because it already lives in code or tests. Load BEFORE writing or editing ANY documentation, ADR, or skill — and whenever choosing where a fact should live or whether to document it at all — not only when explicitly asked to "update docs" or "capture learnings".
 ---
 
 # Where knowledge lives in this project's environment
