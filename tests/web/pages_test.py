@@ -246,3 +246,34 @@ def test_security_headers_present_on_page():
     assert "default-src 'self'" in csp
     assert "frame-ancestors 'none'" in csp
     assert "upgrade-insecure-requests" in csp
+    # ReDoc spawns a blob: web worker; the worker-src directive must allow it.
+    assert "worker-src 'self' blob:" in csp
+
+
+# ---------------------------------------------------------------------------
+# Interactive API docs (/docs, /redoc) — self-hosted assets, no CDN
+# ---------------------------------------------------------------------------
+#
+# FastAPI's default Swagger UI / ReDoc load JS/CSS from cdn.jsdelivr.net, which
+# the CSP (ADR 0010) blocks, leaving the pages blank. The bundles are vendored
+# under static/assets/ and served same-origin instead.
+
+
+def test_docs_pages_use_self_hosted_assets():
+    for path in ("/docs", "/redoc"):
+        response = client.get(path)
+        assert response.status_code == 200, path
+        body = response.text
+        assert "cdn.jsdelivr.net" not in body, path
+        assert "fastapi.tiangolo.com" not in body, path
+        assert "/assets/" in body, path
+        assert "content-security-policy" in response.headers, path
+
+
+def test_docs_vendored_assets_are_served():
+    for asset in (
+        "/assets/swagger-ui-bundle-5.32.8.js",
+        "/assets/swagger-ui-5.32.8.css",
+        "/assets/redoc.standalone-2.5.3.js",
+    ):
+        assert client.get(asset).status_code == 200, asset
