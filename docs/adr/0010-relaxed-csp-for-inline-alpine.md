@@ -68,6 +68,16 @@ lockdown (`Permissions-Policy`), HSTS, and mixed-content upgrade.
   `tests/web/pages_test.py::test_security_headers_present_on_page` guards them.
 - The CSP cannot be tightened in `script-src` without the Alpine CSP-build migration (Option
   B remains open for a future PR).
+- **Interactive API docs are self-hosted.** FastAPI's default `/docs` (Swagger UI) and
+  `/redoc` load their JS/CSS from `cdn.jsdelivr.net` and a favicon from `fastapi.tiangolo.com`,
+  all blocked by this CSP — the pages rendered blank. The bundles are now vendored under
+  `static/assets/` and served same-origin (matching the vendored Alpine.js), so the tight CSP
+  needs no CDN origins. ReDoc renders inside a `blob:` web worker, so the policy includes
+  `worker-src 'self' blob:`. `tests/web/pages_test.py` and `tests/e2e/test_docs_page.py` guard
+  this. The vendored `redoc.standalone-*.js` hard-codes one `https://cdn.redoc.ly/redoc/logo-mini.svg`
+  branding URL (blocked by `img-src 'self' data:`); it is patched to the vendored
+  `/assets/redoc-logo-mini.svg`. **When re-vendoring ReDoc, re-apply that single string
+  replacement** — the e2e test fails on the CSP violation if it is missed.
 
 ### Infrastructure follow-ups (out of repo — Cloudflare/DNS)
 

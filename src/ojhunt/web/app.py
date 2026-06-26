@@ -14,6 +14,7 @@ from fastapi import FastAPI, Request
 from fastapi.exception_handlers import (
     http_exception_handler as _default_http_exception_handler,
 )
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -55,6 +56,9 @@ _CSP = "; ".join(
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data:",
+        # ReDoc (/redoc) renders its docs in a web worker spawned from a blob: URL;
+        # without this the worker is blocked by the default-src 'self' fallback.
+        "worker-src 'self' blob:",
         "connect-src 'self'",
         "object-src 'none'",
         "base-uri 'self'",
@@ -85,12 +89,44 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
+# docs_url/redoc_url are disabled here and re-registered below with self-hosted
+# assets. FastAPI's defaults load Swagger UI / ReDoc from cdn.jsdelivr.net, which the
+# CSP (ADR 0010) blocks — the bundles are vendored under static/assets/ instead.
 app = FastAPI(
     title="OJHunt Lite",
     description="Query Online Judge statistics across multiple platforms",
     version="0.1.0",
     lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
 )
+
+# Versioned filenames of the vendored docs UI bundles (see static/assets/).
+_SWAGGER_JS = "/assets/swagger-ui-bundle-5.32.8.js"
+_SWAGGER_CSS = "/assets/swagger-ui-5.32.8.css"
+_REDOC_JS = "/assets/redoc.standalone-2.5.3.js"
+
+
+@app.get("/docs", include_in_schema=False)
+async def swagger_ui_html() -> HTMLResponse:
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=f"{app.title} - Swagger UI",
+        swagger_js_url=_SWAGGER_JS,
+        swagger_css_url=_SWAGGER_CSS,
+        swagger_favicon_url="/favicon.ico",
+    )
+
+
+@app.get("/redoc", include_in_schema=False)
+async def redoc_html() -> HTMLResponse:
+    return get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=f"{app.title} - ReDoc",
+        redoc_js_url=_REDOC_JS,
+        redoc_favicon_url="/favicon.ico",
+        with_google_fonts=False,
+    )
 
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(LLMsDiscoverabilityMiddleware)
