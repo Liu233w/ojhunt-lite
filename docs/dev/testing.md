@@ -1,12 +1,7 @@
----
-name: ojhunt-testing
-description: General pytest conventions for non-crawler tests — CI scope, web route tests, markdown doc tests. For crawler test conventions see ojhunt-crawlers; for Playwright see ojhunt-e2e.
----
-
 # Pytest conventions
 
-Crawler-specific test conventions live in the **ojhunt-crawlers** skill.
-Playwright e2e tests live in the **ojhunt-e2e** skill.
+Crawler-specific test conventions live in [`docs/dev/crawlers.md`](crawlers.md) and the
+**ojhunt-crawlers** skill. Playwright e2e tests live in [`docs/dev/e2e.md`](e2e.md).
 
 ## Running tests
 
@@ -24,6 +19,11 @@ uv run pytest
 **CI runs `pytest -m "not network and not playwright"` — never run crawler (network) tests
 when debugging CI failures.**
 
+To run everything at once before committing, use `./doit.sh full-check`: it starts the dev
+server, runs lint + unit + e2e + visual, then stops the server (leaving a server you started
+yourself untouched) and reports every failing suite. This is the gate the **ojhunt-implement**
+workflow runs before it commits.
+
 ## Test structure
 
 | Type | Location | Convention | Requires server |
@@ -38,7 +38,7 @@ Do not put unit tests in `tests/e2e/` — that folder is exclusively for Playwri
 
 New page routes must have a corresponding unit test. Use `TestClient` with monkeypatching:
 
-```python
+```python notest
 from starlette.testclient import TestClient
 client = TestClient(app, follow_redirects=False)
 

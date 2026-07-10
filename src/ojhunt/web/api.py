@@ -4,7 +4,7 @@ API routes for OJHunt Lite web application.
 
 import base64
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
 
 from fastapi import APIRouter, HTTPException, Path as PathParam
 from fastapi.responses import JSONResponse
@@ -27,6 +27,11 @@ from ojhunt.core.models import QueryResult as CoreQueryResult
 from ojhunt.core.runner import run_crawler
 from ojhunt.core.stats import get_unique_solved
 from ojhunt.crawlers import discover_crawlers
+from ojhunt.web.crawler_status import (
+    CheckStatus,
+    CrawlerAvailability,
+    get_all_status,
+)
 from ojhunt.web.http_client import HttpClientDep
 
 
@@ -41,6 +46,17 @@ class CrawlerInfo(BaseModel):
     isVirtualJudge: bool = Field(
         False,
         description="Deprecated alias for isAggregator. Will be removed in a future version.",
+    )
+    status: Literal["online", "offline", "waiting"] = Field(
+        "waiting",
+        description=(
+            "Live availability from the server-side checker. 'waiting' means not yet "
+            "checked in the current pass (also the default when the checker hasn't run)."
+        ),
+    )
+    statusError: Optional[str] = Field(
+        None,
+        description="Reason the crawler is offline (present only when status is 'offline').",
     )
 
 
@@ -120,15 +136,19 @@ router = APIRouter()
 )
 async def list_crawlers() -> CrawlersListResponse:
     crawlers = discover_crawlers()
+    availability = get_all_status()
     data = {}
     for name, info in crawlers.items():
         meta = info.meta
+        avail = availability.get(name, CrawlerAvailability(CheckStatus.WAITING))
         data[name] = CrawlerInfo(
             title=meta.title,
             description=meta.description,
             url=meta.url,
             isAggregator=meta.is_aggregator,
             isVirtualJudge=meta.is_aggregator,
+            status=avail.status.value,
+            statusError=avail.error,
         )
     return CrawlersListResponse(error=False, data=data)
 

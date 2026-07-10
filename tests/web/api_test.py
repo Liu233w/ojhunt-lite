@@ -3,10 +3,18 @@ Unit tests for CrawlerResult DTO (from_model / to_model conversions).
 These tests do not require a running web server.
 """
 
+from fastapi.testclient import TestClient
+
 from ojhunt.core.models import CrawlerInfo, NullCrawler
 from ojhunt.core.models import QueryResult as CoreQueryResult
 from ojhunt.crawlers import discover_crawlers
 from ojhunt.web.api import CrawlerResult, QueryResult
+from ojhunt.web.app import app
+
+# Module-level client does NOT enter the lifespan context, so the background
+# availability checker never starts and get_all_status() stays empty — every
+# crawler reports the default "waiting" status.
+client = TestClient(app)
 
 
 def make_crawler(name: str = "codeforces") -> CrawlerInfo:
@@ -167,3 +175,40 @@ def test_round_trip_failure():
     assert restored.success is False
     assert restored.username == original.username
     assert restored.error == original.error
+
+
+# --- GET /api/crawlers (availability status fields) ---
+
+
+def test_list_crawlers_defaults_to_waiting():
+    response = client.get("/api/crawlers")
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert "codeforces" in data
+    cf = data["codeforces"]
+    # Existing metadata fields are preserved alongside the new status fields.
+    assert "title" in cf
+    assert "isAggregator" in cf
+    # Checker hasn't run under TestClient → default status, no error.
+    assert cf["status"] == "waiting"
+    assert cf["statusError"] is None
+
+
+def test_list_crawlers_reflects_checker_status(monkeypatch):
+    from ojhunt.web.crawler_status import CheckStatus, CrawlerAvailability
+
+    def _fake_status():
+        return {
+            "codeforces": CrawlerAvailability(CheckStatus.ONLINE),
+            "cses": CrawlerAvailability(
+                CheckStatus.OFFLINE, error="Login credentials not configured"
+            ),
+        }
+
+    monkeypatch.setattr("ojhunt.web.api.get_all_status", _fake_status)
+    data = client.get("/api/crawlers").json()["data"]
+
+    assert data["codeforces"]["status"] == "online"
+    assert data["codeforces"]["statusError"] is None
+    assert data["cses"]["status"] == "offline"
+    assert data["cses"]["statusError"] == "Login credentials not configured"

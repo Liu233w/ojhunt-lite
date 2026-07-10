@@ -1,11 +1,8 @@
----
-name: ojhunt-web
-description: FastAPI app, PDF internals, API routes, and dev server. Load whenever the task involves the web layer — exploring routes, planning API changes, reading PDF handling code, implementing endpoints, or setting up the environment.
----
+# Web layer
 
-# Web Layer
-
-See `docs/web.md` for production deployment, container usage, and API endpoint reference.
+Internal reference for the FastAPI app, PDF handling, dev server, and frontend conventions.
+For user-facing usage (production deployment, container, API endpoints) see
+[`docs/web.md`](../web.md).
 
 ## Running the dev server
 
@@ -29,7 +26,7 @@ Use `doit.sh` — it starts the server, waits until it's ready, and manages the 
 - **Port depends on the checkout** (so several worktrees can run at once): the main checkout
   uses **8080**; a git worktree gets a **dynamic free port** — run `./doit.sh status` (or read
   `.doit/server.port`) to find it. Don't assume 8080 inside a worktree. See
-  [ADR 0009](../../../docs/adr/0009-parallel-worktree-dev-server.md).
+  [ADR 0009](../adr/0009-parallel-worktree-dev-server.md).
 - **Removing a worktree leaks its server.** `./doit.sh start` auto-reaps orphans whose
   worktree is gone (registry in the main checkout's `.doit/`); run `./doit.sh reap` to clean up
   on demand.

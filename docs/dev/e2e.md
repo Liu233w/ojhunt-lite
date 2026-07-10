@@ -1,11 +1,6 @@
----
-name: ojhunt-e2e
-description: Playwright e2e browser tests. Load whenever the task involves e2e tests — understanding coverage, planning browser test scenarios, writing or running Playwright tests. See also ojhunt-testing for shared pytest conventions.
----
+# E2E tests (Playwright)
 
-# E2E Tests (Playwright)
-
-See also the **ojhunt-testing** skill for shared pytest fixture and assertion conventions.
+See [`docs/dev/testing.md`](testing.md) for shared pytest fixture and assertion conventions.
 
 ## Setup
 
@@ -39,7 +34,7 @@ See also the **ojhunt-testing** skill for shared pytest fixture and assertion co
   `page.route(...)` and `route.fulfill(...)`. Never let e2e tests hit the real crawler
   network — live calls are flaky and can hit rate limits. Real crawler integration is
   covered by `test_query.py`. The success response shape is:
-  ```python
+  ```python notest
   {
       "crawler": "<name>", "username": "<user>", "error": False,
       "data": {"solved": 100, "submissions": 200, "solvedList": ["1A"], "duration": 0.1},

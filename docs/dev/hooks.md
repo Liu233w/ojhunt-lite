@@ -1,9 +1,4 @@
----
-name: ojhunt-hooks
-description: Claude Code hooks for this project - existing rules and how to add new ones. Load when adding, reviewing, or planning enforcement rules or automation, or when the user asks what constraints are currently active.
----
-
-# Project Hooks
+# Project hooks
 
 Hooks enforce constraints mechanically. Check `.claude/settings.json` to see
 what's currently active.
