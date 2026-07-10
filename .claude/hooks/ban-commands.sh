@@ -14,7 +14,7 @@ if echo "$COMMAND" | grep -qE '^[[:space:]]*(sudo[[:space:]]+)?pip[[:space:]]+in
 fi
 
 if echo "$COMMAND" | grep -qE '^[[:space:]]*(sudo[[:space:]]+)?uvicorn[[:space:]]'; then
-    echo "ERROR: Do not start the dev server with 'uvicorn' directly. Load the ojhunt-web skill for the correct start command." >&2
+    echo "ERROR: Do not start the dev server with 'uvicorn' directly. Use './doit.sh start' (see docs/dev/web.md)." >&2
     exit 2
 fi
 

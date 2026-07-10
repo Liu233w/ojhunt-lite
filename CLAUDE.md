@@ -16,18 +16,35 @@ When a `lint`/`test-*` task fails, its full output is already saved to `.doit/<t
 ## Where to find documentation
 
 - **Setup, usage, project structure** → [README.md](README.md)
-- **Crawler contributor reference, deployment** → [docs/development.md](docs/development.md)
+- **Development conventions & reference** → the index in [docs/development.md](docs/development.md)
 - **Architectural decisions** → [docs/adr/](docs/adr/)
+
+The development index is imported below so its routing table — "working on X → read
+`docs/dev/X.md`" — is always in context. Follow it to the right reference before starting work.
+
+@docs/development.md
 
 ## Project skills
 
-All skills whose name starts with `ojhunt-` are project-specific workflows for this repo. Check their descriptions to find the right one for your task. Use the Skill tool to invoke them — do not read skill files directly as plain text.
+Skills hold only genuine **workflows** — a procedure you run on demand. Invoke via the Skill
+tool (don't read skill files as plain text):
 
-### Growing these skills
+- **ojhunt-crawlers** — implement or debug a crawler
+- **ojhunt-commit** — commit, commit conventions, ADRs
+- **ojhunt-update-env** — decide where a new piece of knowledge belongs
 
-If the user mentions a workflow, convention, or recurring pattern that isn't covered by an
-existing sub-skill, ask them: *"Should I update an existing skill or create a new one for this?"*
-Don't silently let project knowledge go undocumented.
+**Conventions and reference** (Python style, tests, e2e, web layer, hooks, crawler reference,
+deployment) are *not* skills — they live in `docs/dev/*.md`, indexed by the routing table in
+`docs/development.md` (imported above). Read the matching doc before working in that area
+rather than relying on a skill to trigger.
+
+### Growing project knowledge
+
+If the user mentions a workflow, convention, or recurring pattern that isn't captured yet,
+route it: a **workflow/procedure** → a skill; a **convention or reference fact** →
+`docs/dev/*.md` (and add a row to the routing table in `docs/development.md`); a **hard rule**
+→ a hook. Ask the user before adding, and see the **ojhunt-update-env** skill for the full
+routing map. Don't silently let project knowledge go undocumented.
 
 ### Self-correcting on repeated failures
 
