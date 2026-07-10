@@ -30,6 +30,7 @@ The development index is imported below so its routing table — "working on X �
 Skills hold only genuine **workflows** — a procedure you run on demand. Invoke via the Skill
 tool (don't read skill files as plain text):
 
+- **ojhunt-implement** — end-to-end feature workflow (plan → implement → full-check → commit)
 - **ojhunt-crawlers** — implement or debug a crawler
 - **ojhunt-commit** — commit, commit conventions, ADRs
 - **ojhunt-update-env** — decide where a new piece of knowledge belongs

@@ -60,6 +60,7 @@ another doc should point to the authoritative file plus any gotchas it doesn't c
 
 ## Skills (`.claude/skills/ojhunt-*/`)
 **Workflows only** — a procedure the agent runs on demand. Currently:
+- `ojhunt-implement` — end-to-end feature workflow (plan → implement → `full-check` → commit → fixups)
 - `ojhunt-crawlers` — implement or debug a crawler (the procedure; reference is in `docs/dev/crawlers.md`)
 - `ojhunt-commit` — commit workflow, conventions, ADR guidance
 - `ojhunt-update-env` — this file
