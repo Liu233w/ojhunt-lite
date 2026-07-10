@@ -1,6 +1,6 @@
 ---
 name: ojhunt-update-env
-description: Single source of truth for where each piece of knowledge belongs (docs/, ADRs, skills, hooks, commands, CLAUDE.md) and what must NOT be documented because it already lives in code or tests. Load BEFORE writing or editing ANY documentation, ADR, or skill — and whenever choosing where a fact should live or whether to document it at all — not only when explicitly asked to "update docs" or "capture learnings".
+description: Single source of truth for where each piece of knowledge belongs (docs/dev/, docs/, ADRs, skills, hooks, commands, CLAUDE.md) and what must NOT be documented because it already lives in code or tests. Load BEFORE writing or editing ANY documentation, ADR, or skill — and whenever choosing where a fact should live or whether to document it at all — not only when explicitly asked to "update docs" or "capture learnings".
 ---
 
 # Where knowledge lives in this project's environment
@@ -9,15 +9,22 @@ description: Single source of truth for where each piece of knowledge belongs (d
 documentation, point to the authoritative source — don't inline definitions that already exist
 elsewhere. Duplication causes drift.
 
+**Workflow vs. convention — pick the right channel.** A **workflow** (a procedure you run on
+demand: commit, implement a crawler, decide where knowledge goes) is a **skill**. A
+**convention or reference fact** (code style, a schema, a gotcha, a test rule) is a **doc under
+`docs/dev/`** — because skills are lazily triggered and unreliably loaded, whereas `docs/dev/`
+is indexed by `docs/development.md`, which is `@`-imported into `CLAUDE.md` and therefore always
+in context. Don't put a convention in a skill hoping it triggers; add it to `docs/dev/` and its
+routing-table row.
+
 **Command docs span multiple layers — search before changing.** Shell commands (e.g. how to
 run tests, start the server, add a dependency) can be documented in skills, READMEs, `docs/`,
 and referenced inside hook error messages. When a command changes, search all four locations
-before closing the task: `grep -r "the old command" .claude/skills/ README.md docs/ .claude/hooks/`
+before closing the task: `grep -rn "the old command" .claude/skills/ README.md docs/ .claude/hooks/`
 
-**Route between sibling skills, don't append to the most-used one:** When adding to a skill,
-name what the new section is *about* in one phrase and check whether a sibling `ojhunt-*`
-skill owns that phrase. The dominant skill tends to absorb content from neighbouring domains
-because authors append where they're already editing — resist the easy append.
+**Route to the right file, don't append to the nearest one.** When adding knowledge, name what
+it's *about* in one phrase and put it where that phrase belongs. The file you're already editing
+tends to absorb content from neighbouring domains — resist the easy append.
 
 ## README.md
 Entry-level documentation: setup, usage examples, CLI flags, supported OJs.
@@ -27,20 +34,38 @@ Update when something operational changes (a command, a new crawler, a setup ste
 Documentation for users running or deploying the project:
 - `docs/cli.md` — CLI usage reference
 - `docs/web.md` — Web UI usage reference
-- `docs/development.md` — Crawler contributor guide (`__crawler_meta__` fields, login types,
-  templates, return format). Update when the crawler API or contribution process changes.
+- `docs/development.md` — the **development index**: setup, a routing table pointing into
+  `docs/dev/`, and the ADR list. `@`-imported into `CLAUDE.md`, so keep it **short** — put
+  detail in `docs/dev/`, not here.
 - `docs/adr/` — Architectural decisions (see below)
 
+## `docs/dev/` (internal conventions & reference)
+The home for development conventions, schemas, templates, and gotchas — the knowledge you need
+*while working* but that isn't a procedure. One file per domain:
+- `docs/dev/crawlers.md` — crawler metadata schema, login types, return format, templates,
+  HTML parsing, SSL, license header, archived-crawler rules
+- `docs/dev/python.md` — import order, typing, error handling, dependencies (`uv add`)
+- `docs/dev/testing.md` — pytest conventions, CI scope, page-route tests, markdown doc tests
+- `docs/dev/e2e.md` — Playwright e2e / visual regression conventions
+- `docs/dev/web.md` — FastAPI app, PDF internals, dev server, env vars, minimal-JS, CSS
+- `docs/dev/hooks.md` — how project hooks work and the command-ban regex gotcha
+- `docs/dev/deployment.md` — system fonts, `legacy.db`, PDF preview script
+
+**When adding a fact here, add a routing-table row to `docs/development.md`** if the domain is
+new, so the agent can find it. **Only document what's non-obvious** — if Claude can derive it by
+reading the files, or it's enforced elsewhere (hook, test, linter), don't write it.
+
+**When a well-written doc already covers a topic, reference it — don't replicate.** A skill or
+another doc should point to the authoritative file plus any gotchas it doesn't capture.
+
 ## Skills (`.claude/skills/ojhunt-*/`)
-Workflow documentation: how to implement crawlers, how to commit, how to write tests, and
-the conventions behind those workflows. Update when the *process* of doing something changes
-in this project — not when the code changes.
+**Workflows only** — a procedure the agent runs on demand. Currently:
+- `ojhunt-crawlers` — implement or debug a crawler (the procedure; reference is in `docs/dev/crawlers.md`)
+- `ojhunt-commit` — commit workflow, conventions, ADR guidance
+- `ojhunt-update-env` — this file
 
-**Only document what's non-obvious.** If Claude can derive it by reading the files, or if
-it's enforced elsewhere (hook, test, linter), don't write it. Redundant entries create drift.
-
-**When a well-written doc file already covers the topic, the skill should be a thin pointer
-to that file plus any gotchas the doc doesn't capture. Don't replicate discoverable content.**
+Update a skill when the *process* of doing something changes. Do **not** add convention/reference
+facts to a skill — those go in `docs/dev/` (see above).
 
 To add a new skill:
 1. Create `.claude/skills/ojhunt-<topic>/SKILL.md` with frontmatter:
@@ -57,7 +82,7 @@ directory. Use the `ojhunt-` prefix to group related project skills.
 
 ## Hooks (`.claude/hooks/` + `.claude/settings.json`)
 Hard enforcement rules — things the agent must never do or must always do automatically.
-Update when you need mechanical enforcement, not just reminders. See **ojhunt-hooks** skill.
+Update when you need mechanical enforcement, not just reminders. See `docs/dev/hooks.md`.
 
 ## Commands (`.claude/commands/`)
 Project-level slash commands that override global ones.
@@ -85,19 +110,23 @@ Context that **every agent working on this project must know**, regardless of th
 Update when something is so fundamental that any agent — without it — would make the wrong
 call: project-wide invariants, hard constraints, or pointers to where documentation lives.
 
-Keep entries minimal. `CLAUDE.md` is loaded into every conversation; bloat here costs context
-on every invocation. If the knowledge is task-specific (e.g., "how to write a crawler"),
-put it in a skill, not here.
+Keep entries minimal. `CLAUDE.md` is loaded into every conversation (and it `@`-imports
+`docs/development.md`, so that index costs context on every invocation too — keep it lean). If
+the knowledge is task-specific (e.g., "how to write a crawler"), put it in a skill or `docs/dev/`,
+not here.
 
 ---
 
 ## If unsure which layer
 
 - Operational fact (setup, command, structure) → README
-- User-facing reference → `docs/`
-- Crawler contributor reference → `docs/development.md`
-- Workflow or process → `.claude/skills/ojhunt-*/`
-- "Never do X" or "always do Y after Z" → **hook first** (see **ojhunt-hooks** skill); once hook-enforced, do NOT also add a skill entry — the hook is the enforcement, a skill note just creates drift
+- User-facing reference → `docs/cli.md` / `docs/web.md`
+- Development convention, style, schema, or gotcha for a code area → `docs/dev/<area>.md`
+  (add a routing-table row in `docs/development.md` if the domain is new)
+- Workflow or process (a procedure run on demand) → `.claude/skills/ojhunt-*/`
+- "Never do X" or "always do Y after Z" → **hook first** (see `docs/dev/hooks.md`); once
+  hook-enforced, do NOT also add a doc/skill entry — the hook is the enforcement, a note just
+  creates drift
 - Project-level command override → `.claude/commands/`
 - Significant architectural decision (multiple approaches considered, choice non-obvious from code) → `docs/adr/`
 - Small tactical change → commit message intent (no doc needed)
@@ -127,12 +156,12 @@ route from memory — re-read the relevant section if unsure.
 ### Step 3: Show proposed changes
 
 For each learning, show the target file and a concise diff. Keep additions
-brief — skill files are loaded into every prompt.
+brief — `docs/development.md` is loaded into every prompt via the `@`-import.
 
 ### Step 4: Apply with approval
 
 Ask the user which changes to apply. Only edit the files they approve.
 
-**Important:** Documentation updates (skill files, README, `docs/`) are the
+**Important:** Documentation updates (`docs/dev/`, `docs/`, README, skills) are the
 primary output — always propose at least one. Memory updates are optional
 and secondary; never substitute memory for documentation.
