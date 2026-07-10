@@ -251,6 +251,38 @@ update-snapshots() {
   echo "Done — commit tests/e2e/__snapshots__/ alongside the change that required the update."
 }
 
+full-check() {
+  # Full pre-commit gate: lint + every test suite (incl. visual) against a live
+  # server. We own the server lifecycle so callers don't have to: start it once,
+  # run everything, then stop it — but only if *we* started it, so a dev server
+  # you left running with `./doit.sh start` survives.
+  local started_here=0
+  is-alive "$SERVER_PID" || started_here=1
+  # An EXIT trap is the only reliable teardown hook: dispatch runs this function
+  # as the last thing the script does, and we turn `set -e` off below, so cleanup
+  # must fire even when a check fails. Bake started_here's value into the trap
+  # string *now* (double quotes) — the trap body runs in global scope after this
+  # function returns, where the local no longer exists and `set -u` would abort.
+  trap "[[ $started_here == 1 ]] && kill" EXIT
+  start
+  # Run all four to completion and collect failures rather than aborting on the
+  # first — one run should surface every problem. `set +e` because these commands
+  # are expected to fail sometimes and we handle the codes ourselves; each task
+  # already tees its full output to .doit/<task>.log via run_logged.
+  local -a failed=()
+  set +e
+  lint        || failed+=("lint")
+  test-unit   || failed+=("test-unit")
+  test-e2e    || failed+=("test-e2e")
+  test-visual || failed+=("test-visual")
+  set -e
+  if (( ${#failed[@]} )); then
+    echo "full-check FAILED: ${failed[*]} — read .doit/<task>.log for details"
+    return 1
+  fi
+  echo "full-check PASSED (lint, test-unit, test-e2e, test-visual)"
+}
+
 help() {
   cat <<EOF
 Usage: ./doit.sh <task> [args...]
@@ -270,6 +302,7 @@ Tests:
   test-visual        run visual regression tests (starts server if needed) [pytest-args...]
   test-crawler NAME  run tests for a specific crawler by name [pytest-args...]
   update-snapshots   update visual regression snapshots (starts server if needed)
+  full-check         run lint + all tests (unit, e2e, visual); starts & stops the server
 EOF
 }
 
