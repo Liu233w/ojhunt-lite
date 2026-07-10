@@ -11,6 +11,8 @@ Run `./doit.sh help` for the full list. Key tasks:
 - `./doit.sh test-visual` / `update-snapshots` — visual regression tests
 - `./doit.sh start` / `kill` / `status` / `logs` — dev server lifecycle
 
+When a `lint`/`test-*` task fails, its full output is already saved to `.doit/<task>.log` — **read that log** (e.g. `grep -nE 'FAILED|error' .doit/test-unit.log`) instead of re-running the task with `| tail`/`| grep`.
+
 ## Where to find documentation
 
 - **Setup, usage, project structure** → [README.md](README.md)

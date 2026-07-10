@@ -6,6 +6,17 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUN_DIR="$ROOT_DIR/.doit"
 mkdir -p "$RUN_DIR"
 
+# run_logged: run a verbose test/lint command from ROOT_DIR, teeing its FULL
+# output to .doit/<task>.log AND the terminal. On failure, READ the log
+# (e.g. grep -E 'FAILED|error' .doit/test-unit.log) instead of re-running the
+# task with | tail / | grep — one read beats N re-invocations. Preserves the
+# command's real exit code via PIPESTATUS (tee would otherwise mask it).
+run_logged() {  # run_logged <task-name> <cmd...>
+  local name="$1"; shift
+  ( cd "$ROOT_DIR" && "$@" ) 2>&1 | tee "$RUN_DIR/${name}.log"
+  return "${PIPESTATUS[0]}"
+}
+
 SERVER_PID="$RUN_DIR/server.pid"
 SERVER_LOG="$RUN_DIR/server.log"
 SERVER_PORTFILE="$RUN_DIR/server.port"
@@ -194,11 +205,11 @@ status() {
 logs() { tail -F "$SERVER_LOG"; }
 
 lint() {
-  ( cd "$ROOT_DIR" && uv run ruff check . )
+  run_logged lint uv run ruff check .
 }
 
 test-unit() {
-  ( cd "$ROOT_DIR" && uv run pytest -m "not network and not playwright" "$@" )
+  run_logged test-unit uv run pytest -m "not network and not playwright" "$@"
 }
 
 test-e2e() {
@@ -206,7 +217,7 @@ test-e2e() {
     echo "Starting server for e2e tests..."
     start
   fi
-  ( cd "$ROOT_DIR" && OJHUNT_DEV_PORT="$(current-port)" uv run pytest -m playwright tests/e2e/ --ignore=tests/e2e/test_visual.py "$@" )
+  OJHUNT_DEV_PORT="$(current-port)" run_logged test-e2e uv run pytest -m playwright tests/e2e/ --ignore=tests/e2e/test_visual.py "$@"
 }
 
 test-visual() {
@@ -215,7 +226,7 @@ test-visual() {
     start
   fi
   rm -rf "$ROOT_DIR/test-results"
-  ( cd "$ROOT_DIR" && OJHUNT_DEV_PORT="$(current-port)" uv run pytest -m playwright tests/e2e/test_visual.py "$@" )
+  OJHUNT_DEV_PORT="$(current-port)" run_logged test-visual uv run pytest -m playwright tests/e2e/test_visual.py "$@"
 }
 
 test-crawler() {
@@ -226,7 +237,7 @@ test-crawler() {
     echo "error: no test file found for crawler '${name}' (looked for tests/crawlers/${name}_test.py)" >&2
     return 1
   fi
-  ( cd "$ROOT_DIR" && uv run pytest "$test_file" "$@" )
+  run_logged test-crawler uv run pytest "$test_file" "$@"
 }
 
 update-snapshots() {
@@ -236,7 +247,7 @@ update-snapshots() {
   fi
   echo "Updating visual snapshots..."
   rm -rf "$ROOT_DIR/test-results"
-  ( cd "$ROOT_DIR" && OJHUNT_DEV_PORT="$(current-port)" uv run pytest tests/e2e/test_visual.py --update-snapshots "$@" )
+  OJHUNT_DEV_PORT="$(current-port)" run_logged update-snapshots uv run pytest tests/e2e/test_visual.py --update-snapshots "$@"
   echo "Done — commit tests/e2e/__snapshots__/ alongside the change that required the update."
 }
 
