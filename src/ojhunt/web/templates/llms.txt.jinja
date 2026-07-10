@@ -76,7 +76,8 @@ POST {{ base }}/pdf/merge
 ## Key endpoints
 
 GET  {{ base }}/api/crawlers/
-  List all available crawlers.
+  List all available crawlers. Each entry includes a live availability "status"
+  (online/offline/waiting) and, when offline, a "statusError" message.
 
 GET  {{ base }}/api/crawlers/{crawler}/{username}
   Query a single crawler. Returns a CrawlerResult — pass it verbatim to /api/merge.
