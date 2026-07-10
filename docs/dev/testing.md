@@ -19,6 +19,11 @@ uv run pytest
 **CI runs `pytest -m "not network and not playwright"` — never run crawler (network) tests
 when debugging CI failures.**
 
+To run everything at once before committing, use `./doit.sh full-check`: it starts the dev
+server, runs lint + unit + e2e + visual, then stops the server (leaving a server you started
+yourself untouched) and reports every failing suite. This is the gate the **ojhunt-implement**
+workflow runs before it commits.
+
 ## Test structure
 
 | Type | Location | Convention | Requires server |

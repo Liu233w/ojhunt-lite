@@ -9,6 +9,7 @@ Run `./doit.sh help` for the full list. Key tasks:
 - `./doit.sh test-e2e` — browser e2e tests, excluding visual (starts dev server if needed)
 - `./doit.sh test-crawler <name>` — network tests for one crawler (e.g. `codeforces`)
 - `./doit.sh test-visual` / `update-snapshots` — visual regression tests
+- `./doit.sh full-check` — lint + all tests (unit, e2e, visual); starts & stops the server
 - `./doit.sh start` / `kill` / `status` / `logs` — dev server lifecycle
 
 When a `lint`/`test-*` task fails, its full output is already saved to `.doit/<task>.log` — **read that log** (e.g. `grep -nE 'FAILED|error' .doit/test-unit.log`) instead of re-running the task with `| tail`/`| grep`.
