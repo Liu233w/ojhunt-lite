@@ -75,7 +75,7 @@ async def query(
     try:
         doc = LexborHTMLParser(html)
 
-        numbers_div = doc.css_first("div.panel__head.-socle div.numbers")
+        numbers_div = doc.css_first("div.panel__head div.numbers")
         if not numbers_div:
             raise ValueError("The user does not exist")
 
