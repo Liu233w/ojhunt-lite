@@ -26,6 +26,7 @@ from ojhunt.cli import (
 )
 from ojhunt.core.models import CrawlerInfo, NullCrawler, QueryResult
 from ojhunt.core.runner import run_crawler
+from ojhunt.core.session import create_session
 from ojhunt.crawlers import discover_crawlers
 
 
@@ -120,7 +121,7 @@ async def run_queries(
 
     results: Dict[str, QueryResult] = {}
 
-    async with aiohttp.ClientSession() as session:
+    async with create_session() as session:
         with progress:
             tasks = []
             for q, key in zip(queries, keys):
