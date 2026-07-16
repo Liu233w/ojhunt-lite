@@ -7,12 +7,14 @@ from typing import Annotated
 import aiohttp
 from fastapi import Depends
 
+from ojhunt.core.session import create_session
+
 _CLIENT: aiohttp.ClientSession
 
 
 def init_http_client() -> None:
     global _CLIENT
-    _CLIENT = aiohttp.ClientSession()
+    _CLIENT = create_session()
 
 
 async def get_http_client() -> aiohttp.ClientSession:
