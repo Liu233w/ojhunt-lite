@@ -228,6 +228,24 @@ BSD-2 Clause license header (copy from an existing crawler, use the current year
 self-signed certs **when no login is involved** — public stats queries have nothing sensitive
 in transit. Never bypass SSL for authenticated sessions.
 
+## Outbound request identification
+
+The web app and CLI build their `aiohttp` session via `create_session()` in
+`src/ojhunt/core/session.py`, which seeds every request with an OJHunt `User-Agent` and an
+always-on `X-OJHunt` header linking to `ojhunt.com` (so queried OJs can identify us and reach
+out). See [ADR 0012](../adr/0012-identify-outbound-requests.md).
+
+Implications for crawler code:
+
+- **Don't add identity headers in a crawler file.** They come from the session. Crawler files
+  stay copy-pasteable and carry no OJHunt branding.
+- **You may override `User-Agent` per request** to dodge bot-blocking (see `poj.py`,
+  `vjudge.py`). That only replaces the UA — the `X-OJHunt` header still rides along, so we
+  stay identifiable. This is the one sanctioned reason to set headers inside a crawler.
+- **Tests run through the same headers.** `tests/crawlers/conftest.py` builds the `session`
+  fixture with `create_session(trust_env=True)`, so a crawler test failing only because the
+  OJHunt UA is blocked means that crawler needs a per-request browser UA.
+
 ## Registration for testing
 
 If you need an account to test login behavior:
