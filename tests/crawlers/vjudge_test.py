@@ -8,9 +8,9 @@ Set LOGIN_USERNAME__VJUDGE and LOGIN_PASSWORD__VJUDGE environment variables to r
 
 import pytest
 import pytest_asyncio
-import aiohttp
 import os
 from ojhunt.crawlers.vjudge import __crawler_meta__, query
+from ojhunt.core.session import create_session
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"
@@ -21,7 +21,7 @@ USERNAME_WITHOUT_SUBMISSIONS = "nwpuacm"
 async def session():
     """Module-scoped session so the login cookie is reused across tests.
     VJudge triggers a captcha after a few logins in quick succession."""
-    async with aiohttp.ClientSession(trust_env=True) as s:
+    async with create_session(trust_env=True) as s:
         yield s
 
 
