@@ -52,3 +52,4 @@ Significant architectural decisions and their rationale are recorded in [`docs/a
 - [ADR 0008](./adr/0008-unique-solved-dedup-design.md) — unique solved dedup is problem-level; listless crawlers add raw count directly
 - [ADR 0009](./adr/0009-parallel-worktree-dev-server.md) — parallel-worktree dev server: dynamic port per worktree + orphan reaping (no git hook)
 - [ADR 0010](./adr/0010-relaxed-csp-for-inline-alpine.md) — relaxed CSP (`script-src` allows `'unsafe-inline'`/`'unsafe-eval'`) is load-bearing for inline Alpine.js; don't tighten without migrating to `@alpinejs/csp`
+- [ADR 0011](./adr/0011-poj-status-log-fallback.md) — POJ falls back to walking the public `/status` log when `/userstatus` is 403-blocked; the primary `/userstatus` path is load-bearing, don't delete it
