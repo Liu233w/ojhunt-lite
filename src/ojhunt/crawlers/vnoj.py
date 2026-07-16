@@ -43,9 +43,15 @@ BASE_URL = "https://oj.vnoi.info"
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> Dict[str, Union[int, List[str], None]]:
     """
     Query VNOJ for user statistics.
+
+    VNOJ runs DMOJ. Its API v2 (`/api/v2/user/<name>`) and the per-user
+    `/user/<name>/solved/` list page have both been disabled, so the only
+    remaining source is the public profile page, which shows a solved count
+    but no problem list. We therefore return the count and leave solved_list
+    unavailable (None).
 
     Args:
         session: aiohttp ClientSession
@@ -71,57 +77,29 @@ async def query(
             if response.status == 404:
                 raise ValueError("The user does not exist")
             response.raise_for_status()
+            html = await response.text()
     except aiohttp.ClientError as e:
         raise RuntimeError(f"Request failed: {str(e)}")
 
-    try:
-        solved_list = await _fetch_solved_list(session, username)
-        solved = len(solved_list)
-    except ValueError:
-        raise
-    except Exception:
-        raise RuntimeError("Error while parsing")
+    solved = _extract_solved_count(LexborHTMLParser(html))
 
     return {
         "solved": solved,
         "submissions": 0,
-        "solved_list": solved_list,
+        "solved_list": None,
     }
 
 
 def _extract_solved_count(doc: LexborHTMLParser) -> int:
-    """Extract solved count from user profile page."""
+    """Extract solved count from the user profile sidebar.
+
+    The label is rendered in Vietnamese ("Số bài đã giải: N"); the English
+    variant is kept as a fallback in case the site locale changes.
+    """
     for div in doc.css("div.user-sidebar div"):
         text = div.text()
         if "Problems solved:" in text or "Số bài đã giải:" in text:
             match = re.search(r":\s*(\d+)", text)
             if match:
                 return int(match.group(1))
-    return 0
-
-
-async def _fetch_solved_list(
-    session: aiohttp.ClientSession, username: str
-) -> List[str]:
-    """Fetch list of solved problems from the solved page."""
-    try:
-        async with session.get(
-            f"{BASE_URL}/user/{username}/solved/",
-            timeout=aiohttp.ClientTimeout(total=30),
-        ) as response:
-            response.raise_for_status()
-            html = await response.text()
-    except aiohttp.ClientError:
-        return []
-
-    doc = LexborHTMLParser(html)
-    solved_set = set()
-
-    for link in doc.css("a[href^='/problem/']"):
-        href = link.attributes.get("href") or ""
-        if href.startswith("/problem/"):
-            problem_part = href[9:].rstrip("/")
-            if problem_part and "/" not in problem_part:
-                solved_set.add(problem_part)
-
-    return sorted(list(solved_set))
+    raise RuntimeError("Error while parsing")
