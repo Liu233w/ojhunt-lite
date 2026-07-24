@@ -79,6 +79,17 @@ the redirect never fires.
 - HTML `href` attributes are harmless (browsers follow 307 redirects), but `fetch()` calls
   can silently fail because StaticFiles returns a non-JSON 404 body that breaks `response.json()`
 
+## Reverse-proxy rate limiting (429)
+
+The app itself never emits HTTP 429 — rate limiting is enforced by the production reverse
+proxy, and its 429 body is **not** JSON. Any client `fetch` that reaches the server can
+therefore receive a 429 with an HTML/plain-text body.
+
+- Client `fetch` handlers must special-case `response.status === 429` **before** calling
+  `response.json()` — otherwise the non-JSON body makes `response.json()` throw and the user
+  sees a confusing parse error instead of a rate-limit message.
+- Established guards live in `app.js`: `executeQuery`, `calculateReport`, `downloadReport`.
+
 ## CSS conventions
 
 CSS files live at `src/ojhunt/web/static/assets/`:
