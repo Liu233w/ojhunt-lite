@@ -458,6 +458,10 @@ function ojhunt() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(request),
                     });
+                    if (response.status === 429) {
+                        alert('Rate limit exceeded. Please wait a moment and try again.');
+                        return;
+                    }
                     if (!response.ok) {
                         const err = await response.json();
                         alert(err.detail || 'Failed to generate PDF');
