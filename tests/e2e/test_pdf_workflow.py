@@ -244,6 +244,44 @@ def test_download_report_updates_date_indicator(
 
 
 @pytest.mark.playwright
+def test_download_report_shows_rate_limit_message_on_429(
+    page: Page, mock_codeforces_api
+):
+    """A 429 from the reverse proxy surfaces a clear rate-limit alert, not a JSON error.
+
+    The proxy's 429 body is not JSON, so the fix must key off the status code alone.
+    """
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    # Reverse proxy returns 429 with a non-JSON body.
+    page.route(
+        "**/api/pdf/generate",
+        lambda route: route.fulfill(
+            status=429,
+            content_type="text/html",
+            body="<html><body>429 Too Many Requests</body></html>",
+        ),
+    )
+
+    dialog_messages: list[str] = []
+    page.on("dialog", lambda d: (dialog_messages.append(d.message), d.accept()))
+
+    # Query so the summary + download button appear
+    _add_query(page, "codeforces", "tourist")
+    page.click("button.btn.primary:has-text('query all')")
+    row = _row(page, "CodeForces")
+    expect(row).to_have_class("card r-ok", timeout=30000)
+
+    page.click("button.btn.primary:has-text('download report.pdf')")
+    page.wait_for_timeout(2000)
+
+    assert any("Rate limit" in m for m in dialog_messages), dialog_messages
+    # Button recovers (isDownloading reset in finally)
+    expect(page.locator(".download-card .btn.primary")).not_to_be_disabled(timeout=5000)
+
+
+@pytest.mark.playwright
 def test_download_updates_report_slot_filename_and_persists(
     page: Page, context: BrowserContext, mock_codeforces_api
 ):
