@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v7.0.0
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-      - uses: astral-sh/setup-uv@v8.3.0
+      - uses: astral-sh/setup-uv@v8.3.2
       - name: Compute version
         id: version
         run: |
