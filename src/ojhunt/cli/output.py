@@ -13,7 +13,7 @@ from rich.table import Table
 from ojhunt.cli.models import Query
 from ojhunt.core.models import CrawlerInfo, LoginType, QueryResult
 from ojhunt.core.stats import get_unique_solved
-from ojhunt.crawlers import discover_crawlers
+from ojhunt.crawlers import crawlers as crawler_registry
 
 
 def check_duplicate_queries(queries: List[Query]) -> None:
@@ -209,9 +209,7 @@ def print_report(
 
 def print_crawler_list(json_output: bool = False) -> None:
     """Print list of available crawlers in a table format."""
-    crawlers = discover_crawlers()
-
-    if not crawlers:
+    if not crawler_registry:
         msg = "\nNo crawlers found. Make sure aiohttp is installed.\n"
         if json_output:
             print(msg, file=sys.stderr)
@@ -221,8 +219,8 @@ def print_crawler_list(json_output: bool = False) -> None:
 
     if json_output:
         result = {}
-        for name in sorted(crawlers.keys()):
-            meta = crawlers[name].meta
+        for name in sorted(crawler_registry.keys()):
+            meta = crawler_registry[name].meta
             result[name] = {
                 "title": meta.title,
                 "description": meta.description,
@@ -235,14 +233,16 @@ def print_crawler_list(json_output: bool = False) -> None:
 
     console = Console()
 
-    table = Table(title=f"Available crawlers ({len(crawlers)})", show_lines=True)
+    table = Table(
+        title=f"Available crawlers ({len(crawler_registry)})", show_lines=True
+    )
     table.add_column("Name")
     table.add_column("Description")
     table.add_column("URL")
     table.add_column("Login")
 
-    for name in sorted(crawlers.keys()):
-        meta = crawlers[name].meta
+    for name in sorted(crawler_registry.keys()):
+        meta = crawler_registry[name].meta
         description = meta.cli_description or meta.description
         table.add_row(name, description, meta.url, meta.login_type.label)
 

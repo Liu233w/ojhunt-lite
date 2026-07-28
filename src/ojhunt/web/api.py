@@ -26,7 +26,7 @@ from ojhunt.core.models import NullCrawler
 from ojhunt.core.models import QueryResult as CoreQueryResult
 from ojhunt.core.runner import run_crawler
 from ojhunt.core.stats import get_unique_solved
-from ojhunt.crawlers import discover_crawlers
+from ojhunt.crawlers import crawlers as crawler_registry
 from ojhunt.web.crawler_status import (
     CheckStatus,
     CrawlerAvailability,
@@ -105,8 +105,7 @@ class CrawlerResult(BaseModel):
         )
 
     def to_model(self) -> CoreQueryResult:
-        crawlers = discover_crawlers()
-        crawler_info = crawlers.get(self.crawler) or NullCrawler(self.crawler)
+        crawler_info = crawler_registry.get(self.crawler) or NullCrawler(self.crawler)
         if self.error or not self.data:
             return CoreQueryResult(
                 crawler=crawler_info,
@@ -135,10 +134,9 @@ router = APIRouter()
     description="Returns a list of all available OJ crawlers with their metadata.",
 )
 async def list_crawlers() -> CrawlersListResponse:
-    crawlers = discover_crawlers()
     availability = get_all_status()
     data = {}
-    for name, info in crawlers.items():
+    for name, info in crawler_registry.items():
         meta = info.meta
         avail = availability.get(name, CrawlerAvailability(CheckStatus.WAITING))
         data[name] = CrawlerInfo(
@@ -164,9 +162,7 @@ async def query_crawler(
     crawler_name: str = PathParam(..., description="Name of the crawler to use"),
     username: str = PathParam(..., description="Username to query"),
 ) -> JSONResponse:
-    crawlers = discover_crawlers()
-
-    if crawler_name not in crawlers:
+    if crawler_name not in crawler_registry:
         return JSONResponse(
             content=CrawlerResult(
                 crawler=crawler_name,
@@ -177,7 +173,7 @@ async def query_crawler(
             status_code=400,
         )
 
-    crawler = crawlers[crawler_name]
+    crawler = crawler_registry[crawler_name]
 
     kwargs: Dict[str, str] = {}
 

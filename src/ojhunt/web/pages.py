@@ -17,7 +17,7 @@ from fastapi.responses import (
 )
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from ojhunt.crawlers import discover_crawlers
+from ojhunt.crawlers import crawlers as crawler_registry
 from ojhunt.web.crawler_status import get_all_status, CrawlerAvailability, CheckStatus
 from ojhunt.web.legacy_db import export_user_pdf
 from ojhunt.web.pdf import PdfSnapshot, extract_data, generate_pdf, merge_history
@@ -85,14 +85,13 @@ jinja_env.globals["static_version"] = STATIC_VERSION
 
 @router.get("/", response_class=HTMLResponse)
 async def index() -> str:
-    crawlers = discover_crawlers()
     crawler_data = {
         name: {
             "title": info.meta.title,
             "description": info.meta.description,
             "isAggregator": info.meta.is_aggregator,
         }
-        for name, info in sorted(crawlers.items())
+        for name, info in sorted(crawler_registry.items())
     }
     template = jinja_env.get_template("index.html.jinja")
     return template.render(crawlers=crawler_data)
@@ -117,8 +116,7 @@ async def about() -> str:
 @router.get("/llms.txt", response_class=PlainTextResponse)
 async def llms_txt(request: Request) -> str:
     base = str(request.base_url).rstrip("/")
-    crawlers = discover_crawlers()
-    crawler_names = sorted(crawlers.keys())
+    crawler_names = sorted(crawler_registry.keys())
     template = jinja_env.get_template("llms.txt.jinja")
     return template.render(
         base=base,
@@ -233,7 +231,6 @@ async def pdf_merge_post(
 async def crawlers_page(test_availability: str | None = None) -> str:
     import json
 
-    crawlers = discover_crawlers()
     if test_availability is not None:
         try:
             raw: dict[str, str] = json.loads(test_availability)
@@ -247,7 +244,7 @@ async def crawlers_page(test_availability: str | None = None) -> str:
     else:
         availability = get_all_status()
     crawler_list = []
-    for name, info in sorted(crawlers.items()):
+    for name, info in sorted(crawler_registry.items()):
         crawler_list.append(
             {
                 "name": name,
