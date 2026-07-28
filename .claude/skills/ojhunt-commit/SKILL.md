@@ -19,20 +19,24 @@ Create a single git commit using the conventions below, based on the user
 instruction and the current changes.
 
 **First, gather current state yourself** by running these at commit time, with `-C` pinned to
-this repo's absolute root:
+this checkout's absolute root. Resolve that root from **this skill's own base directory** — the
+harness injects it on every invocation as `<root>/.claude/skills/ojhunt-commit`, so strip that
+suffix and use what remains. Never hardcode the path: each worktree is its own root, and a
+hardcoded one would aim every command at a different tree.
 
 ```bash
-git -C /Users/shuminliu/source/personal/ojhunt-lite status --short         # staged/unstaged
-git -C /Users/shuminliu/source/personal/ojhunt-lite branch --show-current  # current branch
-git -C /Users/shuminliu/source/personal/ojhunt-lite log --oneline -10      # recent subjects, to match style
+ROOT=<this skill's base dir, minus /.claude/skills/ojhunt-commit>
+git -C "$ROOT" status --short         # staged/unstaged
+git -C "$ROOT" branch --show-current  # current branch
+git -C "$ROOT" log --oneline -10      # recent subjects, to match style
 ```
 
-**Why `-C` and not bare `git`:** if the session added sibling repos and any command `cd`'d into
-one, the shell cwd has drifted and bare `git` silently reports *another repo's* state — a valid
+**Why pin `-C` at all:** if the session added sibling repos and any command `cd`'d into one, the
+shell cwd has drifted and bare `git` silently reports *another repo's* state — a valid
 `git status` and `git log` of the wrong project. `nothing to commit, working tree clean` then
 reads as a clean repo, so the commit is skipped while real changes sit unstaged. Nothing in the
 output signals the error. `git -C "$(git rev-parse --show-toplevel)"` does **not** fix this — it
-resolves against the drifted cwd too, so the path must be literal.
+resolves against the drifted cwd too, so the root has to come from somewhere cwd-independent.
 
 If the user instruction is empty, infer intent from the diff. If intent is
 unclear, ask before committing.
