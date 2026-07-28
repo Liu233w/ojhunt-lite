@@ -117,6 +117,8 @@ types, HTML parsing, SSL policy, and license-header rules.
 - [ ] BSD-2 license header present (only in `src/ojhunt/crawlers/` files, not tests)
 - [ ] `solved_list` is `None` (not `[]`) when unavailable
 - [ ] Error messages match exactly: `"Please enter username"`, `"The user does not exist"`
+- [ ] `query` has a docstring — `help()` shows it alongside the generated metadata (ADR 0014)
+- [ ] `./doit.sh gen-docs` run and `docs/library.md` committed (adding or removing a crawler changes its table; `test-unit` fails while it is stale)
 - [ ] If crawler was previously archived: remove its files from `archived_crawlers/` and remove its entry from `archived_crawlers/README.md`
 
 ## Debugging a Broken Crawler
