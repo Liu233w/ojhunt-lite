@@ -89,15 +89,28 @@ Update when you need mechanical enforcement, not just reminders. See `docs/dev/h
 Project-level slash commands that override global ones.
 Create a command when the global equivalent needs project-specific context injected.
 
-Skills can also embed `!`shell command`` substitutions and `$ARGUMENTS` directly,
-so prefer extending an existing skill (e.g. **ojhunt-commit** owns `/commit`-style
-behavior) over adding a parallel command file.
+Skills take the arguments placeholder directly, so prefer extending an existing skill
+(e.g. **ojhunt-commit** owns `/commit`-style behavior) over adding a parallel command file.
+
+**Do not embed git or build state via a `!`-prefixed shell substitution.** It is evaluated
+when the skill *loads*, so it is stale by the time the skill acts, silently empty if the
+command trips a permission prompt, and dumped into context whether the task needs it or not.
+Make state-gathering the first *workflow step* instead — tell the agent to run the commands
+itself — and pin `git` with `-C` to the checkout's absolute root, resolved per invocation from
+the skill's injected base directory rather than hardcoded, since every worktree is its own root.
+The pin matters because a session that added sibling repos can leave the shell cwd drifted, and
+bare `git` then reports another repo's state as a perfectly well-formed `git status` of the wrong
+project. Reserve the substitution for small, cheap, always-available values where staleness is
+harmless.
 
 **Gotcha when documenting these features in prose:** the arguments placeholder
 gets substituted on render even inside inline-code spans, so writing it
 literally in skill prose erases it. Describe it ("the arguments placeholder")
 rather than using the literal token, and reserve the literal token for the
-section that should actually receive the user's input.
+section that should actually receive the user's input. The `!` substitution has
+the mirror-image trap: it fires only when the `!` is *immediately* followed by
+the opening backtick, so wrapping a long command onto the next line silently
+disables it — the skill then loads with no value at all and nothing flags it.
 
 ## `docs/adr/`
 Significant architectural decisions and their rationale. See the **ojhunt-commit** skill for
