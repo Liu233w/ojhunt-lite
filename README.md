@@ -106,6 +106,17 @@ asyncio.run(main())
 `query_sync` and `CrawlerResult` work with any crawler in `ojhunt.crawlers.*`.
 Some crawlers (`nit`, `uva`) use a persistent label cache and require the full package — they cannot be used as standalone copied files.
 
+Full reference — every crawler, its login requirements and arguments: **[docs/library.md](docs/library.md)**. The same text is available from a Python prompt:
+
+```python
+from ojhunt.crawlers import crawlers
+```
+
+```python notest
+help(crawlers["cses"])   # what it queries, login, arguments
+help(crawlers.cses)      # the same crawler, as an attribute
+```
+
 ## Supported Platforms
 
 See the [src/ojhunt/crawlers/](./src/ojhunt/crawlers) directory. Archived crawlers (dead sites) are in [archived_crawlers/](./archived_crawlers).

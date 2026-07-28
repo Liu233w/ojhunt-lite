@@ -1,17 +1,37 @@
 """Unit tests for the generated library documentation (see ADR 0014)."""
 
-import importlib
+import importlib.util
 import pydoc
+from pathlib import Path
 
 import ojhunt.crawlers
 from ojhunt.core.models import CrawlerMeta, LoginType
 from ojhunt.crawlers import crawlers as CRAWLERS
 from ojhunt.crawlers._help import compose_query_doc, render_crawler_doc
 
+REPO_ROOT = Path(__file__).parents[2]
+
 
 def _plain(thing):
     """Render help() output without pydoc's backspace-bolding."""
     return pydoc.render_doc(thing, renderer=pydoc.plaintext)
+
+
+def _generator():
+    """Import scripts/generate_library_docs.py, which is outside the package."""
+    path = REPO_ROOT / "scripts" / "generate_library_docs.py"
+    spec = importlib.util.spec_from_file_location("generate_library_docs", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_library_md_is_what_the_generator_produces_now():
+    generator = _generator()
+
+    assert generator.render_library_docs() == generator.OUTPUT.read_text(
+        encoding="utf-8"
+    ), "docs/library.md is stale — run ./doit.sh gen-docs and commit the result"
 
 
 def test_public_api_is_importable():
