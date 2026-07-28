@@ -68,6 +68,21 @@ def _extract_lentille_context(html: str) -> dict:
 async def query(
     session: aiohttp.ClientSession, username: str
 ) -> Dict[str, Union[int, List[str], None]]:
+    """
+    Query Luogu (洛谷) for user statistics.
+
+    Args:
+        session: aiohttp ClientSession
+        username: Luogu username or numeric user ID
+
+    Returns:
+        Dictionary with keys: solved, submissions, solved_list.
+        solved_list is always None — Luogu only exposes counts on the profile page.
+
+    Raises:
+        ValueError: If username is empty or the user does not exist
+        RuntimeError: If the request fails or the profile page cannot be parsed
+    """
     if not username or not username.strip():
         raise ValueError("Please enter username")
 

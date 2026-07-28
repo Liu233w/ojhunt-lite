@@ -42,7 +42,7 @@ async def test_valid_user(session):
     assert "solved_list" in result
 
     assert isinstance(result["solved"], int)
-    assert result["submissions"] == 0
+    assert result["submissions"] == result["solved"], "no total published (ADR 0015)"
     assert isinstance(result["solved_list"], list)
 
     assert result["solved"] > 0

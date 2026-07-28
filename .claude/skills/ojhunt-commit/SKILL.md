@@ -13,17 +13,26 @@ asks to commit), use this flow. The conventions below apply.
 
 $ARGUMENTS
 
-## Context
-
-- Current git status (trimmed): !
-  `git status --short 2>&1 | awk 'NR<=10{print} END{if(NR>10) print "... ("NR" files total, showing first 10)"}' || echo "(git status unavailable)"`
-- Current branch: !`git branch --show-current 2>&1 || echo "(no branch)"`
-- Recent commits: !`git log --oneline -10 2>&1 || echo "(no commits yet)"`
-
 ## Task
 
 Create a single git commit using the conventions below, based on the user
-instruction and the changes shown above.
+instruction and the current changes.
+
+**First, gather current state yourself** by running these at commit time, with `-C` pinned to
+this repo's absolute root:
+
+```bash
+git -C /Users/shuminliu/source/personal/ojhunt-lite status --short         # staged/unstaged
+git -C /Users/shuminliu/source/personal/ojhunt-lite branch --show-current  # current branch
+git -C /Users/shuminliu/source/personal/ojhunt-lite log --oneline -10      # recent subjects, to match style
+```
+
+**Why `-C` and not bare `git`:** if the session added sibling repos and any command `cd`'d into
+one, the shell cwd has drifted and bare `git` silently reports *another repo's* state — a valid
+`git status` and `git log` of the wrong project. `nothing to commit, working tree clean` then
+reads as a clean repo, so the commit is skipped while real changes sit unstaged. Nothing in the
+output signals the error. `git -C "$(git rev-parse --show-toplevel)"` does **not** fix this — it
+resolves against the drifted cwd too, so the path must be literal.
 
 If the user instruction is empty, infer intent from the diff. If intent is
 unclear, ask before committing.
@@ -39,8 +48,8 @@ The preferred workflow is **fixup-first, squash-last** — never squash immediat
 
 1. **Create fixup! commit(s)**: Stage the relevant files and run
    `git commit --fixup=<sha>` (requires `dangerouslyDisableSandbox: true`).
-   If the commit message also needs changing, additionally run
-   `git commit --fixup=reword:<sha>` (git ≥ 2.32) — no content, just a message edit.
+   If the commit message also needs changing, additionally create an `amend!`
+   commit — see "Rewording a commit message" below.
    Show the user `git log --oneline -5` so they can review.
 2. **Stop and wait** for the user to confirm they are happy. Do not proceed to
    rebase without explicit user approval.
@@ -49,6 +58,63 @@ The preferred workflow is **fixup-first, squash-last** — never squash immediat
    (requires `dangerouslyDisableSandbox: true`). `-i` is required because
    `--autosquash` only works in interactive mode; `GIT_SEQUENCE_EDITOR=true`
    suppresses the editor so no prompt appears.
+
+### Rewording a commit message
+
+Use `git commit --fixup=amend:<sha>` (git ≥ 2.32). **Not**
+`--fixup=reword:<sha>` — autosquash does not recognise the `reword!` prefix and
+leaves a stray commit behind. Do **not** combine `-m` with `--fixup=amend:`;
+git rejects it.
+
+1. `git show <sha> --format="%B" --no-patch` — read the original message.
+2. Write the new message to `.doit/commit-msg.txt`. The subject must be
+   `amend! <exact original subject>`; the body becomes the replacement message
+   after autosquash.
+3. `GIT_EDITOR="cp .doit/commit-msg.txt" git commit --allow-empty --fixup=amend:<sha>`
+   (requires `dangerouslyDisableSandbox: true`).
+4. `git show <new-sha> --format="%B" --no-patch` — verify before squashing.
+
+### Scoping a fixup
+
+`git commit --fixup` commits **the index** — stage the paths that belong to that target
+and leave everything else unstaged. Never `git stash` to scope a commit: it reverts
+unstaged work, including edits the user made themselves.
+
+`git add -p` is unavailable (no interactive flags). To split one file's changes across
+two fixups, save the finished version first, write the intermediate content, stage it,
+commit, then restore:
+
+```bash
+cp <path> .doit/split.final    # save FIRST — nothing else holds these hunks
+python3 -c "..."               # rewrite <path>: HEAD content + only target A's hunks
+git add <path> && git commit --fixup=<sha-A>
+cp .doit/split.final <path>    # restore; the remaining hunks go to the next fixup
+```
+
+`.doit/` is gitignored and inside the repo, so it survives the sandbox bypass that git
+writes need — `$TMPDIR` is unset there.
+
+### Verifying a squash
+
+A `fixup!` diff is computed against the **final** tree but replays at its target commit, so
+expect conflicts wherever that commit's surroundings differ — and expect a mis-scoped hunk to
+land in a commit that cannot work yet. Both are invisible until the rebase runs.
+
+Rehearse on a throwaway branch, never on the user's:
+
+```bash
+git checkout -b scratch/squash-test
+GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash <base>^   # resolve era-correctly
+git diff <branch> scratch/squash-test                          # gate: must be empty
+for sha in $(git rev-list --reverse main..HEAD); do
+  git checkout -q "$sha" && ./doit.sh lint && ./doit.sh test-unit   # each commit alone
+done
+```
+
+To repair a commit mid-history, stop on it:
+`GIT_SEQUENCE_EDITOR='sed -i "" -e "s/^pick <sha>/edit <sha>/"' git rebase -i main`, amend,
+`git rebase --continue`. Then move the branch with `git reset --hard scratch/squash-test` —
+`git branch -f` refuses while the branch is checked out.
 
 ---
 

@@ -225,7 +225,9 @@ async def query(
 
         return {
             "solved": solved,
-            "submissions": submissions,
+            # Either table row can be missing from the profile page; solved is
+            # the floor (ADR 0015).
+            "submissions": max(submissions, solved),
             "solved_list": solved_list,
         }
 

@@ -21,6 +21,27 @@ from typing import Dict, List, Union
 
 Use `Dict`, `List`, `Union` from the `typing` module — not the `dict[str, ...]` syntax.
 
+## Prefer asserts and names over comments
+
+State an invariant with `assert` — it documents *and* enforces:
+
+```python notest
+row = f"| {name} | {platform} | {notes} |"
+assert row.count("|") == 4, f"malformed table row: {row!r}"
+```
+
+Asserts are for what the code guarantees itself. Data arriving from outside — a user's
+argument, a judge's response — needs a real `raise`, because `python -O` strips asserts.
+
+In tests, put the explanation in the assert message, not in a comment above it:
+`assert "items" in listed, "dict's own attributes must survive"`.
+
+Where a comment would explain *what* an expression produces, name the value instead:
+`single_line_description = " ".join(text.split())`.
+
+Keep comments for what neither can express — why a construct is load-bearing, or why
+the obvious alternative is wrong.
+
 ## Error handling
 
 - `ValueError`: User input errors (empty username, user not found)

@@ -85,7 +85,9 @@ async def query(
 
     return {
         "solved": solved,
-        "submissions": 0,
+        # The profile page shows no submission total; report the solved count,
+        # which every accepted problem cost at least (ADR 0015).
+        "submissions": solved,
         "solved_list": None,
     }
 

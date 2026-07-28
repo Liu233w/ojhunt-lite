@@ -208,6 +208,10 @@ lint() {
   run_logged lint uv run ruff check .
 }
 
+gen-docs() {
+  run_logged gen-docs uv run python scripts/generate_library_docs.py
+}
+
 test-unit() {
   run_logged test-unit uv run pytest -m "not network and not playwright" "$@"
 }
@@ -303,6 +307,9 @@ Tests:
   test-crawler NAME  run tests for a specific crawler by name [pytest-args...]
   update-snapshots   update visual regression snapshots (starts server if needed)
   full-check         run lint + all tests (unit, e2e, visual); starts & stops the server
+
+Docs:
+  gen-docs           regenerate docs/library.md from the library docstrings
 EOF
 }
 

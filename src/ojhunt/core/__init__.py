@@ -7,7 +7,9 @@ Provides shared types and utilities used across CLI, web, and crawlers.
 from ojhunt.core.models import (
     CrawlerInfo,
     CrawlerMeta,
+    CrawlerRegistry,
     CrawlerResult,
+    LoginType,
     NullCrawler,
     QueryResult,
 )
@@ -17,7 +19,9 @@ from ojhunt.core.stats import collect_solved_problems
 __all__ = [
     "CrawlerInfo",
     "CrawlerMeta",
+    "CrawlerRegistry",
     "CrawlerResult",
+    "LoginType",
     "NullCrawler",
     "QueryResult",
     "run_crawler",

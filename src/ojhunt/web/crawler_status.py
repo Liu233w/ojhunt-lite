@@ -14,7 +14,7 @@ import aiohttp
 from ojhunt.core.credentials import get_login_kwargs
 from ojhunt.core.models import CrawlerInfo, LoginType
 from ojhunt.core.runner import run_crawler
-from ojhunt.crawlers import discover_crawlers
+from ojhunt.crawlers import crawlers as crawler_registry
 
 logger = logging.getLogger(__name__)
 
@@ -79,14 +79,12 @@ async def _check_one(
 
 async def _checker_loop(client: aiohttp.ClientSession) -> None:
     """Background loop that checks crawlers one by one."""
-    crawlers = discover_crawlers()
-
     # Initialize all to waiting
-    for name in crawlers:
+    for name in crawler_registry:
         _status[name] = CrawlerAvailability(CheckStatus.WAITING)
 
     while True:
-        for name, crawler in crawlers.items():
+        for name, crawler in crawler_registry.items():
             _status[name] = CrawlerAvailability(CheckStatus.WAITING)
             try:
                 _status[name] = await _check_one(client, name, crawler)

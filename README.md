@@ -8,23 +8,19 @@ A lightweight async Python tool for querying Online Judge (OJ) statistics across
 
 ## CLI
 
-**Install once, use anywhere** (pipx, uv tool, or pip):
-
 ```bash
-pipx install ojhunt
-# or: uv tool install ojhunt
-# or: pip install ojhunt
+pipx install ojhunt        # or: uv tool install ojhunt / pip install ojhunt
+ojhunt tourist@codeforces
 ```
 
-**Run directly from a clone** (no install needed):
+From a clone:
 
 ```bash
-git clone https://github.com/Liu233w/ojhunt-lite
-cd ojhunt-lite
+git clone https://github.com/Liu233w/ojhunt-lite && cd ojhunt-lite
 uv run ojhunt tourist@codeforces
 ```
 
-**Run via container** (no Python needed):
+Or without a Python install, via container:
 
 ```bash
 docker run --rm ghcr.io/liu233w/ojhunt-lite tourist@codeforces
@@ -74,37 +70,18 @@ uv add ojhunt
 # or: pip install ojhunt
 ```
 
-**Sync (simplest):**
-
 ```python
-from ojhunt.crawlers.codeforces import query
-from ojhunt.crawlers import query_sync
+from ojhunt.crawlers import crawlers
 ```
 
 ```python notest
-result = query_sync(query, "tourist")
+result = crawlers.codeforces.query_sync("tourist")
 print(result.solved, result.submissions, result.solved_list)
 ```
 
-**Async (when you already have an event loop):**
-
-```python
-import asyncio, aiohttp
-from ojhunt.crawlers.codeforces import query
-from ojhunt.crawlers import CrawlerResult
-```
-
-```python notest
-async def main():
-    async with aiohttp.ClientSession() as session:
-        result = CrawlerResult.from_dict(await query(session, "tourist"))
-        print(result.solved, result.submissions, result.solved_list)
-
-asyncio.run(main())
-```
-
-`query_sync` and `CrawlerResult` work with any crawler in `ojhunt.crawlers.*`.
-Some crawlers (`nit`, `uva`) use a persistent label cache and require the full package — they cannot be used as standalone copied files.
+Async use, login-required crawlers, copying a single crawler file into your own
+project, and every crawler's arguments: **[docs/library.md](docs/library.md)** — or
+`help(ojhunt.crawlers)` and `help(crawlers.cses)` from a Python prompt.
 
 ## Supported Platforms
 

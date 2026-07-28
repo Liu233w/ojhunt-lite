@@ -132,7 +132,9 @@ async def query(
 
         return {
             "solved": solved,
-            "submissions": submissions,
+            # The submissions link is the one POJ's ill-formatted HTML most
+            # often loses; solved is the floor (ADR 0015).
+            "submissions": max(submissions, solved),
             "solved_list": solved_list,
         }
     except Exception:

@@ -520,9 +520,7 @@ class TestPrintCrawlerListJson:
 
     def test_json_goes_to_stdout(self, capsys):
         """Test that JSON output goes to stdout."""
-        with patch(
-            "ojhunt.cli.output.discover_crawlers", return_value=self._make_crawlers()
-        ):
+        with patch("ojhunt.cli.output.crawler_registry", self._make_crawlers()):
             print_crawler_list(json_output=True)
         captured = capsys.readouterr()
         assert captured.out.strip() != ""
@@ -530,18 +528,14 @@ class TestPrintCrawlerListJson:
 
     def test_json_is_dict(self, capsys):
         """Test that JSON output is a dict keyed by crawler name."""
-        with patch(
-            "ojhunt.cli.output.discover_crawlers", return_value=self._make_crawlers()
-        ):
+        with patch("ojhunt.cli.output.crawler_registry", self._make_crawlers()):
             print_crawler_list(json_output=True)
         data = json.loads(capsys.readouterr().out)
         assert isinstance(data, dict)
 
     def test_json_entry_fields(self, capsys):
         """Test each entry has the expected fields."""
-        with patch(
-            "ojhunt.cli.output.discover_crawlers", return_value=self._make_crawlers()
-        ):
+        with patch("ojhunt.cli.output.crawler_registry", self._make_crawlers()):
             print_crawler_list(json_output=True)
         data = json.loads(capsys.readouterr().out)
         entry = data["codeforces"]
@@ -554,18 +548,14 @@ class TestPrintCrawlerListJson:
 
     def test_json_requires_login_field(self, capsys):
         """Test requires_login is correctly set for login crawlers."""
-        with patch(
-            "ojhunt.cli.output.discover_crawlers", return_value=self._make_crawlers()
-        ):
+        with patch("ojhunt.cli.output.crawler_registry", self._make_crawlers()):
             print_crawler_list(json_output=True)
         data = json.loads(capsys.readouterr().out)
         assert data["vjudge"]["login_type"] == "shared_account"
 
     def test_json_sorted_by_name(self, capsys):
         """Test crawlers are sorted by name."""
-        with patch(
-            "ojhunt.cli.output.discover_crawlers", return_value=self._make_crawlers()
-        ):
+        with patch("ojhunt.cli.output.crawler_registry", self._make_crawlers()):
             print_crawler_list(json_output=True)
         data = json.loads(capsys.readouterr().out)
         keys = list(data.keys())
@@ -573,7 +563,7 @@ class TestPrintCrawlerListJson:
 
     def test_json_no_crawlers_goes_to_stderr(self, capsys):
         """Test 'no crawlers' message goes to stderr in JSON mode."""
-        with patch("ojhunt.cli.output.discover_crawlers", return_value={}):
+        with patch("ojhunt.cli.output.crawler_registry", {}):
             print_crawler_list(json_output=True)
         captured = capsys.readouterr()
         assert captured.out == ""

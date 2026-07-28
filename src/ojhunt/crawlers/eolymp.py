@@ -32,7 +32,7 @@ from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "EOlymp",
-    "description": "",
+    "description": "Submission count reflects accepted submissions only.",
     "url": "https://www.eolymp.com/",
     "test_username": "vjudge5",
 }
@@ -109,8 +109,12 @@ async def query(
 
     stats = user.get("stats", {})
 
+    solved = stats.get("problemsSolved", 0)
+
     return {
-        "solved": stats.get("problemsSolved", 0),
-        "submissions": stats.get("submissionsAccepted", 0),
+        "solved": solved,
+        # EOlymp counts accepted submissions only, and the field can be absent;
+        # solved is the floor either way (ADR 0015).
+        "submissions": max(stats.get("submissionsAccepted", 0), solved),
         "solved_list": None,
     }
