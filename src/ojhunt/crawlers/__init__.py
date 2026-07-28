@@ -31,12 +31,15 @@ Synchronous use, the simplest way in:
 
 Asynchronous use, when you already have an event loop:
 
-    import aiohttp
+    from ojhunt.core.session import create_session
     from ojhunt.crawlers import CrawlerResult
     from ojhunt.crawlers.codeforces import query
 
-    async with aiohttp.ClientSession() as session:
+    async with create_session() as session:
         result = CrawlerResult.from_dict(await query(session, "tourist"))
+
+create_session() is a plain aiohttp.ClientSession carrying headers that tell each
+judge who is querying it and how to opt out; prefer it over building your own.
 
 Results
     Both styles produce a CrawlerResult with solved, submissions and
@@ -83,11 +86,14 @@ Copying single crawler files
 
         asyncio.run(main())
 
-    For the blocking, typed form, copy query_sync() and CrawlerResult as well —
-    between them they need nothing else from ojhunt:
+    For the blocking, typed form, copy query_sync() and CrawlerResult as well,
+    with aiohttp.ClientSession() in place of create_session():
 
         result = query_sync(query, "tourist")
         print(result.solved, result.submissions, result.solved_list)
+
+    A copied crawler carries no OJHunt branding by design, so identify your own
+    project in the session headers.
 """
 
 __all__ = [
@@ -110,8 +116,7 @@ from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
 
-import aiohttp
-
+from ojhunt.core.session import create_session
 from ojhunt.core.models import (
     CrawlerInfo,
     CrawlerMeta,
@@ -138,7 +143,8 @@ def query_sync(
 
     Takes either a crawler from the registry or a crawler module's own async
     query function, so it works just as well beside a single copied crawler
-    file: nothing here needs the rest of ojhunt except CrawlerResult.
+    file — swap create_session() for aiohttp.ClientSession() when copying, and
+    CrawlerResult is then the only other piece needed.
 
     Runs its own event loop, so it cannot be called from inside a running one
     (a notebook, or any async function) — await the query function there instead.
@@ -175,7 +181,9 @@ def query_sync(
         )
 
     async def _run() -> CrawlerResult:
-        async with aiohttp.ClientSession() as session:
+        # create_session(), not a bare ClientSession: every request OJHunt makes
+        # identifies itself to the judge (ADR 0012), library calls included.
+        async with create_session() as session:
             return CrawlerResult.coerce(await query_fn(session, username, **kwargs))
 
     return asyncio.run(_run())
