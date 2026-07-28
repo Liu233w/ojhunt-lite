@@ -61,8 +61,10 @@ judge who is querying it and how to opt out; prefer it over building your own.
 Results
     Both styles produce a CrawlerResult with solved, submissions and
     solved_list. solved_list is None when the judge does not publish which
-    problems a user solved, and submissions is 0 when it publishes no
-    submission count.
+    problems a user solved. submissions is never fewer than solved: a judge that
+    publishes no submission total yields the solved count instead, so the figure
+    is a lower bound (ADR 0015). A judge that publishes some other count says so
+    in its own description, which help() on that crawler prints.
 
 Errors
     ValueError means the input was wrong — empty username, no such user,
@@ -191,7 +193,7 @@ Typed result returned by crawler query functions.
 
 Attributes:
     solved: Number of accepted problems.
-    submissions: Total submissions, or 0 if the judge publishes no count.
+    submissions: Total submissions, as the crawler reports them.
     solved_list: IDs of the solved problems, or None if the judge does not
         publish them.
 
@@ -256,7 +258,6 @@ Example:
     result = crawlers.codeforces.query_sync("tourist")
     print(result.solved, result.submissions, result.solved_list)
 ```
-
 
 ### `CrawlerMeta`
 
@@ -325,7 +326,7 @@ Members
 | `csg` | [CSG](https://cpc.csgrandeur.cn/) | – | CSGrandeur Online Judge | – |
 | `csu` | [CSU](https://vlab.csu.edu.cn/oj) | – | – | – |
 | `darkbzoj` | [DarkBZOJ](https://darkbzoj.cc/) | – | – | – |
-| `eolymp` | [EOlymp](https://www.eolymp.com/) | – | – | – |
+| `eolymp` | [EOlymp](https://www.eolymp.com/) | – | Submission count reflects accepted submissions only. | – |
 | `hdu` | [HDU](http://acm.hdu.edu.cn/) | – | – | – |
 | `hust` | [HUST](https://hustoj.org/) | – | HUST Online Judge | – |
 | `kilonova` | [Kilonova](https://kilonova.ro/) | – | Romanian competitive programming platform | – |

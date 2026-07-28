@@ -93,6 +93,8 @@ async def query(
 
     return {
         "solved": len(solved_list),
-        "submissions": 0,
+        # solved_map is the only statistic the API returns; report the solved
+        # count, which every accepted problem cost at least (ADR 0015).
+        "submissions": len(solved_list),
         "solved_list": sorted(solved_list),
     }

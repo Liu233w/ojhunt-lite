@@ -44,10 +44,20 @@ All crawlers return:
 ```python notest
 {
     "solved": int,            # Number of accepted problems
-    "submissions": int,       # Total submissions (0 if unavailable)
+    "submissions": int,       # Total submissions, never below "solved"
     "solved_list": list|None  # Problem IDs (None if unavailable)
 }
 ```
+
+A judge that publishes no submission total: report `solved` there, not `0` — every accepted
+problem cost at least one submission, and `/api/merge` and `ojhunt --json` sum the field, so a
+zero makes the total smaller than the solved count inside it. Where the number is scraped and a
+page can lose it, clamp with `max(submissions, solved)`. See
+[ADR 0015](../adr/0015-submissions-floor-is-solved.md); the crawler's own network test asserts it.
+
+Judge-specific quirks — what a count actually measures, what to type as a username — belong in
+the crawler file and its `description`. `core/models.py` describes the shape of a result, never
+any judge's behaviour.
 
 ## Crawler templates
 

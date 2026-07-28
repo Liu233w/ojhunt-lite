@@ -49,7 +49,7 @@ class CrawlerResult:
 
     Attributes:
         solved: Number of accepted problems.
-        submissions: Total submissions, or 0 if the judge publishes no count.
+        submissions: Total submissions, as the crawler reports them.
         solved_list: IDs of the solved problems, or None if the judge does not
             publish them.
     """
