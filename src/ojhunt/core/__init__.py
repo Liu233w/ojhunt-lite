@@ -9,6 +9,7 @@ from ojhunt.core.models import (
     CrawlerMeta,
     CrawlerRegistry,
     CrawlerResult,
+    LoginType,
     NullCrawler,
     QueryResult,
 )
@@ -20,6 +21,7 @@ __all__ = [
     "CrawlerMeta",
     "CrawlerRegistry",
     "CrawlerResult",
+    "LoginType",
     "NullCrawler",
     "QueryResult",
     "run_crawler",

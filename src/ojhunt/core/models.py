@@ -12,6 +12,18 @@ import aiohttp
 
 
 class LoginType(Enum):
+    """Whether a crawler needs credentials, and whose.
+
+    NOT_REQUIRED
+        Profiles are public; pass nothing.
+    OWN_ACCOUNT
+        The judge only shows the logged-in user's own statistics, so the
+        credentials must belong to the user being queried.
+    SHARED_ACCOUNT
+        The judge hides profiles from guests, but any authenticated account can
+        look up any user, so one shared account serves every query.
+    """
+
     NOT_REQUIRED = "not_required"
     OWN_ACCOUNT = "own_account"  # Must log in as the target user
     SHARED_ACCOUNT = "shared_account"  # Any shared account can query any user
@@ -33,7 +45,14 @@ class LoginType(Enum):
 
 @dataclass
 class CrawlerResult:
-    """Typed result returned by crawler query functions."""
+    """Typed result returned by crawler query functions.
+
+    Attributes:
+        solved: Number of accepted problems.
+        submissions: Total submissions, or 0 if the judge publishes no count.
+        solved_list: IDs of the solved problems, or None if the judge does not
+            publish them.
+    """
 
     solved: int
     submissions: int
@@ -41,16 +60,67 @@ class CrawlerResult:
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "CrawlerResult":
+        """Build a CrawlerResult from the raw dict a crawler's query returns.
+
+        Args:
+            d: Dict with keys solved, submissions and optionally solved_list.
+
+        Returns:
+            The equivalent CrawlerResult.
+
+        Raises:
+            KeyError: If solved or submissions is missing.
+        """
         return cls(
             solved=d["solved"],
             submissions=d["submissions"],
             solved_list=d.get("solved_list"),
         )
 
+    @classmethod
+    def coerce(cls, result: Any) -> "CrawlerResult":
+        """Build a CrawlerResult from whatever a query function returned.
+
+        Crawler modules return the raw dict their own docstring describes, but a
+        query function is free to build the result itself, so accept both.
+
+        Args:
+            result: A raw crawler dict, or an already-built CrawlerResult.
+
+        Returns:
+            The equivalent CrawlerResult.
+
+        Raises:
+            TypeError: If the query function returned neither.
+            KeyError: If a dict is missing solved or submissions.
+        """
+        if isinstance(result, cls):
+            return result
+        if not isinstance(result, dict):
+            raise TypeError(
+                f"query function returned {type(result).__name__}, "
+                "expected a dict or a CrawlerResult"
+            )
+        return cls.from_dict(result)
+
 
 @dataclass
 class CrawlerMeta:
-    """Metadata for a crawler."""
+    """Metadata for a crawler, parsed from its __crawler_meta__ dict.
+
+    Attributes:
+        title: Display name of the online judge.
+        description: What a user should type as the username, when that needs
+            explaining.
+        cli_description: Replaces description in `ojhunt --list` when CLI usage
+            differs, e.g. login instructions.
+        url: Homepage of the judge.
+        is_aggregator: Whether the judge mirrors problems from other judges, in
+            which case solved_list entries carry a source prefix.
+        login_type: Whether credentials are needed, and whose.
+        test_username: A username known to exist, used by tests and the
+            /crawlers availability check.
+    """
 
     title: str
     description: str = ""
@@ -63,11 +133,28 @@ class CrawlerMeta:
 
 @dataclass
 class CrawlerInfo:
-    """A crawler with metadata and query function."""
+    """A crawler with metadata and query function.
+
+    Discovery fills each instance's __doc__ with generated documentation, so
+    help() on a CrawlerInfo describes that specific crawler.
+
+    Attributes:
+        name: Crawler name, i.e. its module basename (e.g. "codeforces").
+        meta: Metadata from the crawler's __crawler_meta__.
+        query: The crawler's query function, awaited as
+            query(session, username, **credentials) and returning a
+            CrawlerResult.
+    """
 
     name: str
     meta: CrawlerMeta
     query: Callable[..., Awaitable[CrawlerResult]]
+
+    def __repr__(self) -> str:
+        return (
+            f'<{type(self).__name__} {self.name} "{self.meta.title}" '
+            f"login={self.meta.login_type.value}>"
+        )
 
 
 class CrawlerRegistry(Dict[str, CrawlerInfo]):

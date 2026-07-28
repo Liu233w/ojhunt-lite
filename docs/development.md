@@ -55,3 +55,4 @@ Significant architectural decisions and their rationale are recorded in [`docs/a
 - [ADR 0011](./adr/0011-poj-status-log-fallback.md) — POJ falls back to walking the public `/status` log when `/userstatus` is 403-blocked; the primary `/userstatus` path is load-bearing, don't delete it
 - [ADR 0012](./adr/0012-identify-outbound-requests.md) — all web/CLI crawler requests go through `create_session()`, which adds an OJHunt `User-Agent` + always-on `X-OJHunt` header; identity lives at the session layer, never in crawler files
 - [ADR 0013](./adr/0013-lazy-crawler-registry.md) — the registry is the module attribute `ojhunt.crawlers.crawlers`, discovered on first access; the `TYPE_CHECKING` declaration is load-bearing for ruff F822
+- [ADR 0014](./adr/0014-generated-crawler-help.md) — crawler `help()` text is generated from `__crawler_meta__` and attached to `CrawlerInfo.__doc__`; crawler module docstrings stay reserved for the license header
