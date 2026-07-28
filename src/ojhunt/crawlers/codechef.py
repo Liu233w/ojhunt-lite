@@ -41,6 +41,22 @@ __crawler_meta__ = {
 async def query(
     session: aiohttp.ClientSession, username: str
 ) -> Dict[str, Union[int, List[str]]]:
+    """
+    Query CodeChef for user statistics.
+
+    Walks the user's public submission pages and counts distinct accepted problems.
+
+    Args:
+        session: aiohttp ClientSession
+        username: CodeChef username
+
+    Returns:
+        Dictionary with keys: solved, submissions, solved_list
+
+    Raises:
+        ValueError: If username is empty, or the user does not exist / has no submissions
+        RuntimeError: If a submission page cannot be fetched or parsed
+    """
     if not username or not username.strip():
         raise ValueError("Please enter username")
 

@@ -42,6 +42,21 @@ BASE_URL = "https://www.51nod.com"
 async def query(
     session: aiohttp.ClientSession, username: str
 ) -> Dict[str, Union[int, List[str], None]]:
+    """
+    Query 51Nod for user statistics.
+
+    Args:
+        session: aiohttp ClientSession
+        username: Numeric 51Nod user ID, visible in the profile URL — a display
+            name is rejected
+
+    Returns:
+        Dictionary with keys: solved, submissions, solved_list
+
+    Raises:
+        ValueError: If username is empty, not numeric, or the user does not exist
+        RuntimeError: If the request fails
+    """
     if not username or not username.strip():
         raise ValueError("Please enter username")
 

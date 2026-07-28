@@ -97,6 +97,36 @@ async def query(
     login_user: Optional[str] = None,
     login_password: Optional[str] = None,
 ) -> Dict[str, Union[int, List[str], None]]:
+    """
+    Query CSES for user statistics.
+
+    CSES has no public profiles, so a login is always required. Any authenticated
+    account can look up any user: pass shared-account credentials as login_user /
+    login_password and the target's numeric ID as username. Passing password
+    instead logs in as `username` itself, in which case a login name is accepted.
+
+    Args:
+        session: aiohttp ClientSession
+        username: Target user's numeric CSES ID (visible in the profile URL), or
+            your own login name when authenticating with password
+        password: Password for `username`, to query your own account
+        login_user: Account to authenticate as; takes precedence over password
+        login_password: Password for login_user
+
+    Returns:
+        Dictionary with keys: solved, submissions, solved_list
+
+    Raises:
+        ValueError: If username is empty, no credentials were given, another user
+            was requested by name instead of numeric ID, the user does not exist,
+            or the session kept expiring before the profile could be read
+        RuntimeError: If the credentials are rejected or a request fails
+
+    Example:
+        from ojhunt.crawlers import query_sync
+        from ojhunt.crawlers.cses import query
+        result = query_sync(query, "3", login_user="me", login_password="secret")
+    """
     if not username or not username.strip():
         raise ValueError("Please enter username")
 

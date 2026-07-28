@@ -39,6 +39,21 @@ __crawler_meta__ = {
 async def query(
     session: aiohttp.ClientSession, username: str
 ) -> Dict[str, Union[int, List[str]]]:
+    """
+    Query LightOJ for user statistics.
+
+    Args:
+        session: aiohttp ClientSession
+        username: LightOJ username
+
+    Returns:
+        Dictionary with keys: solved, submissions, solved_list.
+        solved_list is always None — LightOJ does not expose solved problem IDs.
+
+    Raises:
+        ValueError: If username is empty or the user does not exist
+        RuntimeError: If the request fails or the response cannot be parsed
+    """
     if not username or not username.strip():
         raise ValueError("Please enter username")
 
