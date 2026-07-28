@@ -138,6 +138,9 @@ class CrawlerInfo:
     Discovery fills each instance's __doc__ with generated documentation, so
     help() on a CrawlerInfo describes that specific crawler.
 
+    query_sync() blocks until the judge answers, which makes
+    crawlers.codeforces.query_sync("tourist") the shortest way to one result.
+
     Attributes:
         name: Crawler name, i.e. its module basename (e.g. "codeforces").
         meta: Metadata from the crawler's __crawler_meta__.
@@ -155,6 +158,36 @@ class CrawlerInfo:
             f'<{type(self).__name__} {self.name} "{self.meta.title}" '
             f"login={self.meta.login_type.value}>"
         )
+
+    def query_sync(self, username: str, **kwargs: Any) -> CrawlerResult:
+        """Query this crawler, blocking until it answers.
+
+        Runs its own event loop, so it cannot be called from inside a running one
+        (a notebook, or any async function) — await self.query(session, username)
+        there instead.
+
+        Args:
+            username: Username to query.
+            **kwargs: Credentials the crawler accepts, e.g. password, or
+                login_user and login_password. help() on this crawler names
+                them.
+
+        Returns:
+            CrawlerResult with solved, submissions, solved_list fields.
+
+        Raises:
+            ValueError: If the username or credentials are unusable.
+            RuntimeError: If the request fails or the response cannot be parsed.
+
+        Example:
+            from ojhunt.crawlers import crawlers
+            result = crawlers.codeforces.query_sync("tourist")
+            print(result.solved, result.submissions, result.solved_list)
+        """
+        # Local import: ojhunt.crawlers imports this module.
+        from ojhunt.crawlers import query_sync
+
+        return query_sync(self.query, username, **kwargs)
 
 
 class CrawlerRegistry(Dict[str, CrawlerInfo]):

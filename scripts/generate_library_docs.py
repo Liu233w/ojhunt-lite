@@ -57,7 +57,7 @@ def _doc(obj: Any) -> str:
 
 
 def _readable(annotation: str) -> str:
-    """Drop module prefixes that only add noise for a reader."""
+    """Drop the module prefixes that only add noise."""
     return annotation.replace("typing.", "").replace("ojhunt.core.models.", "")
 
 
@@ -69,6 +69,15 @@ def _signature(fn: Callable[..., Any]) -> inspect.Signature:
 def _function_entry(name: str, fn: Callable[..., Any]) -> str:
     signature = _readable(f"{name}{_signature(fn)}")
     return f"### `{name}()`\n\n" + _block(f"{signature}\n\n{_doc(fn)}")
+
+
+def _method_entry(cls: type, name: str) -> str:
+    """Document a bound method the way a caller writes it, without `self`."""
+    fn = getattr(cls, name)
+    signature = _signature(fn)
+    without_self = signature.replace(parameters=list(signature.parameters.values())[1:])
+    rendered = _readable(f"{cls.__name__}.{name}{without_self}")
+    return f"### `{cls.__name__}.{name}()`\n\n" + _block(f"{rendered}\n\n{_doc(fn)}")
 
 
 def _field_line(field: Field) -> str:
@@ -153,6 +162,8 @@ def render_library_docs() -> str:
         _dataclass_entry(CrawlerResult),
         "",
         _dataclass_entry(CrawlerInfo),
+        "",
+        _method_entry(CrawlerInfo, "query_sync"),
         "",
         "",
         _dataclass_entry(CrawlerMeta),

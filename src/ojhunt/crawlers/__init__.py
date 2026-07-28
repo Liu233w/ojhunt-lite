@@ -17,11 +17,17 @@ on first use, so importing one crawler module does not pay for all the others.
 
 Synchronous use, the simplest way in:
 
+    from ojhunt.crawlers import crawlers
+
+    result = crawlers.codeforces.query_sync("tourist")
+    print(result.solved, result.submissions, result.solved_list)
+
+    # query_sync() is also a function, taking a crawler or a query function
     from ojhunt.crawlers import query_sync
     from ojhunt.crawlers.codeforces import query
 
-    result = query_sync(query, "tourist")
-    print(result.solved, result.submissions, result.solved_list)
+    query_sync(crawlers.codeforces, "tourist")
+    query_sync(query, "tourist")
 
 Asynchronous use, when you already have an event loop:
 
@@ -64,6 +70,24 @@ Copying single crawler files
     Crawler modules are self-contained and BSD-licensed, so one file can be
     copied into another project. The exceptions are nit and uva, which share a
     problem-label cache and need the whole package.
+
+    A copied query returns a plain dict, so the file works on its own:
+
+        import asyncio
+        import aiohttp
+        from codeforces import query          # the copied file
+
+        async def main():
+            async with aiohttp.ClientSession() as session:
+                print(await query(session, "tourist"))
+
+        asyncio.run(main())
+
+    For the blocking, typed form, copy query_sync() and CrawlerResult as well —
+    between them they need nothing else from ojhunt:
+
+        result = query_sync(query, "tourist")
+        print(result.solved, result.submissions, result.solved_list)
 """
 
 __all__ = [
@@ -84,7 +108,7 @@ import pkgutil
 import sys
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, List
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
 
 import aiohttp
 
@@ -105,15 +129,23 @@ if TYPE_CHECKING:
 
 
 def query_sync(
-    query_fn: Callable[..., Awaitable[dict]],
+    crawler: "Union[CrawlerInfo, Callable[..., Awaitable[Any]]]",
     username: str,
     **kwargs: Any,
 ) -> CrawlerResult:
     """
-    Synchronous wrapper around an async crawler query function.
+    Query a crawler synchronously, opening and closing a session for you.
+
+    Takes either a crawler from the registry or a crawler module's own async
+    query function, so it works just as well beside a single copied crawler
+    file: nothing here needs the rest of ojhunt except CrawlerResult.
+
+    Runs its own event loop, so it cannot be called from inside a running one
+    (a notebook, or any async function) — await the query function there instead.
 
     Args:
-        query_fn: The crawler's async query function (e.g. codeforces.query)
+        crawler: A CrawlerInfo (e.g. crawlers.codeforces), or an async query
+                 function (e.g. codeforces.query)
         username: Username to query
         **kwargs: Additional arguments forwarded to the query function
                   (e.g. password, login_user, login_password for login-required crawlers)
@@ -126,15 +158,25 @@ def query_sync(
         RuntimeError: If the request fails or the response cannot be parsed
 
     Example:
-        from ojhunt.crawlers.codeforces import query
-        from ojhunt.crawlers import query_sync
-        result = query_sync(query, "tourist")
+        from ojhunt.crawlers import crawlers, query_sync
+        result = query_sync(crawlers.codeforces, "tourist")
         print(result.solved, result.submissions)
+
+        from ojhunt.crawlers.codeforces import query
+        result = query_sync(query, "tourist")
     """
+    # Duck-typed and string-annotated so a copy of this function beside one
+    # crawler file runs without CrawlerInfo, CrawlerMeta and LoginType.
+    query_fn = getattr(crawler, "query", crawler)
+    if not callable(query_fn):
+        raise TypeError(
+            f"expected a crawler or an async query function, got {crawler!r}; "
+            'a crawler name needs a lookup first — query_sync(crawlers["cses"], ...)'
+        )
 
     async def _run() -> CrawlerResult:
         async with aiohttp.ClientSession() as session:
-            return CrawlerResult.from_dict(await query_fn(session, username, **kwargs))
+            return CrawlerResult.coerce(await query_fn(session, username, **kwargs))
 
     return asyncio.run(_run())
 
