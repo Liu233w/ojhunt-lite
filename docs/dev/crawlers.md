@@ -51,6 +51,10 @@ All crawlers return:
 
 ## Crawler templates
 
+`query` needs a docstring: `help()` on the crawler joins it to the text generated from
+`__crawler_meta__` ([ADR 0014](../adr/0014-generated-crawler-help.md)), and a unit test fails
+without it. The module docstring is not available for this — it holds the license header.
+
 ### API-based crawler
 
 ```python notest
@@ -69,6 +73,19 @@ __crawler_meta__ = {
 }
 
 async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str], None]]:
+    """Query OJ Name for user statistics.
+
+    Args:
+        session: aiohttp ClientSession
+        username: The user's handle on OJ Name
+
+    Returns:
+        Dictionary with keys: solved, submissions, solved_list
+
+    Raises:
+        ValueError: If username is empty or the user does not exist
+        RuntimeError: If the request fails or the response cannot be parsed
+    """
     if not username or not username.strip():
         raise ValueError("Please enter username")
     username = username.strip()
@@ -109,6 +126,19 @@ __crawler_meta__ = {
 }
 
 async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str], None]]:
+    """Query Your OJ for user statistics.
+
+    Args:
+        session: aiohttp ClientSession
+        username: The user's handle on Your OJ
+
+    Returns:
+        Dictionary with keys: solved, submissions, solved_list
+
+    Raises:
+        ValueError: If username is empty or the user does not exist
+        RuntimeError: If a page cannot be fetched or parsed
+    """
     if not username or not username.strip():
         raise ValueError("Please enter username")
     username = username.strip()
@@ -150,6 +180,25 @@ async def query(
     login_user: Optional[str] = None,
     login_password: Optional[str] = None,
 ) -> Dict[str, Union[int, List[str], None]]:
+    """Query Your OJ for user statistics.
+
+    Your OJ hides profiles from guests, so a login is always required. Any account
+    can look up any user: pass shared credentials as login_user / login_password.
+
+    Args:
+        session: aiohttp ClientSession
+        username: The user being queried
+        password: Password for `username`, to query your own account
+        login_user: Account to authenticate as; takes precedence over password
+        login_password: Password for login_user
+
+    Returns:
+        Dictionary with keys: solved, submissions, solved_list
+
+    Raises:
+        ValueError: If credentials are missing or the user does not exist
+        RuntimeError: If the login or a request fails
+    """
     if login_user and login_password:
         actual_user, actual_pass = login_user, login_password
     elif password:

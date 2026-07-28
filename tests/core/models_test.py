@@ -2,7 +2,13 @@
 
 import pytest
 
-from ojhunt.core.models import CrawlerInfo, CrawlerMeta, CrawlerRegistry
+from ojhunt.core.models import (
+    CrawlerInfo,
+    CrawlerMeta,
+    CrawlerRegistry,
+    CrawlerResult,
+    NullCrawler,
+)
 from ojhunt.crawlers import crawlers as crawler_registry
 
 
@@ -14,6 +20,15 @@ def _registry(*names):
             )
             for name in names
         }
+    )
+
+
+def test_repr_names_the_actual_class():
+    crawler = CrawlerInfo(name="cf", meta=CrawlerMeta(title="CF"), query=None)
+
+    assert repr(crawler) == '<CrawlerInfo cf "CF" login=not_required>'
+    assert repr(NullCrawler("bogus")).startswith("<NullCrawler bogus"), (
+        "an unknown crawler must not read as a real one"
     )
 
 
@@ -40,6 +55,15 @@ def test_a_derived_registry_keeps_attribute_access():
     assert (registry | extra).cses is extra["cses"]
     assert (extra | registry).aizu is registry["aizu"]
     assert type(dict(registry)) is dict, "an explicit conversion may drop it"
+
+
+def test_coerce_takes_either_shape_and_rejects_the_rest():
+    built = CrawlerResult(solved=1, submissions=2)
+
+    assert CrawlerResult.coerce(built) is built
+    assert CrawlerResult.coerce({"solved": 1, "submissions": 2}) == built
+    with pytest.raises(TypeError, match="returned tuple"):
+        CrawlerResult.coerce((1, 2))
 
 
 def test_unknown_attribute_raises_attribute_error():

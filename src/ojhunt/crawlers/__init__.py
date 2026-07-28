@@ -1,27 +1,85 @@
 """
-OJHunt Lite Crawlers Package
+OJHunt Lite crawlers — solved and submission counts from online judges.
 
-This package contains async crawlers for various Online Judge platforms.
-Each crawler follows a consistent interface: an async query function that
-returns a dict with keys solved, submissions, solved_list.
-
-Every crawler is also registered, so it can be looked up by name:
+Every crawler is a module in this package exposing an async ``query`` function.
+Import one directly, or look it up in the registry:
 
     from ojhunt.crawlers import crawlers
 
+    crawlers                   # {"codeforces": CrawlerInfo(...), ...}
     crawlers["cses"]           # one crawler, by key
     crawlers.cses              # the same one, as an attribute
+    help(crawlers.cses)        # what it does, login, arguments
 
-The registry is a dict, so iteration, len() and .items() work as usual. It is
-discovered on first use, so importing one crawler module does not pay for the
-other 32.
+The registry is a dict, so iteration, len() and .items() work as usual; its
+entries double as attributes, which tab-complete at a prompt. It is discovered
+on first use, so importing one crawler module does not pay for all the others.
+
+Synchronous use, the simplest way in:
+
+    from ojhunt.crawlers import query_sync
+    from ojhunt.crawlers.codeforces import query
+
+    result = query_sync(query, "tourist")
+    print(result.solved, result.submissions, result.solved_list)
+
+Asynchronous use, when you already have an event loop:
+
+    import aiohttp
+    from ojhunt.crawlers import CrawlerResult
+    from ojhunt.crawlers.codeforces import query
+
+    async with aiohttp.ClientSession() as session:
+        result = CrawlerResult.from_dict(await query(session, "tourist"))
+
+Results
+    Both styles produce a CrawlerResult with solved, submissions and
+    solved_list. solved_list is None when the judge does not publish which
+    problems a user solved, and submissions is 0 when it publishes no
+    submission count.
+
+Errors
+    ValueError means the input was wrong — empty username, no such user,
+    missing credentials. RuntimeError means everything else: the request
+    failed, the judge answered with an error, or its output did not parse.
+
+Login-required crawlers
+    CrawlerInfo.meta.login_type says whether credentials are needed:
+
+        LoginType.NOT_REQUIRED    profiles are public, pass nothing
+        LoginType.SHARED_ACCOUNT  any account may query any user, so pass
+                                  login_user and login_password
+        LoginType.OWN_ACCOUNT     the judge only shows the logged-in user's
+                                  own statistics, so the credentials must
+                                  belong to the user being queried
+
+    help() on a crawler names the arguments it accepts.
+
+Aggregators
+    Crawlers whose meta.is_aggregator is True (VJudge, NIT) mirror problems
+    from other judges, and their solved_list entries already carry a source
+    prefix such as codeforces-1A.
+
+Copying single crawler files
+    Crawler modules are self-contained and BSD-licensed, so one file can be
+    copied into another project. The exceptions are nit and uva, which share a
+    problem-label cache and need the whole package.
 """
 
-__all__ = ["CrawlerRegistry", "CrawlerResult", "crawlers", "query_sync"]
+__all__ = [
+    "CrawlerInfo",
+    "CrawlerMeta",
+    "CrawlerRegistry",
+    "CrawlerResult",
+    "LoginType",
+    "crawlers",
+    "query_sync",
+]
 
 import asyncio
 import functools
 import importlib
+import inspect
 import pkgutil
 import sys
 from functools import cache
@@ -37,6 +95,7 @@ from ojhunt.core.models import (
     CrawlerResult,
     LoginType,
 )
+from ojhunt.crawlers._help import compose_query_doc, render_crawler_doc
 
 if TYPE_CHECKING:
     # Load-bearing: names `crawlers` for ruff (F822 on __all__) and type checkers,
@@ -62,6 +121,10 @@ def query_sync(
     Returns:
         CrawlerResult with solved, submissions, solved_list fields
 
+    Raises:
+        ValueError: If the username or credentials are unusable
+        RuntimeError: If the request fails or the response cannot be parsed
+
     Example:
         from ojhunt.crawlers.codeforces import query
         from ojhunt.crawlers import query_sync
@@ -81,8 +144,15 @@ def _wrap_query(fn: Callable) -> Callable[..., Awaitable[CrawlerResult]]:
 
     @functools.wraps(fn)
     async def wrapped(*args: Any, **kwargs: Any) -> CrawlerResult:
-        return CrawlerResult.from_dict(await fn(*args, **kwargs))
+        return CrawlerResult.coerce(await fn(*args, **kwargs))
 
+    # functools.wraps sets __wrapped__, which inspect.signature follows, so help()
+    # would otherwise advertise the raw function's dict return type. It also
+    # aliases fn's own __annotations__ dict, so replace it rather than mutate it.
+    wrapped.__signature__ = inspect.signature(fn).replace(
+        return_annotation=CrawlerResult
+    )
+    wrapped.__annotations__ = {**fn.__annotations__, "return": CrawlerResult}
     return wrapped
 
 
@@ -92,6 +162,9 @@ def _discover() -> CrawlerRegistry:
 
     Memoized: the first attribute access to `crawlers` pays for the import of
     all crawler modules, and later ones reuse the same registry.
+
+    Every crawler carries generated documentation, so help() on one explains
+    what it queries, whether it needs a login, and which arguments it takes.
     """
     crawlers = CrawlerRegistry()
     package_dir = Path(__file__).parent
@@ -121,11 +194,12 @@ def _discover() -> CrawlerRegistry:
                     login_type=LoginType.from_meta(meta_dict.get("login_type")),
                     test_username=meta_dict.get("test_username", ""),
                 )
-                crawlers[module_name] = CrawlerInfo(
-                    name=module_name,
-                    meta=meta,
-                    query=_wrap_query(module.query),
-                )
+                doc = render_crawler_doc(module_name, meta, module.query)
+                query_fn = _wrap_query(module.query)
+                query_fn.__doc__ = compose_query_doc(module.query.__doc__, doc)
+                crawler = CrawlerInfo(name=module_name, meta=meta, query=query_fn)
+                crawler.__doc__ = doc
+                crawlers[module_name] = crawler
         except Exception as e:
             # Every consumer resolves the registry at import time, so one
             # unloadable crawler must not take down the CLI or the web app —
