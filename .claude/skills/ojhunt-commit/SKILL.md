@@ -50,6 +50,48 @@ The preferred workflow is **fixup-first, squash-last** — never squash immediat
    `--autosquash` only works in interactive mode; `GIT_SEQUENCE_EDITOR=true`
    suppresses the editor so no prompt appears.
 
+### Scoping a fixup
+
+`git commit --fixup` commits **the index** — stage the paths that belong to that target
+and leave everything else unstaged. Never `git stash` to scope a commit: it reverts
+unstaged work, including edits the user made themselves.
+
+`git add -p` is unavailable (no interactive flags). To split one file's changes across
+two fixups, save the finished version first, write the intermediate content, stage it,
+commit, then restore:
+
+```bash
+cp <path> .doit/split.final    # save FIRST — nothing else holds these hunks
+python3 -c "..."               # rewrite <path>: HEAD content + only target A's hunks
+git add <path> && git commit --fixup=<sha-A>
+cp .doit/split.final <path>    # restore; the remaining hunks go to the next fixup
+```
+
+`.doit/` is gitignored and inside the repo, so it survives the sandbox bypass that git
+writes need — `$TMPDIR` is unset there.
+
+### Verifying a squash
+
+A `fixup!` diff is computed against the **final** tree but replays at its target commit, so
+expect conflicts wherever that commit's surroundings differ — and expect a mis-scoped hunk to
+land in a commit that cannot work yet. Both are invisible until the rebase runs.
+
+Rehearse on a throwaway branch, never on the user's:
+
+```bash
+git checkout -b scratch/squash-test
+GIT_SEQUENCE_EDITOR=true git rebase -i --autosquash <base>^   # resolve era-correctly
+git diff <branch> scratch/squash-test                          # gate: must be empty
+for sha in $(git rev-list --reverse main..HEAD); do
+  git checkout -q "$sha" && ./doit.sh lint && ./doit.sh test-unit   # each commit alone
+done
+```
+
+To repair a commit mid-history, stop on it:
+`GIT_SEQUENCE_EDITOR='sed -i "" -e "s/^pick <sha>/edit <sha>/"' git rebase -i main`, amend,
+`git rebase --continue`. Then move the branch with `git reset --hard scratch/squash-test` —
+`git branch -f` refuses while the branch is checked out.
+
 ---
 
 # Commit conventions
