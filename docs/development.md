@@ -30,6 +30,7 @@ Read the matching reference **before** implementing or debugging in that area.
 | Tests: pytest conventions, CI scope, page-route tests, markdown doc tests | [`docs/dev/testing.md`](dev/testing.md) |
 | Playwright e2e / visual regression tests | [`docs/dev/e2e.md`](dev/e2e.md) |
 | Web layer: FastAPI app, PDF internals, dev server, env vars, CSS, minimal-JS | [`docs/dev/web.md`](dev/web.md) |
+| Writing docs: what belongs in the README vs `docs/` | [`docs/dev/docs.md`](dev/docs.md) |
 | Claude Code hooks (enforcement rules) | [`docs/dev/hooks.md`](dev/hooks.md) |
 | Deployment / ops: system fonts, `legacy.db`, PDF preview | [`docs/dev/deployment.md`](dev/deployment.md) |
 | Committing, commit conventions, when to write an ADR | **ojhunt-commit** skill |
