@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from ojhunt.core.models import CrawlerInfo, NullCrawler
 from ojhunt.core.models import QueryResult as CoreQueryResult
-from ojhunt.crawlers import discover_crawlers
+from ojhunt.crawlers import crawlers as crawler_registry
 from ojhunt.web.api import CrawlerResult, QueryResult
 from ojhunt.web.app import app
 
@@ -18,8 +18,7 @@ client = TestClient(app)
 
 
 def make_crawler(name: str = "codeforces") -> CrawlerInfo:
-    crawlers = discover_crawlers()
-    return crawlers[name]
+    return crawler_registry[name]
 
 
 # --- from_model ---

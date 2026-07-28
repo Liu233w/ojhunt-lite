@@ -70,6 +70,48 @@ class CrawlerInfo:
     query: Callable[..., Awaitable[CrawlerResult]]
 
 
+class CrawlerRegistry(Dict[str, CrawlerInfo]):
+    """Every crawler in this build, keyed by name.
+
+    This is a dict, so anything a dict does works — iteration, len(),
+    .items(), `"cses" in registry`, registry["cses"]. Crawlers are reachable as
+    attributes too, which reads better at a prompt and tab-completes:
+
+        from ojhunt.crawlers import crawlers
+
+        crawlers["codeforces"]      # by key
+        crawlers.codeforces         # the same object, as an attribute
+        help(crawlers.cses)         # what CSES queries, and what it needs
+
+    Prefer the subscript form in code a type checker reads: attribute names are
+    only known at runtime. An attribute that is not a crawler raises
+    AttributeError; because __dir__ lists the crawler names, Python appends its
+    own "Did you mean" suggestion when the miss looks like a typo.
+
+    copy() and `|` hand back a registry, so a filtered or extended copy keeps
+    attribute access. Only dict(registry) drops it, as an explicit conversion
+    should.
+    """
+
+    def __getattr__(self, name: str) -> CrawlerInfo:
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(f"no crawler named {name!r}") from None
+
+    def __dir__(self) -> List[str]:
+        return [*super().__dir__(), *self]
+
+    def copy(self) -> "CrawlerRegistry":
+        return CrawlerRegistry(self)
+
+    def __or__(self, other: Dict[str, CrawlerInfo]) -> "CrawlerRegistry":
+        return CrawlerRegistry({**self, **other})
+
+    def __ror__(self, other: Dict[str, CrawlerInfo]) -> "CrawlerRegistry":
+        return CrawlerRegistry({**other, **self})
+
+
 @dataclass
 class QueryResult:
     """Result of querying a crawler."""

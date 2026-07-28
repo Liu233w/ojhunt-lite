@@ -27,7 +27,7 @@ from ojhunt.cli import (
 from ojhunt.core.models import CrawlerInfo, NullCrawler, QueryResult
 from ojhunt.core.runner import run_crawler
 from ojhunt.core.session import create_session
-from ojhunt.crawlers import discover_crawlers
+from ojhunt.crawlers import crawlers as crawler_registry
 
 
 async def query_crawler(
@@ -163,10 +163,8 @@ async def _async_main() -> int:
         print_crawler_list(json_output=args.json)
         return 0
 
-    crawlers = discover_crawlers()
-
     if args.all:
-        queries = build_all_queries(args.default_username, crawlers)
+        queries = build_all_queries(args.default_username, crawler_registry)
 
     if not queries:
         print(
@@ -177,14 +175,16 @@ async def _async_main() -> int:
 
     check_duplicate_queries(queries)
 
-    if not validate_crawlers(queries, crawlers):
+    if not validate_crawlers(queries, crawler_registry):
         return 1
 
-    if not validate_credentials(queries, crawlers, crawler_logins):
+    if not validate_credentials(queries, crawler_registry, crawler_logins):
         return 1
 
     start_time = datetime.now()
-    results = await run_queries(queries, crawlers, crawler_logins, args.no_progress)
+    results = await run_queries(
+        queries, crawler_registry, crawler_logins, args.no_progress
+    )
     end_time = datetime.now()
     total_duration = (end_time - start_time).total_seconds()
 
