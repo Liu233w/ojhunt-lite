@@ -104,18 +104,23 @@ def _login_paragraph(name: str, meta: CrawlerMeta, params: List[str]) -> str:
 
 def _usage_example(name: str, meta: CrawlerMeta, params: List[str]) -> str:
     sample = meta.test_username or "username"
-    args = f'query, "{sample}"'
+    creds = ""
     if meta.login_type is not LoginType.NOT_REQUIRED:
         if "login_user" in params:
-            args += ', login_user="...", login_password="..."'
+            creds = ', login_user="...", login_password="..."'
         else:
-            args += ', password="..."'
+            creds = ', password="..."'
     return (
         "Usage:\n"
+        "    from ojhunt.crawlers import crawlers\n"
+        f'    result = crawlers.{name}.query_sync("{sample}"{creds})\n'
+        "    print(result.solved, result.submissions, result.solved_list)\n"
+        "\n"
+        f"Same query without the registry, which is what a copy of {name}.py\n"
+        "can use:\n"
         "    from ojhunt.crawlers import query_sync\n"
         f"    from ojhunt.crawlers.{name} import query\n"
-        f"    result = query_sync({args})\n"
-        "    print(result.solved, result.submissions, result.solved_list)"
+        f'    result = query_sync(query, "{sample}"{creds})'
     )
 
 

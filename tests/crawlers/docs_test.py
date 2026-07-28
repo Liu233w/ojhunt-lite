@@ -97,12 +97,12 @@ def test_help_on_a_crawler_shows_its_documentation():
     assert "Login: required, any account." in rendered
     assert "LOGIN_USERNAME__CSES" in rendered
     assert "query(session, username, password, login_user, login_password)" in rendered
+    assert 'crawlers.cses.query_sync("3", login_user="..."' in rendered
 
 
 def test_help_on_a_crawler_query_keeps_the_signature_and_adds_usage():
     rendered = _plain(CRAWLERS["codeforces"].query)
-    # functools.wraps means the wrapper reports the crawler's own signature.
-    assert "async query(session:" in rendered
+    assert "async query(session:" in rendered, "functools.wraps keeps the signature"
     assert "Query CodeForces for user statistics." in rendered
     assert "CodeForces — http://codeforces.com/" in rendered
     assert 'query_sync(query, "leoloveacm")' in rendered
@@ -110,8 +110,9 @@ def test_help_on_a_crawler_query_keeps_the_signature_and_adds_usage():
 
 def test_generated_docs_do_not_touch_the_crawler_module():
     module = importlib.import_module("ojhunt.crawlers.codeforces")
-    # The copy-pasteable file keeps its own docstring; only the wrapper gains text.
-    assert "Login: not required." not in (module.query.__doc__ or "")
+    assert "Login: not required." not in (module.query.__doc__ or ""), (
+        "only the wrapper gains generated text"
+    )
     assert module.__doc__.lstrip().startswith("BSD 2-Clause License")
 
 
@@ -122,7 +123,8 @@ def test_render_crawler_doc_uses_the_test_username_in_the_example():
     assert doc.startswith("Demo — https://demo.test/")
     assert "Login: not required." in doc
     assert "Call: query(session, username)" in doc
-    assert 'query_sync(query, "alice")' in doc
+    assert 'crawlers.demo.query_sync("alice")' in doc, "registry shorthand"
+    assert 'query_sync(query, "alice")' in doc, "form a copied file can use"
 
 
 def test_render_crawler_doc_explains_own_account_login():
