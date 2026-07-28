@@ -35,7 +35,7 @@ async def test_valid_user(session):
     assert "solved_list" in result
 
     assert isinstance(result["solved"], int)
-    assert result["submissions"] == 0
+    assert result["submissions"] == result["solved"], "no total published (ADR 0015)"
     # VNOJ's API and per-user solved-list page are disabled; only the profile
     # page count remains, so solved_list is unavailable.
     assert result["solved_list"] is None

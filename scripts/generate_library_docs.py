@@ -165,7 +165,6 @@ def render_library_docs() -> str:
         "",
         _method_entry(CrawlerInfo, "query_sync"),
         "",
-        "",
         _dataclass_entry(CrawlerMeta),
         "",
         _login_type_entry(),

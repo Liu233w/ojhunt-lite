@@ -77,7 +77,9 @@ async def query(
 
     return {
         "solved": len(solved_list),
-        "submissions": 0,
+        # The API exposes no submission total; report the solved count, which
+        # every accepted problem cost at least (ADR 0015).
+        "submissions": len(solved_list),
         "solved_list": solved_list,
     }
 

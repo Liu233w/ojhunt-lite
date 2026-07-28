@@ -44,8 +44,10 @@ judge who is querying it and how to opt out; prefer it over building your own.
 Results
     Both styles produce a CrawlerResult with solved, submissions and
     solved_list. solved_list is None when the judge does not publish which
-    problems a user solved, and submissions is 0 when it publishes no
-    submission count.
+    problems a user solved. submissions is never fewer than solved: a judge that
+    publishes no submission total yields the solved count instead, so the figure
+    is a lower bound (ADR 0015). A judge that publishes some other count says so
+    in its own description, which help() on that crawler prints.
 
 Errors
     ValueError means the input was wrong — empty username, no such user,
