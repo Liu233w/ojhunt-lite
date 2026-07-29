@@ -1,7 +1,7 @@
 ---
 name: ojhunt-commit
 description: Git operations, commit conventions, and ADRs. Load when preparing to commit, writing agent/worker prompts that include git steps, planning a change that may warrant an ADR, or evaluating whether a design decision needs documentation.
-allowed-tools: Read, Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Bash(git commit:*)
+allowed-tools: Read, Bash(git -C:*), Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Bash(git show:*), Bash(git commit:*), Bash(git rebase:*), Bash(git checkout:*), Bash(git reset:*), Bash(git rev-list:*), Bash(cp:*), Bash(./doit.sh:*)
 ---
 
 # Running a commit
@@ -24,11 +24,15 @@ harness injects it on every invocation as `<root>/.claude/skills/ojhunt-commit`,
 suffix and use what remains. Never hardcode the path: each worktree is its own root, and a
 hardcoded one would aim every command at a different tree.
 
+Substitute the resolved path into each command directly. Do **not** carry it in a shell variable:
+shell state does not persist between tool calls, so a `ROOT=` set in one command is empty in the
+next, and `git -C "" …` falls back to the drifted cwd — the exact bug the pin exists to prevent,
+in a form that looks defended against.
+
 ```bash
-ROOT=<this skill's base dir, minus /.claude/skills/ojhunt-commit>
-git -C "$ROOT" status --short         # staged/unstaged
-git -C "$ROOT" branch --show-current  # current branch
-git -C "$ROOT" log --oneline -10      # recent subjects, to match style
+git -C <resolved-root> status --short         # staged/unstaged
+git -C <resolved-root> branch --show-current  # current branch
+git -C <resolved-root> log --oneline -10      # recent subjects, to match style
 ```
 
 **Why pin `-C` at all:** if the session added sibling repos and any command `cd`'d into one, the
