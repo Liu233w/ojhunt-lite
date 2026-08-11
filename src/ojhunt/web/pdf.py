@@ -112,17 +112,21 @@ class PdfEmbeddedData(BaseModel):
     history: list[HistoryEntry]
 
 
+def _resolve_tz(iana_timezone: str) -> ZoneInfo:
+    """Return the named zone, falling back to UTC when the host lacks tzdata."""
+    try:
+        return ZoneInfo(iana_timezone)
+    except ZoneInfoNotFoundError:
+        return ZoneInfo("UTC")
+
+
 def compute_day_key(iana_timezone: str) -> str:
     """Return the current YYYY-MM-DD day key using the user's local timezone.
 
     The day resets at 4am (not midnight) to avoid splitting a late-night session
     across two calendar days.
     """
-    try:
-        tz = ZoneInfo(iana_timezone)
-    except ZoneInfoNotFoundError:
-        tz = ZoneInfo("UTC")
-    now = datetime.now(tz)
+    now = datetime.now(_resolve_tz(iana_timezone))
     if now.hour < 4:
         now -= timedelta(days=1)
     return now.strftime("%Y-%m-%d")
@@ -271,7 +275,10 @@ def generate_pdf(
 
     pdf.set_font(_FONT, "", 9)
     pdf.set_text_color(100, 100, 100)
-    generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+    # The reader's zone, not the server's: the day keys in the chart below already
+    # use it, so the footer would otherwise disagree with the rest of the report.
+    generated_tz = _resolve_tz(snapshot.timezone)
+    generated_at = datetime.now(generated_tz).strftime("%Y-%m-%d %H:%M %Z")
     pdf.cell(
         0,
         5,
