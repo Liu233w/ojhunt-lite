@@ -5,7 +5,7 @@ HTML page routes for OJHunt Lite web application.
 import os
 import random
 import secrets
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import APIRouter, File, Form, Request, UploadFile
@@ -104,7 +104,11 @@ async def about() -> str:
     if BUILD_TIME:
         try:
             ts = int(BUILD_TIME)
-            build_time_str = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+            # UTC, and said so: this page is rendered server-side, so the reader's
+            # zone is not available here.
+            build_time_str = datetime.fromtimestamp(ts, UTC).strftime(
+                "%Y-%m-%d %H:%M:%S UTC"
+            )
         except ValueError:
             build_time_str = BUILD_TIME
     return template.render(
