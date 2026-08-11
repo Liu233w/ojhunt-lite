@@ -205,7 +205,16 @@ status() {
 logs() { tail -F "$SERVER_LOG"; }
 
 lint() {
-  run_logged lint uv run ruff check .
+  run_logged lint _ruff_check_and_format
+}
+
+# Both ruff passes always run, so one report lists every problem. Ruff 0.16 also
+# formats python blocks inside markdown, which `ruff check` alone does not see.
+_ruff_check_and_format() {
+  local status=0
+  uv run ruff check . || status=1
+  uv run ruff format --check . || status=1
+  return "$status"
 }
 
 gen-docs() {
@@ -300,7 +309,7 @@ Server:
   reap               kill orphaned servers whose git worktree has been removed
 
 Tests:
-  lint               run ruff linter
+  lint               run ruff linter and formatter check
   test-unit          run unit tests (no network, no playwright) [pytest-args...]
   test-e2e           run e2e tests excluding visual (starts server if needed) [pytest-args...]
   test-visual        run visual regression tests (starts server if needed) [pytest-args...]

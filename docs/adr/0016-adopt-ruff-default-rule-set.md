@@ -64,5 +64,6 @@ recorded in config, and three at the site:
   back gets rewritten by the `format-lint-python.sh` hook on the next edit.
 - The 413-rule set covers `SIM`, `C4`, `B`, `DTZ`, `RUF`, `PL` and more, so new code meets
   checks that were never applied to the code already in the tree.
-- `./doit.sh lint` runs `ruff check` only. Ruff 0.16 also formats Python blocks inside
-  Markdown, and that drift stays invisible to CI until `ruff format --check` joins the task.
+- `./doit.sh lint` runs `ruff format --check` beside `ruff check`, because ruff 0.16 also
+  formats Python blocks inside Markdown and that drift was invisible to a check-only gate.
+  Both passes always run, so one report lists every problem.
