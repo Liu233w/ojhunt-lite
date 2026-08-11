@@ -66,11 +66,9 @@ def historical_pdf_path() -> str:
     )
     pdf_bytes = generate_pdf(settings, history, snapshot)
 
-    tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False, dir=_TMPDIR)
-    tmp.write(pdf_bytes)
-    tmp.close()
-    yield tmp.name
-    os.unlink(tmp.name)
+    path = _write_temp_pdf(pdf_bytes)
+    yield path
+    os.unlink(path)
 
 
 # ---------------------------------------------------------------------------
@@ -100,11 +98,15 @@ def _make_ojhunt_pdf(context: BrowserContext, username: str = "tourist") -> byte
 
 
 def _write_temp_pdf(pdf_bytes: bytes) -> str:
-    """Write PDF bytes to a temp file and return the path."""
-    tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False, dir=_TMPDIR)
-    tmp.write(pdf_bytes)
-    tmp.close()
-    return tmp.name
+    """Write bytes to a uniquely named temp file and return the path.
+
+    The caller unlinks it. Playwright needs a real path on disk, so the file
+    outlives this function and cannot use NamedTemporaryFile's cleanup.
+    """
+    fd, path = tempfile.mkstemp(suffix=".pdf", dir=_TMPDIR)
+    with os.fdopen(fd, "wb") as handle:
+        handle.write(pdf_bytes)
+    return path
 
 
 def _drag_drop_pdf(page: Page, pdf_bytes: bytes, filename: str = "report.pdf") -> None:
@@ -200,21 +202,19 @@ def test_upload_pdf_shows_info_when_queries_exist(page: Page, context: BrowserCo
 @pytest.mark.playwright
 def test_upload_invalid_file_shows_error(page: Page):
     """Uploading a non-OJHunt file shows an alert."""
-    tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False, dir=_TMPDIR)
-    tmp.write(b"not a real pdf at all")
-    tmp.close()
+    pdf_path = _write_temp_pdf(b"not a real pdf at all")
     try:
         page.goto(BASE_URL)
         _clear_storage(page)
 
         dialog_messages = []
         page.on("dialog", lambda d: (dialog_messages.append(d.message), d.accept()))
-        page.set_input_files("input[type='file']", tmp.name)
+        page.set_input_files("input[type='file']", pdf_path)
         page.wait_for_timeout(3000)
 
         assert any("PDF" in m or "pdf" in m for m in dialog_messages)
     finally:
-        os.unlink(tmp.name)
+        os.unlink(pdf_path)
 
 
 @pytest.mark.playwright

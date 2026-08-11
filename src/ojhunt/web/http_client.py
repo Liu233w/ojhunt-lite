@@ -22,7 +22,6 @@ async def get_http_client() -> aiohttp.ClientSession:
 
 
 async def close_http_client() -> None:
-    global _CLIENT
     await _CLIENT.close()
 
 
