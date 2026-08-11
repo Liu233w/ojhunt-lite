@@ -43,9 +43,9 @@ All crawlers return:
 
 ```python notest
 {
-    "solved": int,            # Number of accepted problems
-    "submissions": int,       # Total submissions, never below "solved"
-    "solved_list": list|None  # Problem IDs (None if unavailable)
+    "solved": int,  # Number of accepted problems
+    "submissions": int,  # Total submissions, never below "solved"
+    "solved_list": list | None,  # Problem IDs (None if unavailable)
 }
 ```
 
@@ -82,7 +82,10 @@ __crawler_meta__ = {
     "test_username": "known_active_user",
 }
 
-async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str], None]]:
+
+async def query(
+    session: aiohttp.ClientSession, username: str, password: Optional[str] = None
+) -> Dict[str, Union[int, List[str], None]]:
     """Query OJ Name for user statistics.
 
     Args:
@@ -135,7 +138,10 @@ __crawler_meta__ = {
     "test_username": "known_active_user",
 }
 
-async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str], None]]:
+
+async def query(
+    session: aiohttp.ClientSession, username: str, password: Optional[str] = None
+) -> Dict[str, Union[int, List[str], None]]:
     """Query Your OJ for user statistics.
 
     Args:
@@ -183,6 +189,7 @@ __crawler_meta__ = {
     "test_username": "known_active_user",
 }
 
+
 async def query(
     session: aiohttp.ClientSession,
     username: str,
@@ -229,15 +236,18 @@ from ojhunt.crawlers.example import query, __crawler_meta__
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu_notexist"
 
+
 @pytest.mark.asyncio
 async def test_user_not_exist(session):
     with pytest.raises(ValueError, match="The user does not exist"):
         await query(session, NOT_EXIST_USERNAME)
 
+
 @pytest.mark.asyncio
 async def test_username_with_space(session):
     with pytest.raises(ValueError):
         await query(session, "   ")
+
 
 @pytest.mark.asyncio
 async def test_valid_user(session):

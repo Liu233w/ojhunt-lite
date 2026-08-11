@@ -191,8 +191,8 @@ Site accessible?
 Every crawler test file must have all three (see the test template in `docs/dev/crawlers.md`):
 
 ```python notest
-async def test_user_not_exist(session): ...   # raises ValueError "The user does not exist"
-async def test_username_with_space(session): ...  # raises ValueError
+async def test_user_not_exist(session): ...  # ValueError "The user does not exist"
+async def test_username_with_space(session): ...  # ValueError
 async def test_valid_user(session): ...  # asserts solved/submissions/solved_list
 ```
 
