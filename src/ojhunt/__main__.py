@@ -8,7 +8,7 @@ A lightweight async tool for querying Online Judge statistics across multiple pl
 import asyncio
 import inspect
 import sys
-from datetime import datetime
+import time
 
 import aiohttp
 
@@ -180,12 +180,11 @@ async def _async_main() -> int:
     if not validate_credentials(queries, crawler_registry, crawler_logins):
         return 1
 
-    start_time = datetime.now()
+    start_time = time.monotonic()
     results = await run_queries(
         queries, crawler_registry, crawler_logins, args.no_progress
     )
-    end_time = datetime.now()
-    total_duration = (end_time - start_time).total_seconds()
+    total_duration = time.monotonic() - start_time
 
     return print_report(
         results, args.show_problems, total_duration, json_output=args.json
