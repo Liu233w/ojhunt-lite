@@ -40,10 +40,11 @@ New page routes must have a corresponding unit test. Use `TestClient` with monke
 
 ```python notest
 from starlette.testclient import TestClient
+
 client = TestClient(app, follow_redirects=False)
 
 # File upload syntax:
-files={"field": ("name.pdf", bytes_content, "application/pdf")}
+files = {"field": ("name.pdf", bytes_content, "application/pdf")}
 ```
 
 ## Markdown doc tests
