@@ -21,8 +21,8 @@ from ojhunt.cli.parser import (
 from ojhunt.cli.progress import ProgressManager, TaskStatus
 
 __all__ = [
-    "Query",
     "ProgressManager",
+    "Query",
     "TaskStatus",
     "build_all_queries",
     "check_duplicate_queries",

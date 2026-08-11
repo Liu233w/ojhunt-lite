@@ -27,9 +27,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import re
+
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "DarkBZOJ",
@@ -41,7 +41,7 @@ __crawler_meta__ = {
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query DarkBZOJ (黑暗爆炸OJ) for user statistics.
 
@@ -73,15 +73,14 @@ async def query(
     except aiohttp.ClientError as e:
         if "404" in str(e):
             raise ValueError("The user does not exist")
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     doc = LexborHTMLParser(html)
 
     for panel in doc.css("div.panel"):
         classes = panel.attributes.get("class") or ""
-        if "panel-danger" in classes:
-            if "不存在该用户" in panel.text():
-                raise ValueError("The user does not exist")
+        if "panel-danger" in classes and "不存在该用户" in panel.text():
+            raise ValueError("The user does not exist")
 
     try:
         solved = 0

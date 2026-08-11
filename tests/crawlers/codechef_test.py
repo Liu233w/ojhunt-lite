@@ -3,6 +3,7 @@ Tests for CodeChef crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.codechef import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

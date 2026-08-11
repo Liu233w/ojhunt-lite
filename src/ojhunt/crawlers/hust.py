@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "HUST",
@@ -40,7 +39,7 @@ __crawler_meta__ = {
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str], None]]:
+) -> dict[str, int | list[str] | None]:
     """
     Query HUST Online Judge for user statistics.
 
@@ -67,7 +66,7 @@ async def query(
             response.raise_for_status()
             html = await response.text()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     try:
         doc = LexborHTMLParser(html)

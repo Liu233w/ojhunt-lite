@@ -4,9 +4,10 @@ Core models for OJHunt Lite.
 These types are used across CLI, web, and crawler modules.
 """
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Awaitable, Callable, Dict, List, Optional
+from typing import Any
 
 import aiohttp
 
@@ -29,7 +30,7 @@ class LoginType(Enum):
     SHARED_ACCOUNT = "shared_account"  # Any shared account can query any user
 
     @classmethod
-    def from_meta(cls, value: Optional[str]) -> "LoginType":
+    def from_meta(cls, value: str | None) -> "LoginType":
         if not value:
             return cls.NOT_REQUIRED
         return cls(value)
@@ -56,10 +57,10 @@ class CrawlerResult:
 
     solved: int
     submissions: int
-    solved_list: Optional[List[str]] = None
+    solved_list: list[str] | None = None
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "CrawlerResult":
+    def from_dict(cls, d: dict[str, Any]) -> "CrawlerResult":
         """Build a CrawlerResult from the raw dict a crawler's query returns.
 
         Args:
@@ -190,7 +191,7 @@ class CrawlerInfo:
         return query_sync(self.query, username, **kwargs)
 
 
-class CrawlerRegistry(Dict[str, CrawlerInfo]):
+class CrawlerRegistry(dict[str, CrawlerInfo]):
     """Every crawler in this build, keyed by name.
 
     This is a dict, so anything a dict does works — iteration, len(),
@@ -219,16 +220,16 @@ class CrawlerRegistry(Dict[str, CrawlerInfo]):
         except KeyError:
             raise AttributeError(f"no crawler named {name!r}") from None
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         return [*super().__dir__(), *self]
 
     def copy(self) -> "CrawlerRegistry":
         return CrawlerRegistry(self)
 
-    def __or__(self, other: Dict[str, CrawlerInfo]) -> "CrawlerRegistry":
+    def __or__(self, other: dict[str, CrawlerInfo]) -> "CrawlerRegistry":
         return CrawlerRegistry({**self, **other})
 
-    def __ror__(self, other: Dict[str, CrawlerInfo]) -> "CrawlerRegistry":
+    def __ror__(self, other: dict[str, CrawlerInfo]) -> "CrawlerRegistry":
         return CrawlerRegistry({**other, **self})
 
 
@@ -241,9 +242,9 @@ class QueryResult:
     success: bool
     solved: int = 0
     submissions: int = 0
-    solved_list: Optional[List[str]] = None
+    solved_list: list[str] | None = None
     duration: float = 0.0
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class NullCrawler(CrawlerInfo):

@@ -27,9 +27,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import re
+
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Set, Union
 
 __crawler_meta__ = {
     "title": "POJ",
@@ -55,7 +55,7 @@ _STATUS_PAGE_SIZE = 500
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query PKU JudgeOnline for user statistics.
 
@@ -91,7 +91,7 @@ async def query(
             response.raise_for_status()
             html = await response.text()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     if "<title>Error -- no user found</title>" in html:
         raise ValueError("The user does not exist")
@@ -143,7 +143,7 @@ async def query(
 
 async def _query_via_status(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Reconstruct user statistics from the public /status submission log.
 
@@ -153,12 +153,12 @@ async def _query_via_status(
     distinct problem ids of Accepted submissions.
     """
     submissions = 0
-    solved: Set[str] = set()
-    cursor: Union[int, None] = None
+    solved: set[str] = set()
+    cursor: int | None = None
 
     try:
         while True:
-            params: Dict[str, Union[str, int]] = {
+            params: dict[str, str | int] = {
                 "user_id": username,
                 "size": _STATUS_PAGE_SIZE,
             }
@@ -179,7 +179,7 @@ async def _query_via_status(
             if not rows:
                 break
 
-            run_ids: List[int] = []
+            run_ids: list[int] = []
             for row in rows:
                 cells = row.css("td")
                 if len(cells) < 4:
@@ -209,7 +209,7 @@ async def _query_via_status(
                 break
             cursor = next_cursor
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     # /status cannot tell a missing user apart from one with no submissions;
     # treat an empty log as a non-existent user.

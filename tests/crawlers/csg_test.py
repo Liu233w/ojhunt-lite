@@ -3,6 +3,7 @@ Tests for CSG crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.csg import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

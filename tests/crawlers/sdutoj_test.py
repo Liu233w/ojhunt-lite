@@ -3,6 +3,7 @@ Tests for SDUTOJ crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.sdutoj import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

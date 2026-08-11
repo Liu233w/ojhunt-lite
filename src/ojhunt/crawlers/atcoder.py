@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from typing import Dict, Union
 
 __crawler_meta__ = {
     "title": "AtCoder",
@@ -37,9 +36,7 @@ __crawler_meta__ = {
 }
 
 
-async def query(
-    session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, None]]:
+async def query(session: aiohttp.ClientSession, username: str) -> dict[str, int | None]:
     """
     Query AtCoder for user statistics using kenkoooo's API.
 
@@ -71,7 +68,7 @@ async def query(
     except aiohttp.ClientError as e:
         if isinstance(e, aiohttp.ClientResponseError) and e.status == 404:
             raise ValueError("The user does not exist")
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     # Query kenkoooo's API for AC count
     # Thank @kenkoooo for the API
@@ -85,7 +82,7 @@ async def query(
             response.raise_for_status()
             data = await response.json()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     solved = data.get("count", 0)
 

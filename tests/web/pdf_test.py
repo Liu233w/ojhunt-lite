@@ -1,8 +1,8 @@
 """Tests for PDF generation and data extraction (web/pdf.py and /api/pdf/* routes)."""
 
 import base64
+from datetime import UTC
 from datetime import datetime as _datetime
-from datetime import timezone as _timezone
 from unittest.mock import patch
 
 import pytest
@@ -85,28 +85,28 @@ def _make_blank_pdf(text: str = "no data here") -> bytes:
 
 
 def test_compute_day_key_after_4am():
-    fixed = _datetime(2026, 3, 29, 10, 0, tzinfo=_timezone.utc)
+    fixed = _datetime(2026, 3, 29, 10, 0, tzinfo=UTC)
     with patch("ojhunt.web.pdf.datetime") as mock_dt:
         mock_dt.now.side_effect = _mock_now(fixed)
         assert compute_day_key("UTC") == "2026-03-29"
 
 
 def test_compute_day_key_before_4am_returns_previous_day():
-    fixed = _datetime(2026, 3, 29, 2, 30, tzinfo=_timezone.utc)
+    fixed = _datetime(2026, 3, 29, 2, 30, tzinfo=UTC)
     with patch("ojhunt.web.pdf.datetime") as mock_dt:
         mock_dt.now.side_effect = _mock_now(fixed)
         assert compute_day_key("UTC") == "2026-03-28"
 
 
 def test_compute_day_key_exactly_4am_is_current_day():
-    fixed = _datetime(2026, 3, 29, 4, 0, tzinfo=_timezone.utc)
+    fixed = _datetime(2026, 3, 29, 4, 0, tzinfo=UTC)
     with patch("ojhunt.web.pdf.datetime") as mock_dt:
         mock_dt.now.side_effect = _mock_now(fixed)
         assert compute_day_key("UTC") == "2026-03-29"
 
 
 def test_compute_day_key_invalid_timezone_falls_back_to_utc():
-    fixed = _datetime(2026, 3, 29, 10, 0, tzinfo=_timezone.utc)
+    fixed = _datetime(2026, 3, 29, 10, 0, tzinfo=UTC)
     with patch("ojhunt.web.pdf.datetime") as mock_dt:
         mock_dt.now.side_effect = _mock_now(fixed)
         assert compute_day_key("Not/A/Zone") == "2026-03-29"
@@ -114,7 +114,7 @@ def test_compute_day_key_invalid_timezone_falls_back_to_utc():
 
 def test_compute_day_key_timezone_before_4am_local():
     # 03:00 America/New_York (EDT, UTC-4) = 07:00 UTC — before 4am locally
-    fixed = _datetime(2026, 3, 29, 7, 0, tzinfo=_timezone.utc)
+    fixed = _datetime(2026, 3, 29, 7, 0, tzinfo=UTC)
     with patch("ojhunt.web.pdf.datetime") as mock_dt:
         mock_dt.now.side_effect = _mock_now(fixed)
         assert compute_day_key("America/New_York") == "2026-03-28"
@@ -124,7 +124,7 @@ def test_compute_day_key_dst_spring_forward():
     # 2024-03-10 is US "spring forward" day (clocks jump 2am EST → 3am EDT at 07:00 UTC).
     # 07:30 UTC = 03:30 EDT — inside the spring-forward gap, still before 4am local.
     # Day key should roll back to the previous day, not produce an incorrect date.
-    fixed = _datetime(2024, 3, 10, 7, 30, tzinfo=_timezone.utc)
+    fixed = _datetime(2024, 3, 10, 7, 30, tzinfo=UTC)
     with patch("ojhunt.web.pdf.datetime") as mock_dt:
         mock_dt.now.side_effect = _mock_now(fixed)
         assert compute_day_key("America/New_York") == "2024-03-09"
@@ -132,7 +132,7 @@ def test_compute_day_key_dst_spring_forward():
 
 def test_compute_day_key_dst_spring_forward_after_4am():
     # 08:00 UTC on spring-forward day = 04:00 EDT — exactly 4am, so current day.
-    fixed = _datetime(2024, 3, 10, 8, 0, tzinfo=_timezone.utc)
+    fixed = _datetime(2024, 3, 10, 8, 0, tzinfo=UTC)
     with patch("ojhunt.web.pdf.datetime") as mock_dt:
         mock_dt.now.side_effect = _mock_now(fixed)
         assert compute_day_key("America/New_York") == "2024-03-10"

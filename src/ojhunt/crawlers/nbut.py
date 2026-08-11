@@ -30,7 +30,6 @@ import re
 
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "NBUT",
@@ -42,7 +41,7 @@ __crawler_meta__ = {
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query NBUT for user statistics.
 
@@ -75,7 +74,7 @@ async def query(
                 raise RuntimeError(f"Server Response Error: {response.status}")
             submission_text = await response.text()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     doc_submission = LexborHTMLParser(submission_text)
     user_link = doc_submission.css_first('a[href^="/User/view_user.xhtml?id="]')
@@ -99,7 +98,7 @@ async def query(
                 raise RuntimeError(f"Server Response Error: {response.status}")
             profile_text = await response.text()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     try:
         doc_profile = LexborHTMLParser(profile_text)

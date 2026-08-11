@@ -3,9 +3,8 @@
 import io
 import json
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import List
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import matplotlib
@@ -80,7 +79,7 @@ class PdfQueryItem(BaseModel):
 
 class PdfSettings(BaseModel):
     username: str
-    queries: List[PdfQueryItem]
+    queries: list[PdfQueryItem]
 
 
 class PdfCrawlerResult(BaseModel):
@@ -95,7 +94,7 @@ class PdfSnapshot(BaseModel):
     totalSubmissions: int
     username: str
     timezone: str = "UTC"  # IANA name; only used by compute_day_key() at query time
-    results: List[PdfCrawlerResult] = []
+    results: list[PdfCrawlerResult] = []
 
 
 class HistoryEntry(BaseModel):
@@ -110,7 +109,7 @@ class PdfEmbeddedData(BaseModel):
     version: int
     exportedAt: str
     settings: PdfSettings
-    history: List[HistoryEntry]
+    history: list[HistoryEntry]
 
 
 def compute_day_key(iana_timezone: str) -> str:
@@ -153,9 +152,9 @@ def extract_data(pdf_bytes: bytes) -> PdfEmbeddedData:
 
 
 def merge_history(
-    existing: List[HistoryEntry],
+    existing: list[HistoryEntry],
     new_entry: HistoryEntry,
-) -> List[HistoryEntry]:
+) -> list[HistoryEntry]:
     """Upsert new_entry into existing history by key (YYYY-MM-DD day key).
 
     For the same day, keeps the entry with the higher totalSolved.
@@ -222,7 +221,7 @@ def _section(pdf: _Report, title: str) -> None:
     pdf.ln(2)
 
 
-def _render_chart_png(history: List[HistoryEntry]) -> bytes:
+def _render_chart_png(history: list[HistoryEntry]) -> bytes:
     """Render a solved-over-time line chart for all history entries, return PNG bytes."""
     dates = [datetime.strptime(e.key, "%Y-%m-%d") for e in history]
     solved = [e.totalSolved for e in history]
@@ -250,7 +249,7 @@ def _render_chart_png(history: List[HistoryEntry]) -> bytes:
 
 def generate_pdf(
     settings: PdfSettings,
-    history: List[HistoryEntry],
+    history: list[HistoryEntry],
     snapshot: PdfSnapshot,
 ) -> bytes:
     """Build an OJHunt PDF report and return the bytes."""
@@ -382,7 +381,7 @@ def generate_pdf(
     # JSON extraction by pypdf (it injects visible text at page boundaries).
     embedded = PdfEmbeddedData(
         version=1,
-        exportedAt=datetime.now(timezone.utc).isoformat(),
+        exportedAt=datetime.now(UTC).isoformat(),
         settings=settings,
         history=history,
     ).model_dump_json()

@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "TLX (TOKI Learning Exchange)",
@@ -41,7 +40,7 @@ API_BASE_URL = "https://api.tlx.toki.id/v2"
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str], None]]:
+) -> dict[str, int | list[str] | None]:
     """
     Query TLX for user statistics.
 
@@ -73,7 +72,7 @@ async def query(
             data = await response.json()
 
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     total_problems_tried = data.get("totalProblemsTried", 0)
     verdicts_map = data.get("totalProblemVerdictsMap", {})

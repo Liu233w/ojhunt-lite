@@ -27,14 +27,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import inspect
-from typing import Any, Callable, List, Optional
+from collections.abc import Callable
+from typing import Any
 
 from ojhunt.core.models import CrawlerMeta, LoginType
 
 _RULE = "-" * 56
 
 
-def compose_query_doc(raw_doc: Optional[str], crawler_doc: str) -> str:
+def compose_query_doc(raw_doc: str | None, crawler_doc: str) -> str:
     """Append generated crawler documentation to a query function's own docstring.
 
     The crawler's docstring is dedented first so that help() renders both halves
@@ -61,7 +62,7 @@ def compose_query_doc(raw_doc: Optional[str], crawler_doc: str) -> str:
     return f"{inspect.cleandoc(raw_doc)}\n\n{_RULE}\n\n{wrapped_note}\n\n{crawler_doc}"
 
 
-def _login_paragraph(name: str, meta: CrawlerMeta, params: List[str]) -> str:
+def _login_paragraph(name: str, meta: CrawlerMeta, params: list[str]) -> str:
     if meta.login_type is LoginType.NOT_REQUIRED:
         return "Login: not required."
 
@@ -102,7 +103,7 @@ def _login_paragraph(name: str, meta: CrawlerMeta, params: List[str]) -> str:
     return "\n".join(lines)
 
 
-def _usage_example(name: str, meta: CrawlerMeta, params: List[str]) -> str:
+def _usage_example(name: str, meta: CrawlerMeta, params: list[str]) -> str:
     sample = meta.test_username or "username"
     creds = ""
     if meta.login_type is not LoginType.NOT_REQUIRED:
@@ -144,7 +145,7 @@ def render_crawler_doc(
     Returns:
         Documentation text, suitable for assigning to __doc__.
     """
-    params: List[str] = list(inspect.signature(query_fn).parameters)
+    params: list[str] = list(inspect.signature(query_fn).parameters)
 
     sections = [f"{meta.title} — {meta.url}" if meta.url else meta.title]
 

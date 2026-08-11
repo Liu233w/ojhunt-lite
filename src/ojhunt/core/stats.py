@@ -2,12 +2,10 @@
 Statistics calculation functions.
 """
 
-from typing import List, Set
-
 from ojhunt.core.models import QueryResult
 
 
-def collect_solved_problems(results: List[QueryResult]) -> Set[str]:
+def collect_solved_problems(results: list[QueryResult]) -> set[str]:
     """
     Collect all solved problems with deduplication.
 
@@ -20,7 +18,7 @@ def collect_solved_problems(results: List[QueryResult]) -> Set[str]:
     Returns:
         Set of unique problem identifiers
     """
-    all_solved: Set[str] = set()
+    all_solved: set[str] = set()
     for result in results:
         if not result.success or not result.solved_list:
             continue
@@ -33,7 +31,7 @@ def collect_solved_problems(results: List[QueryResult]) -> Set[str]:
     return all_solved
 
 
-def get_unique_solved(results: List[QueryResult]) -> int:
+def get_unique_solved(results: list[QueryResult]) -> int:
     """
     Total unique solved across all crawlers.
     """

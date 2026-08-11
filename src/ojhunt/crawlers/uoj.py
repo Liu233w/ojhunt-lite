@@ -26,10 +26,10 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import aiohttp
 import re
+
+import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "UOJ",
@@ -41,7 +41,7 @@ __crawler_meta__ = {
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query UOJ for user statistics.
 
@@ -74,15 +74,14 @@ async def query(
     except aiohttp.ClientError as e:
         if "404" in str(e):
             raise ValueError("The user does not exist")
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     # Check for user not found: <div class="panel panel-danger"> containing "不存在该用户"
     doc_profile = LexborHTMLParser(profile_text)
     for panel in doc_profile.css("div.panel"):
         classes = panel.attributes.get("class") or ""
-        if "panel-danger" in classes:
-            if "不存在该用户" in panel.text():
-                raise ValueError("The user does not exist")
+        if "panel-danger" in classes and "不存在该用户" in panel.text():
+            raise ValueError("The user does not exist")
 
     try:
         # Extract solved count - "AC 过的题目：共 217 道题"

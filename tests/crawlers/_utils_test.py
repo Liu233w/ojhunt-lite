@@ -2,18 +2,15 @@
 Tests for crawlers._utils module
 """
 
-from typing import Optional
-
-import pytest
 import aiohttp
+import pytest
+
 from ojhunt.crawlers import _utils
 
 pytestmark = pytest.mark.network
 
 
-async def _mock_resolver(
-    session: aiohttp.ClientSession, problem_id: int
-) -> Optional[str]:
+async def _mock_resolver(session: aiohttp.ClientSession, problem_id: int) -> str | None:
     return f"label-{problem_id}"
 
 
@@ -33,7 +30,7 @@ async def test_resolve_labels_empty_list(session):
 async def test_resolve_labels_caching(session):
     call_count = 0
 
-    async def counting_resolver(sess: aiohttp.ClientSession, pid: int) -> Optional[str]:
+    async def counting_resolver(sess: aiohttp.ClientSession, pid: int) -> str | None:
         nonlocal call_count
         call_count += 1
         return f"label-{pid}"
@@ -51,7 +48,7 @@ async def test_resolve_labels_caching(session):
 async def test_resolve_labels_mixed_cache_and_fetch(session):
     call_count = 0
 
-    async def counting_resolver(sess: aiohttp.ClientSession, pid: int) -> Optional[str]:
+    async def counting_resolver(sess: aiohttp.ClientSession, pid: int) -> str | None:
         nonlocal call_count
         call_count += 1
         return f"label-{pid}"
@@ -71,7 +68,7 @@ async def test_resolve_labels_mixed_cache_and_fetch(session):
 async def test_resolve_labels_rate_limit(session):
     import time
 
-    async def slow_resolver(sess: aiohttp.ClientSession, pid: int) -> Optional[str]:
+    async def slow_resolver(sess: aiohttp.ClientSession, pid: int) -> str | None:
         return f"label-{pid}"
 
     start = time.time()

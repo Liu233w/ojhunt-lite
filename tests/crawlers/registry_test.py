@@ -20,11 +20,13 @@ def _crawlers_imported_by(import_line: str) -> int:
         [
             sys.executable,
             "-c",
-            "import sys\n"
-            f"{import_line}\n"
-            "print(len([m for m in sys.modules"
-            "           if m.startswith('ojhunt.crawlers.')"
-            "           and not m.rpartition('.')[2].startswith('_')]))",
+            (
+                "import sys\n"
+                f"{import_line}\n"
+                "print(len([m for m in sys.modules"
+                "           if m.startswith('ojhunt.crawlers.')"
+                "           and not m.rpartition('.')[2].startswith('_')]))"
+            ),
         ],
         capture_output=True,
         text=True,

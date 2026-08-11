@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from ojhunt.core.models import CrawlerMeta, CrawlerInfo, CrawlerResult
+from ojhunt.core.models import CrawlerInfo, CrawlerMeta, CrawlerResult
 from ojhunt.core.runner import run_crawler
 
 

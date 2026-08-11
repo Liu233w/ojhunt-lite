@@ -3,6 +3,7 @@ Tests for TLX crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.tlx import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

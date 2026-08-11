@@ -3,6 +3,7 @@ Tests for Timus crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.timus import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

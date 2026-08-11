@@ -3,6 +3,7 @@ Tests for oj.uz crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.ojuz import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

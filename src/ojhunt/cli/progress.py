@@ -7,7 +7,7 @@ Supports TUI mode with rich Live display and plain mode for non-TTY environments
 import sys
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from rich.console import Console
 from rich.live import Live
@@ -30,18 +30,18 @@ class TaskInfo:
     title: str
     username: str
     status: TaskStatus = TaskStatus.PENDING
-    solved: Optional[int] = None
-    submissions: Optional[int] = None
-    duration: Optional[float] = None
-    error: Optional[str] = None
+    solved: int | None = None
+    submissions: int | None = None
+    duration: float | None = None
+    error: str | None = None
 
 
 @dataclass
 class ProgressManager:
-    tasks: Dict[str, TaskInfo] = field(default_factory=dict)
-    task_order: List[str] = field(default_factory=list)
+    tasks: dict[str, TaskInfo] = field(default_factory=dict)
+    task_order: list[str] = field(default_factory=list)
     console: Console = field(default_factory=lambda: Console(stderr=True))
-    live: Optional[Live] = None
+    live: Live | None = None
     is_tty: bool = field(default_factory=lambda: sys.stderr.isatty())
 
     @staticmethod
@@ -71,10 +71,10 @@ class ProgressManager:
         self,
         key: str,
         success: bool,
-        solved: Optional[int] = None,
-        submissions: Optional[int] = None,
-        duration: Optional[float] = None,
-        error: Optional[str] = None,
+        solved: int | None = None,
+        submissions: int | None = None,
+        duration: float | None = None,
+        error: str | None = None,
     ) -> None:
         if key in self.tasks:
             task = self.tasks[key]
@@ -138,11 +138,11 @@ class ProgressManager:
             self.live.__exit__(exc_type, exc_val, exc_tb)
         return False
 
-    def get_results(self) -> List[Dict[str, Any]]:
+    def get_results(self) -> list[dict[str, Any]]:
         results = []
         for crawler in self.task_order:
             task = self.tasks[crawler]
-            result: Dict[str, Any] = {
+            result: dict[str, Any] = {
                 "crawler": task.crawler,
                 "title": task.title,
                 "username": task.username,

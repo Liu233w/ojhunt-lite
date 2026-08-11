@@ -26,10 +26,10 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import aiohttp
 import re
+
+import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "CSU",
@@ -41,7 +41,7 @@ __crawler_meta__ = {
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query CSU for user statistics.
 
@@ -89,7 +89,7 @@ async def query(
         """
         ac_list_script = doc.css_first('script:lexbor-contains("function p(id,c){")')
         if ac_list_script:
-            ac_list = re.findall(r"p\((\d+),\d+\);", ac_list_script.text(), re.A)
+            ac_list = re.findall(r"p\((\d+),\d+\);", ac_list_script.text(), re.ASCII)
         else:
             ac_list = []
 
@@ -100,7 +100,7 @@ async def query(
         }
 
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
     except ValueError:
         raise
     except Exception:

@@ -8,6 +8,7 @@ import tempfile
 import pytest
 from playwright.sync_api import BrowserContext, Page, Route, expect
 
+from e2e.helpers import BASE_URL, _add_query, _clear_storage, _row
 from ojhunt.web.pdf import (
     HistoryEntry,
     PdfQueryItem,
@@ -16,8 +17,6 @@ from ojhunt.web.pdf import (
     extract_data,
     generate_pdf,
 )
-
-from e2e.helpers import BASE_URL, _add_query, _clear_storage, _row
 
 _TMPDIR = os.environ.get("TMPDIR", tempfile.gettempdir())
 _MOCK_CODEFORCES_RESPONSE = json.dumps(

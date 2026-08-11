@@ -3,26 +3,16 @@ API routes for OJHunt Lite web application.
 """
 
 import base64
-from datetime import datetime, timezone
-from typing import Dict, List, Literal, Optional
+from datetime import UTC, datetime
+from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Path as PathParam
+from fastapi import APIRouter, HTTPException
+from fastapi import Path as PathParam
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from ojhunt.web.pdf import (
-    HistoryEntry,
-    PdfSettings,
-    PdfSnapshot,
-    compute_day_key,
-    extract_data,
-    generate_pdf,
-    merge_history,
-)
-
 from ojhunt.core.credentials import get_login_kwargs
-from ojhunt.core.models import LoginType
-from ojhunt.core.models import NullCrawler
+from ojhunt.core.models import LoginType, NullCrawler
 from ojhunt.core.models import QueryResult as CoreQueryResult
 from ojhunt.core.runner import run_crawler
 from ojhunt.core.stats import get_unique_solved
@@ -33,6 +23,15 @@ from ojhunt.web.crawler_status import (
     get_all_status,
 )
 from ojhunt.web.http_client import HttpClientDep
+from ojhunt.web.pdf import (
+    HistoryEntry,
+    PdfSettings,
+    PdfSnapshot,
+    compute_day_key,
+    extract_data,
+    generate_pdf,
+    merge_history,
+)
 
 
 class CrawlerInfo(BaseModel):
@@ -54,7 +53,7 @@ class CrawlerInfo(BaseModel):
             "checked in the current pass (also the default when the checker hasn't run)."
         ),
     )
-    statusError: Optional[str] = Field(
+    statusError: str | None = Field(
         None,
         description="Reason the crawler is offline (present only when status is 'offline').",
     )
@@ -62,15 +61,13 @@ class CrawlerInfo(BaseModel):
 
 class CrawlersListResponse(BaseModel):
     error: bool = Field(False, description="Always false for success")
-    data: Dict[str, CrawlerInfo] = Field(..., description="Map of crawler name to info")
+    data: dict[str, CrawlerInfo] = Field(..., description="Map of crawler name to info")
 
 
 class QueryResult(BaseModel):
     solved: int = Field(..., description="Number of accepted problems")
     submissions: int = Field(..., description="Total number of submissions")
-    solvedList: Optional[List[str]] = Field(
-        None, description="List of solved problem IDs"
-    )
+    solvedList: list[str] | None = Field(None, description="List of solved problem IDs")
     duration: float = Field(0, description="Query duration in seconds")
 
 
@@ -80,12 +77,10 @@ class CrawlerResult(BaseModel):
     crawler: str = Field(..., description="Crawler name (e.g. 'codeforces')")
     username: str = Field(..., description="Username that was queried")
     error: bool = Field(..., description="True if the query failed")
-    data: Optional[QueryResult] = Field(
+    data: QueryResult | None = Field(
         None, description="Query data (present on success)"
     )
-    message: Optional[str] = Field(
-        None, description="Error message (present on failure)"
-    )
+    message: str | None = Field(None, description="Error message (present on failure)")
 
     @classmethod
     def from_model(cls, result: CoreQueryResult) -> "CrawlerResult":
@@ -175,7 +170,7 @@ async def query_crawler(
 
     crawler = crawler_registry[crawler_name]
 
-    kwargs: Dict[str, str] = {}
+    kwargs: dict[str, str] = {}
 
     if crawler.meta.login_type == LoginType.SHARED_ACCOUNT:
         login_kwargs = get_login_kwargs(crawler_name)
@@ -225,7 +220,7 @@ class MergeResponse(BaseModel):
         "other crawlers to avoid double-counting."
     ),
 )
-async def merge_results(results: List[CrawlerResult]) -> MergeResponse:
+async def merge_results(results: list[CrawlerResult]) -> MergeResponse:
     core_results = [item.to_model() for item in results]
     total_submissions = sum(r.submissions for r in core_results if r.success)
     return MergeResponse(
@@ -245,7 +240,7 @@ class PdfExtractRequest(BaseModel):
 
 class PdfExtractResponse(BaseModel):
     settings: PdfSettings = Field(..., description="Saved query settings from the PDF")
-    report_date: Optional[str] = Field(
+    report_date: str | None = Field(
         None, description="YYYY-MM-DD of the most recent history entry (for UI display)"
     )
 
@@ -253,7 +248,7 @@ class PdfExtractResponse(BaseModel):
 class PdfGenerateRequest(BaseModel):
     snapshot: PdfSnapshot
     settings: PdfSettings
-    previous_pdf_b64: Optional[str] = Field(
+    previous_pdf_b64: str | None = Field(
         None, description="Base64-encoded previous PDF to merge history from"
     )
 
@@ -305,13 +300,13 @@ async def generate_pdf_report(body: PdfGenerateRequest) -> PdfGenerateResponse:
     day_key = compute_day_key(body.snapshot.timezone)
     new_entry = HistoryEntry(
         key=day_key,
-        date=datetime.now(timezone.utc).isoformat(),
+        date=datetime.now(UTC).isoformat(),
         totalSolved=body.snapshot.totalSolved,
         totalSubmissions=body.snapshot.totalSubmissions,
         username=body.snapshot.username,
     )
 
-    existing_history: List[HistoryEntry] = []
+    existing_history: list[HistoryEntry] = []
     if body.previous_pdf_b64:
         try:
             prev_bytes = base64.b64decode(body.previous_pdf_b64)

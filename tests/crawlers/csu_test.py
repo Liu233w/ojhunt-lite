@@ -3,6 +3,7 @@ Tests for CSU crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.csu import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

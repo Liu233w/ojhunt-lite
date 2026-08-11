@@ -3,10 +3,9 @@ Credential lookup for login-required crawlers.
 """
 
 import os
-from typing import Dict, Optional
 
 
-def get_login_kwargs(crawler_name: str) -> Optional[Dict[str, str]]:
+def get_login_kwargs(crawler_name: str) -> dict[str, str] | None:
     """Return login kwargs for a crawler, or None if credentials are not configured.
 
     Looks up LOGIN_USERNAME__<CRAWLER> and LOGIN_PASSWORD__<CRAWLER> env vars.

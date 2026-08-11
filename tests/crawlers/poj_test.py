@@ -3,6 +3,7 @@ Tests for POJ crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.poj import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

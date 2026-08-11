@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "SDUT OJ",
@@ -71,7 +70,7 @@ async def _fetch_sdutoj(session: aiohttp.ClientSession, api: str, data: dict) ->
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query SDUT OJ for user statistics.
 
@@ -131,7 +130,7 @@ async def query(
         }
 
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
     except ValueError:
         raise
     except Exception:
