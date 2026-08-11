@@ -117,7 +117,7 @@ import sys
 from collections.abc import Awaitable, Callable
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, List, Union
+from typing import TYPE_CHECKING, Any
 
 from ojhunt.core.models import (
     CrawlerInfo,

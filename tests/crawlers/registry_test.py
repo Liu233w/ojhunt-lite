@@ -49,7 +49,7 @@ def test_repeated_access_returns_the_same_registry():
 
 def test_unknown_module_attribute_raises_attribute_error():
     with pytest.raises(AttributeError, match="has no attribute 'nope'"):
-        ojhunt.crawlers.nope
+        _ = ojhunt.crawlers.nope
 
 
 def test_dir_advertises_crawlers():
