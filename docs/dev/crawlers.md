@@ -73,7 +73,6 @@ without it. The module docstring is not available for this — it holds the lice
 # (copy the full header from an existing crawler)
 
 import aiohttp
-from typing import Dict, List, Optional, Union
 
 __crawler_meta__ = {
     "title": "OJ Name",
@@ -84,8 +83,8 @@ __crawler_meta__ = {
 
 
 async def query(
-    session: aiohttp.ClientSession, username: str, password: Optional[str] = None
-) -> Dict[str, Union[int, List[str], None]]:
+    session: aiohttp.ClientSession, username: str, password: str | None = None
+) -> dict[str, int | list[str] | None]:
     """Query OJ Name for user statistics.
 
     Args:
@@ -129,7 +128,6 @@ async def query(
 
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Optional, Union
 
 __crawler_meta__ = {
     "title": "Your OJ",
@@ -140,8 +138,8 @@ __crawler_meta__ = {
 
 
 async def query(
-    session: aiohttp.ClientSession, username: str, password: Optional[str] = None
-) -> Dict[str, Union[int, List[str], None]]:
+    session: aiohttp.ClientSession, username: str, password: str | None = None
+) -> dict[str, int | list[str] | None]:
     """Query Your OJ for user statistics.
 
     Args:
@@ -193,10 +191,10 @@ __crawler_meta__ = {
 async def query(
     session: aiohttp.ClientSession,
     username: str,
-    password: Optional[str] = None,
-    login_user: Optional[str] = None,
-    login_password: Optional[str] = None,
-) -> Dict[str, Union[int, List[str], None]]:
+    password: str | None = None,
+    login_user: str | None = None,
+    login_password: str | None = None,
+) -> dict[str, int | list[str] | None]:
     """Query Your OJ for user statistics.
 
     Your OJ hides profiles from guests, so a login is always required. Any account

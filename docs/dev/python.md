@@ -2,14 +2,20 @@
 
 ## Import order
 
-Standard library → third-party → typing:
+Standard library → third-party → first-party, with a blank line between the groups.
+`typing` and `collections.abc` are standard library, so they belong in the first group:
 
 ```python notest
 import re
+from collections.abc import Callable
+
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union
+
+from ojhunt.core.models import CrawlerResult
 ```
+
+Ruff enforces this order (`I001`) and fixes it, so you do not have to sort by hand.
 
 ## Naming
 
@@ -19,7 +25,12 @@ from typing import Dict, List, Union
 
 ## Typing
 
-Use `Dict`, `List`, `Union` from the `typing` module — not the `dict[str, ...]` syntax.
+Use built-in generics and the `|` union syntax: `dict[str, int]`, `list[str]`, `str | None`.
+Do not use `Dict`, `List`, `Optional` or `Union` from `typing` — ruff rewrites them
+(`UP006`, `UP007`, `UP035`, `UP045`), and the `format-lint-python.sh` hook applies that
+rewrite on every edit. Take `Callable` and `Awaitable` from `collections.abc`, not `typing`.
+
+See [ADR 0016](../adr/0016-adopt-ruff-default-rule-set.md) for why this reversed.
 
 ## Prefer asserts and names over comments
 

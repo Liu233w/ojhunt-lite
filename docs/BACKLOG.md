@@ -53,3 +53,13 @@ texts still need editing by hand.
 
 Option: put `explanation` and `credential_args` next to `LoginType.label` and generate the
 paragraphs from there.
+
+## Eolymp interpolates the username into its GraphQL query text
+
+`src/ojhunt/crawlers/eolymp.py` builds its query with `%`-formatting and escapes the username by
+hand (`username.replace('"', '\\"')`). GraphQL variables are the right mechanism: pass the query
+with a `$search` parameter and send the value in the request's `variables` object. That removes
+the manual escaping and the `# noqa: UP031`, because no brace has to survive a format call.
+
+Left alone because it changes the request payload, so it needs its own network verification
+against api.eolymp.com rather than a drive-by in a lint sweep.
