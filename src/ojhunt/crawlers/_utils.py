@@ -28,8 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import asyncio
 import sqlite3
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Awaitable, Callable, Dict, List, Optional
 
 import aiohttp
 
@@ -61,9 +61,7 @@ def _init_db() -> None:
         conn.close()
 
 
-def _get_cached_labels(
-    oj_name: str, problem_ids: List[int]
-) -> Dict[int, Optional[str]]:
+def _get_cached_labels(oj_name: str, problem_ids: list[int]) -> dict[int, str | None]:
     if not _DB_PATH.exists():
         return {}
 
@@ -80,7 +78,7 @@ def _get_cached_labels(
         conn.close()
 
 
-def _cache_labels(oj_name: str, mappings: Dict[int, Optional[str]]) -> None:
+def _cache_labels(oj_name: str, mappings: dict[int, str | None]) -> None:
     _init_db()
 
     conn = _get_connection()
@@ -98,10 +96,10 @@ def _cache_labels(oj_name: str, mappings: Dict[int, Optional[str]]) -> None:
 async def resolve_labels(
     session: aiohttp.ClientSession,
     oj_name: str,
-    problem_ids: List[int],
-    resolver: Callable[[aiohttp.ClientSession, int], Awaitable[Optional[str]]],
+    problem_ids: list[int],
+    resolver: Callable[[aiohttp.ClientSession, int], Awaitable[str | None]],
     rate_limit_delay: float = 0.0,
-) -> Dict[int, Optional[str]]:
+) -> dict[int, str | None]:
     """
     Resolve problem labels with caching.
 
@@ -130,7 +128,7 @@ async def resolve_labels(
 
     semaphore = asyncio.Semaphore(_CONCURRENT_REQUESTS)
 
-    async def resolve_with_semaphore(pid: int) -> tuple[int, Optional[str]]:
+    async def resolve_with_semaphore(pid: int) -> tuple[int, str | None]:
         async with semaphore:
             if rate_limit_delay > 0:
                 await asyncio.sleep(rate_limit_delay)

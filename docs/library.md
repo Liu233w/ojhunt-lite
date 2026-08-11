@@ -149,7 +149,7 @@ should.
 ### `query_sync()`
 
 ```text
-query_sync(crawler: Union[CrawlerInfo, Callable[..., Awaitable[Any]]], username: str, **kwargs: Any) -> CrawlerResult
+query_sync(crawler: CrawlerInfo | collections.abc.Callable[..., collections.abc.Awaitable[Any]], username: str, **kwargs: Any) -> CrawlerResult
 
 Query a crawler synchronously, opening and closing a session for you.
 
@@ -200,7 +200,7 @@ Attributes:
 Fields
     solved: int
     submissions: int
-    solved_list: Optional[List[str]] = None
+    solved_list: list[str] | None = None
 ```
 
 ### `CrawlerInfo`
@@ -226,7 +226,7 @@ Attributes:
 Fields
     name: str
     meta: CrawlerMeta
-    query: Callable[..., Awaitable[CrawlerResult]]
+    query: collections.abc.Callable[..., collections.abc.Awaitable[CrawlerResult]]
 ```
 
 ### `CrawlerInfo.query_sync()`

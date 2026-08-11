@@ -4,13 +4,12 @@ CLI argument parser for OJHunt Lite.
 
 import argparse
 import sys
-from typing import Dict, List, Optional, Tuple
 
 from ojhunt.cli.models import Query
 from ojhunt.core.models import CrawlerInfo
 
 
-def parse_crawler_login(values: Optional[List[str]]) -> Dict[str, Tuple[str, str]]:
+def parse_crawler_login(values: list[str] | None) -> dict[str, tuple[str, str]]:
     """
     Parse -l user:pass@crawler arguments.
 
@@ -23,7 +22,7 @@ def parse_crawler_login(values: Optional[List[str]]) -> Dict[str, Tuple[str, str
     Raises:
         ValueError: If format is invalid.
     """
-    result: Dict[str, Tuple[str, str]] = {}
+    result: dict[str, tuple[str, str]] = {}
     if not values:
         return result
 
@@ -63,10 +62,10 @@ def parse_crawler_login(values: Optional[List[str]]) -> Dict[str, Tuple[str, str
 
 
 def build_all_queries(
-    default_username: str, crawlers: Dict[str, CrawlerInfo]
-) -> List[Query]:
+    default_username: str, crawlers: dict[str, CrawlerInfo]
+) -> list[Query]:
     """Build queries for all crawlers using default username."""
-    return [Query(crawler=name, username=default_username) for name in crawlers.keys()]
+    return [Query(crawler=name, username=default_username) for name in crawlers]
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -188,7 +187,7 @@ JSON output (--json):
     return parser
 
 
-def parse_positional(args: List[str], default_username: Optional[str]) -> List[Query]:
+def parse_positional(args: list[str], default_username: str | None) -> list[Query]:
     """
     Parse positional arguments like: tourist@codeforces user:pass@vjudge poj
 
@@ -243,8 +242,8 @@ def parse_positional(args: List[str], default_username: Optional[str]) -> List[Q
 
 
 def parse_args(
-    argv: Optional[List[str]] = None,
-) -> Tuple[argparse.Namespace, List[Query], Dict[str, Tuple[str, str]]]:
+    argv: list[str] | None = None,
+) -> tuple[argparse.Namespace, list[Query], dict[str, tuple[str, str]]]:
     """
     Parse command line arguments and build query list.
 
@@ -260,16 +259,15 @@ def parse_args(
     parser = create_parser()
     args = parser.parse_args(argv)
 
-    queries: List[Query] = []
-    crawler_logins: Dict[str, Tuple[str, str]] = {}
+    queries: list[Query] = []
+    crawler_logins: dict[str, tuple[str, str]] = {}
 
     if args.list:
         return args, queries, crawler_logins
 
-    if args.all:
-        if not args.default_username:
-            print("Error: -a/--all requires -d/--default-username", file=sys.stderr)
-            sys.exit(1)
+    if args.all and not args.default_username:
+        print("Error: -a/--all requires -d/--default-username", file=sys.stderr)
+        sys.exit(1)
 
     if not args.all and not args.queries:
         parser.print_help()

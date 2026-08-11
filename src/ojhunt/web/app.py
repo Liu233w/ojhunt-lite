@@ -5,9 +5,9 @@ FastAPI + HTMX web interface for querying Online Judge statistics.
 """
 
 import random
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
@@ -21,10 +21,11 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from ojhunt.web.http_client import close_http_client, get_http_client, init_http_client
 from ojhunt.web.api import router as api_router
-from ojhunt.web.pages import router as pages_router, jinja_env
 from ojhunt.web.crawler_status import start_checker, stop_checker
+from ojhunt.web.http_client import close_http_client, get_http_client, init_http_client
+from ojhunt.web.pages import jinja_env
+from ojhunt.web.pages import router as pages_router
 
 load_dotenv()
 
@@ -127,6 +128,7 @@ async def redoc_html() -> HTMLResponse:
         redoc_favicon_url="/favicon.ico",
         with_google_fonts=False,
     )
+
 
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(LLMsDiscoverabilityMiddleware)

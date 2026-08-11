@@ -114,11 +114,11 @@ import importlib
 import inspect
 import pkgutil
 import sys
+from collections.abc import Awaitable, Callable
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, List, Union
+from typing import TYPE_CHECKING, Any, List, Union
 
-from ojhunt.core.session import create_session
 from ojhunt.core.models import (
     CrawlerInfo,
     CrawlerMeta,
@@ -126,6 +126,7 @@ from ojhunt.core.models import (
     CrawlerResult,
     LoginType,
 )
+from ojhunt.core.session import create_session
 from ojhunt.crawlers._help import compose_query_doc, render_crawler_doc
 
 if TYPE_CHECKING:
@@ -136,7 +137,7 @@ if TYPE_CHECKING:
 
 
 def query_sync(
-    crawler: "Union[CrawlerInfo, Callable[..., Awaitable[Any]]]",
+    crawler: "CrawlerInfo | Callable[..., Awaitable[Any]]",
     username: str,
     **kwargs: Any,
 ) -> CrawlerResult:
@@ -223,9 +224,8 @@ def _discover() -> CrawlerRegistry:
 
     for _, module_name, _ in pkgutil.iter_modules([str(package_dir)]):
         if (
-            module_name.startswith("test_")
+            module_name.startswith(("test_", "_"))
             or module_name.endswith("_test")
-            or module_name.startswith("_")
             or module_name == "conftest"
         ):
             continue
@@ -274,5 +274,5 @@ def __getattr__(name: str) -> Any:
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
-def __dir__() -> List[str]:
+def __dir__() -> list[str]:
     return sorted([*globals(), "crawlers"])

@@ -3,6 +3,7 @@ Tests for Aizu crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.aizu import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "yukicoder",
@@ -41,7 +40,7 @@ API_BASE = "https://yukicoder.me/api/v1"
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query yukicoder for user statistics.
 
@@ -71,7 +70,7 @@ async def query(
                 raise ValueError("The user does not exist")
             response.raise_for_status()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     solved_list = await _fetch_solved_list(session, username)
 
@@ -86,7 +85,7 @@ async def query(
 
 async def _fetch_solved_list(
     session: aiohttp.ClientSession, username: str
-) -> List[str]:
+) -> list[str]:
     """
     Fetch the list of solved problems for a user.
 

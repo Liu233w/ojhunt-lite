@@ -3,6 +3,7 @@ Tests for HUST crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.hust import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

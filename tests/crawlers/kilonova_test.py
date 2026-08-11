@@ -3,6 +3,7 @@ Tests for Kilonova crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.kilonova import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

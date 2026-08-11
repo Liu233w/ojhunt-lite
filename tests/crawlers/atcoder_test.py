@@ -3,6 +3,7 @@ Tests for AtCoder crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.atcoder import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

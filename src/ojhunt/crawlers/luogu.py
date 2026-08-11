@@ -26,10 +26,10 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import aiohttp
 import json
 import re
-from typing import Dict, List, Union
+
+import aiohttp
 
 __crawler_meta__ = {
     "title": "洛谷",
@@ -67,7 +67,7 @@ def _extract_lentille_context(html: str) -> dict:
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str], None]]:
+) -> dict[str, int | list[str] | None]:
     """
     Query Luogu (洛谷) for user statistics.
 
@@ -120,6 +120,6 @@ async def query(
     except ValueError:
         raise
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
     except Exception:
         raise RuntimeError("Error while parsing")

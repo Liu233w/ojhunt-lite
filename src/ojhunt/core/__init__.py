@@ -24,6 +24,6 @@ __all__ = [
     "LoginType",
     "NullCrawler",
     "QueryResult",
-    "run_crawler",
     "collect_solved_problems",
+    "run_crawler",
 ]

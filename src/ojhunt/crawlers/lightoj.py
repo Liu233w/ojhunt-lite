@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "LightOJ",
@@ -38,7 +37,7 @@ __crawler_meta__ = {
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query LightOJ for user statistics.
 
@@ -73,7 +72,7 @@ async def query(
             data = await response.json()
 
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     data_obj = data.get("data") if isinstance(data, dict) else None
     if not isinstance(data_obj, dict) or "userStat" not in data_obj:
@@ -85,7 +84,7 @@ async def query(
         solved = int(user_stat["isSolved"])
         submissions = int(user_stat["numSubmissions"])
     except (KeyError, ValueError, TypeError) as e:
-        raise RuntimeError(f"Failed to parse response: {str(e)}")
+        raise RuntimeError(f"Failed to parse response: {e!s}")
 
     return {
         "solved": solved,

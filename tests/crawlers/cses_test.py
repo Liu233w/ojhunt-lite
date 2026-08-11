@@ -7,8 +7,10 @@ Set LOGIN_USERNAME__CSES and LOGIN_PASSWORD__CSES environment variables to run t
 """
 
 import os
+
 import pytest
-from ojhunt.crawlers.cses import query, __crawler_meta__
+
+from ojhunt.crawlers.cses import __crawler_meta__, query
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_ID = "9999999999"

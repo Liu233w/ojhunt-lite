@@ -3,7 +3,8 @@ Tests for 51Nod crawler
 """
 
 import pytest
-from ojhunt.crawlers.nod import query, __crawler_meta__
+
+from ojhunt.crawlers.nod import __crawler_meta__, query
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_ID = "9999999999"

@@ -50,5 +50,5 @@ async def run_crawler(
             crawler=crawler,
             username=username,
             success=False,
-            error=f"{type(e).__name__}: {str(e)}",
+            error=f"{type(e).__name__}: {e!s}",
         )

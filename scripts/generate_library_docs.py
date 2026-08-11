@@ -8,10 +8,11 @@ help() prints, never a second copy of it. Commit the result.
 """
 
 import inspect
+from collections.abc import Callable
 from dataclasses import MISSING, Field, fields
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, List
+from typing import Any
 
 import ojhunt.crawlers
 from ojhunt.core.models import (
@@ -138,7 +139,7 @@ def _crawler_row(crawler: CrawlerInfo) -> str:
 
 
 def render_library_docs() -> str:
-    crawlers: List[CrawlerInfo] = [c for _, c in sorted(crawler_registry.items())]
+    crawlers: list[CrawlerInfo] = [c for _, c in sorted(crawler_registry.items())]
     assert crawlers, "no crawlers discovered — the table and example would be empty"
 
     sections = [
@@ -151,9 +152,11 @@ def render_library_docs() -> str:
         "",
         "## API",
         "",
-        "Everything below is importable from `ojhunt.crawlers`. The registry itself "
-        "is the module attribute `crawlers`, a `CrawlerRegistry` built on first "
-        "access.",
+        (
+            "Everything below is importable from `ojhunt.crawlers`. The registry itself "
+            "is the module attribute `crawlers`, a `CrawlerRegistry` built on first "
+            "access."
+        ),
         "",
         _class_entry(CrawlerRegistry),
         "",
@@ -171,9 +174,11 @@ def render_library_docs() -> str:
         "",
         "## Supported crawlers",
         "",
-        f"{len(crawlers)} crawlers. Every one takes `(session, username)`; the "
-        'arguments below are additional. Run `help(crawlers["<name>"])` for one '
-        "crawler's full entry.",
+        (
+            f"{len(crawlers)} crawlers. Every one takes `(session, username)`; the "
+            'arguments below are additional. Run `help(crawlers["<name>"])` for one '
+            "crawler's full entry."
+        ),
         "",
         "| Crawler | Platform | Login | Username / notes | Extra arguments |",
         "| --- | --- | --- | --- | --- |",

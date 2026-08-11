@@ -4,7 +4,8 @@ Tests for NIT crawler
 
 import pytest
 from selectolax.lexbor import LexborHTMLParser
-from ojhunt.crawlers.nit import __crawler_meta__, query, _extract_number_from_cell
+
+from ojhunt.crawlers.nit import __crawler_meta__, _extract_number_from_cell, query
 
 pytestmark = pytest.mark.network
 

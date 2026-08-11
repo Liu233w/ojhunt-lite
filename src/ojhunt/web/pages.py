@@ -18,7 +18,7 @@ from fastapi.responses import (
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ojhunt.crawlers import crawlers as crawler_registry
-from ojhunt.web.crawler_status import get_all_status, CrawlerAvailability, CheckStatus
+from ojhunt.web.crawler_status import CheckStatus, CrawlerAvailability, get_all_status
 from ojhunt.web.legacy_db import export_user_pdf
 from ojhunt.web.pdf import PdfSnapshot, extract_data, generate_pdf, merge_history
 

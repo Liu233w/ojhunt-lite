@@ -3,6 +3,7 @@ Tests for VNOJ crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.vnoj import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

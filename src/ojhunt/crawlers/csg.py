@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "CSG",
@@ -39,7 +38,7 @@ __crawler_meta__ = {
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str], None]]:
+) -> dict[str, int | list[str] | None]:
     """
     Query CSGrandeur OJ for user statistics.
 
@@ -73,7 +72,7 @@ async def query(
             response.raise_for_status()
             data = await response.json()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     if data.get("total", 0) == 0 or not data.get("rows"):
         raise ValueError("The user does not exist")

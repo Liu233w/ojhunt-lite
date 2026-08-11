@@ -3,7 +3,6 @@ CLI models for OJHunt Lite.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -12,4 +11,4 @@ class Query:
 
     crawler: str
     username: str
-    password: Optional[str] = None
+    password: str | None = None

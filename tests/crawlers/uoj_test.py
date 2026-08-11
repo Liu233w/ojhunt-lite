@@ -3,6 +3,7 @@ Tests for UOJ crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.uoj import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

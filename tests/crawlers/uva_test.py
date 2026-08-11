@@ -3,6 +3,7 @@ Tests for UVA crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.uva import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

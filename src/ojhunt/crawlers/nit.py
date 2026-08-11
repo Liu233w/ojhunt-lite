@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Optional, Union
 
 from ojhunt.crawlers._utils import resolve_labels
 
@@ -79,9 +78,7 @@ def _oj_map(oj: str) -> str:
         return oj
 
 
-async def _resolve_label(
-    session: aiohttp.ClientSession, problem_id: int
-) -> Optional[str]:
+async def _resolve_label(session: aiohttp.ClientSession, problem_id: int) -> str | None:
     """
     Resolve NIT problem ID to OJ-specific label.
 
@@ -150,7 +147,7 @@ def _extract_number_from_cell(cell) -> int:
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query NIT (OurOJ) for user statistics.
 
@@ -179,7 +176,7 @@ async def query(
                 raise RuntimeError(f"Server Response Error: {response.status}")
             text = await response.text()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     if "No such user!" in text:
         raise ValueError("The user does not exist")

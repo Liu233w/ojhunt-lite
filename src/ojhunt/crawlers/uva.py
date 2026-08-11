@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from typing import Dict, List, Optional, Union
 
 from ojhunt.crawlers._utils import resolve_labels
 
@@ -41,9 +40,7 @@ __crawler_meta__ = {
 UHUNT_PREFIX = "https://uhunt.onlinejudge.org"
 
 
-async def _resolve_label(
-    session: aiohttp.ClientSession, problem_id: int
-) -> Optional[str]:
+async def _resolve_label(session: aiohttp.ClientSession, problem_id: int) -> str | None:
     """
     Resolve UVA problem ID to display number using uhunt API.
 
@@ -69,7 +66,7 @@ async def _resolve_label(
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query UVA Online Judge for user statistics using UHunt API.
 
@@ -103,7 +100,7 @@ async def query(
             if uid == 0:
                 raise ValueError("The user does not exist")
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     try:
         async with session.get(
@@ -113,7 +110,7 @@ async def query(
             response.raise_for_status()
             data = await response.json()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     ac_set = set()
     problem_array = data.get("subs", [])

@@ -3,6 +3,7 @@ Tests for EOlymp crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.eolymp import __crawler_meta__, query
 
 pytestmark = pytest.mark.network
