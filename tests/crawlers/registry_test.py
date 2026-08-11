@@ -20,11 +20,13 @@ def _crawlers_imported_by(import_line: str) -> int:
         [
             sys.executable,
             "-c",
-            "import sys\n"
-            f"{import_line}\n"
-            "print(len([m for m in sys.modules"
-            "           if m.startswith('ojhunt.crawlers.')"
-            "           and not m.rpartition('.')[2].startswith('_')]))",
+            (
+                "import sys\n"
+                f"{import_line}\n"
+                "print(len([m for m in sys.modules"
+                "           if m.startswith('ojhunt.crawlers.')"
+                "           and not m.rpartition('.')[2].startswith('_')]))"
+            ),
         ],
         capture_output=True,
         text=True,
@@ -47,7 +49,7 @@ def test_repeated_access_returns_the_same_registry():
 
 def test_unknown_module_attribute_raises_attribute_error():
     with pytest.raises(AttributeError, match="has no attribute 'nope'"):
-        ojhunt.crawlers.nope
+        _ = ojhunt.crawlers.nope
 
 
 def test_dir_advertises_crawlers():

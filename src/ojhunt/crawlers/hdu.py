@@ -27,9 +27,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import re
+
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "HDU",
@@ -41,7 +41,7 @@ __crawler_meta__ = {
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query Hangzhou Dianzi University OJ for user statistics.
 
@@ -77,7 +77,7 @@ async def query(
         except aiohttp.ClientError as e:
             if attempt >= max_retries - 1:
                 raise RuntimeError(
-                    f"Request failed after {max_retries} attempts: {str(e)}"
+                    f"Request failed after {max_retries} attempts: {e!s}"
                 )
             print(f"HDU connection error, retry {attempt + 1}/{max_retries}...")
 

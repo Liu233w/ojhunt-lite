@@ -36,7 +36,9 @@ See [`docs/dev/testing.md`](testing.md) for shared pytest fixture and assertion 
   covered by `test_query.py`. The success response shape is:
   ```python notest
   {
-      "crawler": "<name>", "username": "<user>", "error": False,
+      "crawler": "<name>",
+      "username": "<user>",
+      "error": False,
       "data": {"solved": 100, "submissions": 200, "solvedList": ["1A"], "duration": 0.1},
       "message": None,
   }

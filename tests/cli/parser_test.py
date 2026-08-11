@@ -171,7 +171,7 @@ class TestParseArgs:
 
     def test_positional_after_separator(self):
         """Test positional args after --."""
-        args, queries, crawler_logins = parse_args(["--", "tourist@codeforces"])
+        _args, queries, crawler_logins = parse_args(["--", "tourist@codeforces"])
         assert queries == [
             Query(crawler="codeforces", username="tourist", password=None)
         ]
@@ -213,25 +213,25 @@ class TestParseArgs:
 
     def test_multiple_crawlers_with_default(self):
         """Test multiple crawlers with default username."""
-        args, queries, _ = parse_args(["-d", "user", "--", "codeforces", "poj", "hdu"])
+        _args, queries, _ = parse_args(["-d", "user", "--", "codeforces", "poj", "hdu"])
         assert len(queries) == 3
         assert all(q.username == "user" for q in queries)
 
     def test_user_with_at_in_name(self):
         """Test user with @ in username using last @ as separator."""
-        args, queries, _ = parse_args(["--", "user@domain@codeforces"])
+        _args, queries, _ = parse_args(["--", "user@domain@codeforces"])
         assert queries == [
             Query(crawler="codeforces", username="user@domain", password=None)
         ]
 
     def test_password_in_query(self):
         """Test password in query string."""
-        args, queries, _ = parse_args(["--", "user:pass@vjudge"])
+        _args, queries, _ = parse_args(["--", "user:pass@vjudge"])
         assert queries == [Query(crawler="vjudge", username="user", password="pass")]
 
     def test_crawler_login_flag(self):
         """Test -l flag parses login credentials."""
-        args, queries, crawler_logins = parse_args(
+        _args, queries, crawler_logins = parse_args(
             ["-l", "user:pass@vjudge", "--", "target@vjudge"]
         )
         assert queries == [Query(crawler="vjudge", username="target", password=None)]
@@ -239,7 +239,7 @@ class TestParseArgs:
 
     def test_multiple_crawler_logins(self):
         """Test multiple -l flags."""
-        args, queries, crawler_logins = parse_args(
+        _args, queries, crawler_logins = parse_args(
             [
                 "-l",
                 "user1:pass1@vjudge",

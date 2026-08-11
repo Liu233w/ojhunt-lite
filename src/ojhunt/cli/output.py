@@ -5,7 +5,6 @@ CLI output and validation functions for OJHunt Lite.
 import json
 import sys
 from collections import Counter
-from typing import Dict, List, Tuple
 
 from rich.console import Console
 from rich.table import Table
@@ -16,7 +15,7 @@ from ojhunt.core.stats import get_unique_solved
 from ojhunt.crawlers import crawlers as crawler_registry
 
 
-def check_duplicate_queries(queries: List[Query]) -> None:
+def check_duplicate_queries(queries: list[Query]) -> None:
     """Check for duplicate queries and print warning to stderr."""
     counter = Counter((q.crawler, q.username) for q in queries)
     for (crawler, username), count in counter.items():
@@ -27,9 +26,9 @@ def check_duplicate_queries(queries: List[Query]) -> None:
             )
 
 
-def validate_crawlers(queries: List[Query], crawlers: Dict[str, CrawlerInfo]) -> bool:
+def validate_crawlers(queries: list[Query], crawlers: dict[str, CrawlerInfo]) -> bool:
     """Validate that all queried crawlers exist."""
-    unknown = set(q.crawler for q in queries if q.crawler not in crawlers)
+    unknown = {q.crawler for q in queries if q.crawler not in crawlers}
     if unknown:
         print(
             f"Error: unknown crawler(s): {', '.join(sorted(unknown))}",
@@ -41,9 +40,9 @@ def validate_crawlers(queries: List[Query], crawlers: Dict[str, CrawlerInfo]) ->
 
 
 def validate_credentials(
-    queries: List[Query],
-    crawlers: Dict[str, CrawlerInfo],
-    crawler_logins: Dict[str, Tuple[str, str]],
+    queries: list[Query],
+    crawlers: dict[str, CrawlerInfo],
+    crawler_logins: dict[str, tuple[str, str]],
 ) -> bool:
     """
     Validate that credential requirements are met for each query.
@@ -108,7 +107,7 @@ def validate_credentials(
 
 
 def print_report(
-    results: List[QueryResult],
+    results: list[QueryResult],
     show_problems: bool,
     total_duration: float,
     json_output: bool = False,
@@ -123,7 +122,7 @@ def print_report(
     if json_output:
         result_list = []
         for r in results:
-            entry: Dict = {
+            entry: dict = {
                 "crawler": r.crawler.name,
                 "title": r.crawler.meta.title,
                 "username": r.username,

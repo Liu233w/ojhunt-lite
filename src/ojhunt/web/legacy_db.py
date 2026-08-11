@@ -5,9 +5,8 @@ Reads from legacy.db (SQLite, produced by scripts/import_legacy.py).
 
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import List
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from ojhunt.web.pdf import (
@@ -69,7 +68,7 @@ def windows_to_iana(win_tz: str) -> str:
 def _day_key_from_utc(utc_dt_str: str, iana_tz: str) -> str:
     """Convert a UTC datetime string to a YYYY-MM-DD day key in the user's timezone."""
     try:
-        dt = datetime.fromisoformat(utc_dt_str).replace(tzinfo=timezone.utc)
+        dt = datetime.fromisoformat(utc_dt_str).replace(tzinfo=UTC)
     except ValueError:
         return utc_dt_str[:10]
     try:
@@ -79,7 +78,7 @@ def _day_key_from_utc(utc_dt_str: str, iana_tz: str) -> str:
     return dt.astimezone(tz).strftime("%Y-%m-%d")
 
 
-def find_user(con: sqlite3.Connection, username: str) -> List[dict]:
+def find_user(con: sqlite3.Connection, username: str) -> list[dict]:
     """Find matching users by ABP username (case-insensitive).
 
     Returns list of {user_id, abp_username} dicts.
@@ -114,7 +113,7 @@ def build_settings(
         (user_id,),
     ).fetchone()
 
-    queries: List[PdfQueryItem] = []
+    queries: list[PdfQueryItem] = []
     if row:
         try:
             data: dict = json.loads(row[0])
@@ -150,7 +149,7 @@ def build_settings(
 
 def build_history(
     con: sqlite3.Connection, user_id: int, iana_tz: str, main_username: str
-) -> List[HistoryEntry]:
+) -> list[HistoryEntry]:
     """Build history entries from all query summaries, deduped per day."""
     rows = con.execute(
         """
@@ -163,7 +162,7 @@ def build_history(
         (user_id,),
     ).fetchall()
 
-    history: List[HistoryEntry] = []
+    history: list[HistoryEntry] = []
     for generate_time, solved, submission in rows:
         day_key = _day_key_from_utc(generate_time, iana_tz)
         entry = HistoryEntry(

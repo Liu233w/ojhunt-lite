@@ -70,7 +70,7 @@ def test_unknown_attribute_raises_attribute_error():
     registry = _registry("aizu")
 
     with pytest.raises(AttributeError, match="no crawler named 'nope'"):
-        registry.nope
+        _ = registry.nope
 
 
 def test_a_near_miss_carries_the_data_python_suggests_from():
@@ -78,7 +78,7 @@ def test_a_near_miss_carries_the_data_python_suggests_from():
     registry = _registry("codeforces")
 
     with pytest.raises(AttributeError) as excinfo:
-        registry.codefroces
+        _ = registry.codefroces
 
     assert excinfo.value.name == "codefroces"
     assert "codeforces" in dir(excinfo.value.obj)

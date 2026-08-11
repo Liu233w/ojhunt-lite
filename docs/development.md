@@ -62,3 +62,4 @@ Significant architectural decisions and their rationale are recorded in [`docs/a
 - [ADR 0013](./adr/0013-lazy-crawler-registry.md) — the registry is the module attribute `ojhunt.crawlers.crawlers`, discovered on first access; the `TYPE_CHECKING` declaration is load-bearing for ruff F822
 - [ADR 0014](./adr/0014-generated-crawler-help.md) — crawler `help()` text is generated from `__crawler_meta__` and attached to `CrawlerInfo.__doc__`; crawler module docstrings stay reserved for the license header
 - [ADR 0015](./adr/0015-submissions-floor-is-solved.md) — every crawler reports at least its `solved` count as `submissions`, so the figure is a lower bound; the rule lives in the crawler files, not in `CrawlerResult`
+- [ADR 0016](./adr/0016-adopt-ruff-default-rule-set.md) — ruff's default rule set stands unpinned, which reversed the typing convention to PEP 585/604; the five exceptions (`BLE001`, `fastapi.File`, and three `noqa`s) are listed there

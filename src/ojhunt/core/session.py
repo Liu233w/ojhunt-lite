@@ -9,7 +9,7 @@ files, so a copied-out crawler carries no OJHunt branding.
 """
 
 import importlib.metadata
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 
@@ -36,7 +36,7 @@ DEFAULT_HEADERS = {"User-Agent": USER_AGENT, IDENTITY_HEADER: IDENTITY_VALUE}
 
 
 def create_session(
-    *, headers: Optional[dict] = None, **kwargs: Any
+    *, headers: dict | None = None, **kwargs: Any
 ) -> aiohttp.ClientSession:
     """
     Build an ``aiohttp.ClientSession`` pre-seeded with OJHunt identification headers.

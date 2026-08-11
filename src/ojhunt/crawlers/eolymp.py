@@ -27,8 +27,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import json
+
 import aiohttp
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "EOlymp",
@@ -44,7 +44,7 @@ GRAPHQL_URL = (
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str], None]]:
+) -> dict[str, int | list[str] | None]:
     """
     Query EOlymp for user statistics.
 
@@ -63,6 +63,8 @@ async def query(
 
     username = username.strip()
 
+    # %-formatting stays: .format() and f-strings would need every brace in the
+    # GraphQL body below doubled, which hides the query's real shape.
     query_str = """
     {
         members(first: 1, search: "%s") {
@@ -76,7 +78,7 @@ async def query(
             }
         }
     }
-    """ % username.replace('"', '\\"')
+    """ % username.replace('"', '\\"')  # noqa: UP031
 
     try:
         async with session.post(
@@ -88,7 +90,7 @@ async def query(
             response.raise_for_status()
             data = await response.json()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
     except json.JSONDecodeError:
         raise RuntimeError("Failed to parse response")
 

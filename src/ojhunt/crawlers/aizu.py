@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "AIZU",
@@ -39,7 +38,7 @@ __crawler_meta__ = {
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query AIZU for user statistics.
 
@@ -85,7 +84,7 @@ async def query(
             list_data = await response.json()
 
             # Extract unique problem IDs
-            solved_set = set(item.get("problemId") for item in list_data)
+            solved_set = {item.get("problemId") for item in list_data}
 
             return {
                 "solved": status_data.get("status", {}).get("solved", 0),
@@ -96,7 +95,7 @@ async def query(
     except aiohttp.ClientError as e:
         if "404" in str(e):
             raise ValueError("The user does not exist")
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
     except ValueError:
         raise
     except Exception:

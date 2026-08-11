@@ -43,9 +43,9 @@ All crawlers return:
 
 ```python notest
 {
-    "solved": int,            # Number of accepted problems
-    "submissions": int,       # Total submissions, never below "solved"
-    "solved_list": list|None  # Problem IDs (None if unavailable)
+    "solved": int,  # Number of accepted problems
+    "submissions": int,  # Total submissions, never below "solved"
+    "solved_list": list | None,  # Problem IDs (None if unavailable)
 }
 ```
 
@@ -73,7 +73,6 @@ without it. The module docstring is not available for this — it holds the lice
 # (copy the full header from an existing crawler)
 
 import aiohttp
-from typing import Dict, List, Optional, Union
 
 __crawler_meta__ = {
     "title": "OJ Name",
@@ -82,7 +81,10 @@ __crawler_meta__ = {
     "test_username": "known_active_user",
 }
 
-async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str], None]]:
+
+async def query(
+    session: aiohttp.ClientSession, username: str, password: str | None = None
+) -> dict[str, int | list[str] | None]:
     """Query OJ Name for user statistics.
 
     Args:
@@ -126,7 +128,6 @@ async def query(session: aiohttp.ClientSession, username: str, password: Optiona
 
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Optional, Union
 
 __crawler_meta__ = {
     "title": "Your OJ",
@@ -135,7 +136,10 @@ __crawler_meta__ = {
     "test_username": "known_active_user",
 }
 
-async def query(session: aiohttp.ClientSession, username: str, password: Optional[str] = None) -> Dict[str, Union[int, List[str], None]]:
+
+async def query(
+    session: aiohttp.ClientSession, username: str, password: str | None = None
+) -> dict[str, int | list[str] | None]:
     """Query Your OJ for user statistics.
 
     Args:
@@ -183,13 +187,14 @@ __crawler_meta__ = {
     "test_username": "known_active_user",
 }
 
+
 async def query(
     session: aiohttp.ClientSession,
     username: str,
-    password: Optional[str] = None,
-    login_user: Optional[str] = None,
-    login_password: Optional[str] = None,
-) -> Dict[str, Union[int, List[str], None]]:
+    password: str | None = None,
+    login_user: str | None = None,
+    login_password: str | None = None,
+) -> dict[str, int | list[str] | None]:
     """Query Your OJ for user statistics.
 
     Your OJ hides profiles from guests, so a login is always required. Any account
@@ -229,15 +234,18 @@ from ojhunt.crawlers.example import query, __crawler_meta__
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu_notexist"
 
+
 @pytest.mark.asyncio
 async def test_user_not_exist(session):
     with pytest.raises(ValueError, match="The user does not exist"):
         await query(session, NOT_EXIST_USERNAME)
 
+
 @pytest.mark.asyncio
 async def test_username_with_space(session):
     with pytest.raises(ValueError):
         await query(session, "   ")
+
 
 @pytest.mark.asyncio
 async def test_valid_user(session):

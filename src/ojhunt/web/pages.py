@@ -5,7 +5,7 @@ HTML page routes for OJHunt Lite web application.
 import os
 import random
 import secrets
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import APIRouter, File, Form, Request, UploadFile
@@ -18,7 +18,7 @@ from fastapi.responses import (
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ojhunt.crawlers import crawlers as crawler_registry
-from ojhunt.web.crawler_status import get_all_status, CrawlerAvailability, CheckStatus
+from ojhunt.web.crawler_status import CheckStatus, CrawlerAvailability, get_all_status
 from ojhunt.web.legacy_db import export_user_pdf
 from ojhunt.web.pdf import PdfSnapshot, extract_data, generate_pdf, merge_history
 
@@ -104,7 +104,11 @@ async def about() -> str:
     if BUILD_TIME:
         try:
             ts = int(BUILD_TIME)
-            build_time_str = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+            # UTC, and said so: this page is rendered server-side, so the reader's
+            # zone is not available here.
+            build_time_str = datetime.fromtimestamp(ts, UTC).strftime(
+                "%Y-%m-%d %H:%M:%S UTC"
+            )
         except ValueError:
             build_time_str = BUILD_TIME
     return template.render(

@@ -26,9 +26,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+from datetime import UTC, datetime
+
 import aiohttp
-from typing import Dict, List, Union
-from datetime import datetime, timezone
 
 __crawler_meta__ = {
     "title": "LibreOJ",
@@ -40,7 +40,7 @@ __crawler_meta__ = {
 
 async def _resolve_solved_list(
     session: aiohttp.ClientSession, username: str
-) -> List[str]:
+) -> list[str]:
     """
     Resolve solved list by querying submission API.
 
@@ -85,7 +85,7 @@ async def _resolve_solved_list(
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query LibreOJ for user statistics.
 
@@ -109,7 +109,7 @@ async def query(
         async with session.post(
             "https://api.loj.ac/api/user/getUserDetail",
             json={
-                "now": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+                "now": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S.000Z"),
                 "timezone": "UTC",
                 "username": username,
             },
@@ -137,7 +137,7 @@ async def query(
         }
 
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
     except ValueError:
         raise
     except Exception:

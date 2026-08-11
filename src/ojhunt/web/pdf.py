@@ -3,9 +3,8 @@
 import io
 import json
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import List
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import matplotlib
@@ -80,7 +79,7 @@ class PdfQueryItem(BaseModel):
 
 class PdfSettings(BaseModel):
     username: str
-    queries: List[PdfQueryItem]
+    queries: list[PdfQueryItem]
 
 
 class PdfCrawlerResult(BaseModel):
@@ -95,7 +94,7 @@ class PdfSnapshot(BaseModel):
     totalSubmissions: int
     username: str
     timezone: str = "UTC"  # IANA name; only used by compute_day_key() at query time
-    results: List[PdfCrawlerResult] = []
+    results: list[PdfCrawlerResult] = []
 
 
 class HistoryEntry(BaseModel):
@@ -110,7 +109,15 @@ class PdfEmbeddedData(BaseModel):
     version: int
     exportedAt: str
     settings: PdfSettings
-    history: List[HistoryEntry]
+    history: list[HistoryEntry]
+
+
+def _resolve_tz(iana_timezone: str) -> ZoneInfo:
+    """Return the named zone, falling back to UTC when the host lacks tzdata."""
+    try:
+        return ZoneInfo(iana_timezone)
+    except ZoneInfoNotFoundError:
+        return ZoneInfo("UTC")
 
 
 def compute_day_key(iana_timezone: str) -> str:
@@ -119,11 +126,7 @@ def compute_day_key(iana_timezone: str) -> str:
     The day resets at 4am (not midnight) to avoid splitting a late-night session
     across two calendar days.
     """
-    try:
-        tz = ZoneInfo(iana_timezone)
-    except ZoneInfoNotFoundError:
-        tz = ZoneInfo("UTC")
-    now = datetime.now(tz)
+    now = datetime.now(_resolve_tz(iana_timezone))
     if now.hour < 4:
         now -= timedelta(days=1)
     return now.strftime("%Y-%m-%d")
@@ -153,9 +156,9 @@ def extract_data(pdf_bytes: bytes) -> PdfEmbeddedData:
 
 
 def merge_history(
-    existing: List[HistoryEntry],
+    existing: list[HistoryEntry],
     new_entry: HistoryEntry,
-) -> List[HistoryEntry]:
+) -> list[HistoryEntry]:
     """Upsert new_entry into existing history by key (YYYY-MM-DD day key).
 
     For the same day, keeps the entry with the higher totalSolved.
@@ -222,9 +225,11 @@ def _section(pdf: _Report, title: str) -> None:
     pdf.ln(2)
 
 
-def _render_chart_png(history: List[HistoryEntry]) -> bytes:
+def _render_chart_png(history: list[HistoryEntry]) -> bytes:
     """Render a solved-over-time line chart for all history entries, return PNG bytes."""
-    dates = [datetime.strptime(e.key, "%Y-%m-%d") for e in history]
+    # Naive on purpose: the keys are already local-day strings from compute_day_key(),
+    # and the axis needs their order, not an instant.
+    dates = [datetime.strptime(e.key, "%Y-%m-%d") for e in history]  # noqa: DTZ007
     solved = [e.totalSolved for e in history]
 
     fig, ax = plt.subplots(figsize=(7.09, 1.8))  # ~180 mm wide at 96 dpi
@@ -250,7 +255,7 @@ def _render_chart_png(history: List[HistoryEntry]) -> bytes:
 
 def generate_pdf(
     settings: PdfSettings,
-    history: List[HistoryEntry],
+    history: list[HistoryEntry],
     snapshot: PdfSnapshot,
 ) -> bytes:
     """Build an OJHunt PDF report and return the bytes."""
@@ -270,7 +275,10 @@ def generate_pdf(
 
     pdf.set_font(_FONT, "", 9)
     pdf.set_text_color(100, 100, 100)
-    generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+    # The reader's zone, not the server's: the day keys in the chart below already
+    # use it, so the footer would otherwise disagree with the rest of the report.
+    generated_tz = _resolve_tz(snapshot.timezone)
+    generated_at = datetime.now(generated_tz).strftime("%Y-%m-%d %H:%M %Z")
     pdf.cell(
         0,
         5,
@@ -382,7 +390,7 @@ def generate_pdf(
     # JSON extraction by pypdf (it injects visible text at page boundaries).
     embedded = PdfEmbeddedData(
         version=1,
-        exportedAt=datetime.now(timezone.utc).isoformat(),
+        exportedAt=datetime.now(UTC).isoformat(),
         settings=settings,
         history=history,
     ).model_dump_json()

@@ -8,8 +8,7 @@ A lightweight async tool for querying Online Judge statistics across multiple pl
 import asyncio
 import inspect
 import sys
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+import time
 
 import aiohttp
 
@@ -34,12 +33,12 @@ async def query_crawler(
     session: aiohttp.ClientSession,
     crawler_name: str,
     username: str,
-    crawlers: Dict[str, CrawlerInfo],
-    progress: Optional[ProgressManager] = None,
-    progress_key: Optional[str] = None,
-    password: Optional[str] = None,
-    login_user: Optional[str] = None,
-    login_password: Optional[str] = None,
+    crawlers: dict[str, CrawlerInfo],
+    progress: ProgressManager | None = None,
+    progress_key: str | None = None,
+    password: str | None = None,
+    login_user: str | None = None,
+    login_password: str | None = None,
 ) -> QueryResult:
     """
     Query a single crawler for user statistics.
@@ -72,7 +71,7 @@ async def query_crawler(
     if progress and progress_key:
         progress.start_task(progress_key)
 
-    kwargs: Dict[str, str] = {}
+    kwargs: dict[str, str] = {}
     if login_user is not None:
         kwargs["login_user"] = login_user
     if login_password is not None:
@@ -105,21 +104,21 @@ async def query_crawler(
 
 
 async def run_queries(
-    queries: List[Query],
-    crawlers: Dict[str, CrawlerInfo],
-    crawler_logins: Dict[str, Tuple[str, str]],
+    queries: list[Query],
+    crawlers: dict[str, CrawlerInfo],
+    crawler_logins: dict[str, tuple[str, str]],
     no_progress: bool = False,
-) -> List[QueryResult]:
+) -> list[QueryResult]:
     """Execute all queries with live progress updates."""
     progress = ProgressManager(is_tty=not no_progress and sys.stderr.isatty())
 
-    keys: List[str] = []
+    keys: list[str] = []
     for q in queries:
         title = crawlers[q.crawler].meta.title
         key = progress.add_task(q.crawler, title, q.username)
         keys.append(key)
 
-    results: Dict[str, QueryResult] = {}
+    results: dict[str, QueryResult] = {}
 
     async with create_session() as session:
         with progress:
@@ -181,12 +180,11 @@ async def _async_main() -> int:
     if not validate_credentials(queries, crawler_registry, crawler_logins):
         return 1
 
-    start_time = datetime.now()
+    start_time = time.monotonic()
     results = await run_queries(
         queries, crawler_registry, crawler_logins, args.no_progress
     )
-    end_time = datetime.now()
-    total_duration = (end_time - start_time).total_seconds()
+    total_duration = time.monotonic() - start_time
 
     return print_report(
         results, args.show_problems, total_duration, json_output=args.json

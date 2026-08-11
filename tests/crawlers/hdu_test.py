@@ -3,6 +3,7 @@ Tests for HDU crawler
 """
 
 import pytest
+
 from ojhunt.crawlers.hdu import __crawler_meta__, query
 
 pytestmark = pytest.mark.network

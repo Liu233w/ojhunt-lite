@@ -41,7 +41,7 @@ class TestBuildAllQueries:
         result = build_all_queries("tourist", crawlers)
         assert len(result) == 3
         assert all(q.username == "tourist" for q in result)
-        assert set(q.crawler for q in result) == {"codeforces", "poj", "hdu"}
+        assert {q.crawler for q in result} == {"codeforces", "poj", "hdu"}
 
     def test_build_all_queries_empty(self):
         """Test with empty crawlers dict."""
@@ -342,7 +342,7 @@ def make_full_result(
     submissions: int = 0,
     solved_list=None,
     duration: float = 1.0,
-    error: str = None,
+    error: str | None = None,
     **meta_kwargs,
 ) -> QueryResult:
     """Helper to create QueryResult with all fields set."""

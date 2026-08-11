@@ -28,8 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
 import logging
+
 import aiohttp
-from typing import Dict, List, Union, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -112,9 +112,9 @@ def _error_text(err: object) -> str:
 
 
 async def _fetch_page(
-    session: aiohttp.ClientSession, username: str, max_id: Optional[int]
-) -> List:
-    params: Dict[str, str] = {"username": username, "pageSize": str(MAX_PAGE_SIZE)}
+    session: aiohttp.ClientSession, username: str, max_id: int | None
+) -> list:
+    params: dict[str, str] = {"username": username, "pageSize": str(MAX_PAGE_SIZE)}
     if max_id is not None:
         params["maxId"] = str(max_id)
 
@@ -145,7 +145,7 @@ async def _fetch_page(
 async def _paginate(session: aiohttp.ClientSession, username: str) -> tuple:
     ac_set: set = set()
     total_submissions = 0
-    max_id: Optional[int] = None
+    max_id: int | None = None
     while True:
         problem_array = await _fetch_page(session, username, max_id)
         if not problem_array:
@@ -180,7 +180,7 @@ async def _try_login(
         ) as response:
             text = await response.text()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"vjudge login failed: {str(e)}")
+        raise RuntimeError(f"vjudge login failed: {e!s}")
     # Login response used to be the literal string "success". It is now an
     # empty 200 body on success, or JSON like
     # {"i18nKey":"user.auth.error.invalid_credentials","trustable":false} on failure.
@@ -200,10 +200,10 @@ async def _try_login(
 async def query(
     session: aiohttp.ClientSession,
     username: str,
-    password: Optional[str] = None,
-    login_user: Optional[str] = None,
-    login_password: Optional[str] = None,
-) -> Dict[str, Union[int, List[str]]]:
+    password: str | None = None,
+    login_user: str | None = None,
+    login_password: str | None = None,
+) -> dict[str, int | list[str]]:
     """
     Query VJudge for user statistics.
 
@@ -260,7 +260,7 @@ async def query(
             logger.debug("vjudge: _AuthRequired on attempt %d", attempt)
             continue
         except aiohttp.ClientError as e:
-            raise RuntimeError(f"Request failed: {str(e)}")
+            raise RuntimeError(f"Request failed: {e!s}")
         except ValueError:
             raise
         except Exception as e:
@@ -273,5 +273,5 @@ async def query(
     return {
         "solved": len(ac_set),
         "submissions": total_submissions,
-        "solved_list": sorted(list(ac_set)),
+        "solved_list": sorted(ac_set),
     }

@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "CodeForces",
@@ -41,7 +40,7 @@ MAX_PAGE_SIZE = 10000
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query CodeForces for user statistics.
 
@@ -67,7 +66,7 @@ async def query(
     return {
         "solved": len(ac_set),
         "submissions": submissions,
-        "solved_list": sorted(list(ac_set)),
+        "solved_list": sorted(ac_set),
     }
 
 
@@ -114,7 +113,7 @@ async def _query_recursively(
                 raise RuntimeError(comment)
 
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     problem_array = data.get("result", [])
 

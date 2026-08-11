@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union
 
 __crawler_meta__ = {
     "title": "oj.uz",
@@ -42,7 +41,7 @@ BASE_URL = "https://oj.uz"
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> Dict[str, Union[int, List[str]]]:
+) -> dict[str, int | list[str]]:
     """
     Query oj.uz for user statistics.
 
@@ -74,7 +73,7 @@ async def query(
             response.raise_for_status()
             html = await response.text()
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Request failed: {str(e)}")
+        raise RuntimeError(f"Request failed: {e!s}")
 
     try:
         doc = LexborHTMLParser(html)
@@ -104,7 +103,7 @@ def _extract_solved_count(doc: LexborHTMLParser) -> int:
     return 0
 
 
-def _extract_solved_list(doc: LexborHTMLParser) -> List[str]:
+def _extract_solved_list(doc: LexborHTMLParser) -> list[str]:
     """Extract list of solved problem IDs from profile page."""
     solved_list = []
     for panel in doc.css("div.panel"):
@@ -139,7 +138,7 @@ async def _count_submissions(session: aiohttp.ClientSession, username: str) -> i
                 response.raise_for_status()
                 html = await response.text()
         except aiohttp.ClientError as e:
-            raise RuntimeError(f"Request failed: {str(e)}")
+            raise RuntimeError(f"Request failed: {e!s}")
 
         doc = LexborHTMLParser(html)
 

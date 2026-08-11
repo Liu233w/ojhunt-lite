@@ -2,7 +2,7 @@
 Crawler execution logic.
 """
 
-from datetime import datetime
+import time
 from typing import Any
 
 import aiohttp
@@ -25,10 +25,10 @@ async def run_crawler(
     Returns:
         QueryResult with success status and data or error
     """
-    start_time = datetime.now()
+    start_time = time.monotonic()
     try:
         result = await crawler.query(client, username, **kwargs)
-        duration = (datetime.now() - start_time).total_seconds()
+        duration = time.monotonic() - start_time
         return QueryResult(
             crawler=crawler,
             username=username,
@@ -50,5 +50,5 @@ async def run_crawler(
             crawler=crawler,
             username=username,
             success=False,
-            error=f"{type(e).__name__}: {str(e)}",
+            error=f"{type(e).__name__}: {e!s}",
         )

@@ -6,11 +6,13 @@ These tests will be skipped if environment variables are not set.
 Set LOGIN_USERNAME__VJUDGE and LOGIN_PASSWORD__VJUDGE environment variables to run these tests.
 """
 
+import os
+
 import pytest
 import pytest_asyncio
-import os
-from ojhunt.crawlers.vjudge import __crawler_meta__, query
+
 from ojhunt.core.session import create_session
+from ojhunt.crawlers.vjudge import __crawler_meta__, query
 
 TEST_USERNAME = __crawler_meta__["test_username"]
 NOT_EXIST_USERNAME = "fmv84zcq3hwu"

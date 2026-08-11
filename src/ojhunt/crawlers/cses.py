@@ -27,9 +27,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import re
+
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
-from typing import Dict, List, Union, Optional
 
 __crawler_meta__ = {
     "title": "CSES",
@@ -71,10 +71,10 @@ async def _login(
             ):
                 raise RuntimeError("CSES login failed: invalid credentials")
     except aiohttp.ClientError as e:
-        raise RuntimeError(f"Login request failed: {str(e)}")
+        raise RuntimeError(f"Login request failed: {e!s}")
 
 
-async def _get_login_user_id(session: aiohttp.ClientSession) -> Optional[str]:
+async def _get_login_user_id(session: aiohttp.ClientSession) -> str | None:
     async with session.get(
         f"{BASE_URL}/",
         timeout=aiohttp.ClientTimeout(total=30),
@@ -93,10 +93,10 @@ async def _get_login_user_id(session: aiohttp.ClientSession) -> Optional[str]:
 async def query(
     session: aiohttp.ClientSession,
     username: str,
-    password: Optional[str] = None,
-    login_user: Optional[str] = None,
-    login_password: Optional[str] = None,
-) -> Dict[str, Union[int, List[str], None]]:
+    password: str | None = None,
+    login_user: str | None = None,
+    login_password: str | None = None,
+) -> dict[str, int | list[str] | None]:
     """
     Query CSES for user statistics.
 
@@ -139,7 +139,7 @@ async def query(
     else:
         raise ValueError("CSES requires login credentials.")
 
-    user_id: Optional[str] = None
+    user_id: str | None = None
     if username != cred_user:
         if username.isdigit():
             user_id = username
@@ -147,8 +147,8 @@ async def query(
             raise ValueError("CSES requires a numeric user ID to query other users")
 
     MAX_LOGIN_RETRIES = 2
-    user_text: Optional[str] = None
-    problemset_text: Optional[str] = None
+    user_text: str | None = None
+    problemset_text: str | None = None
 
     for attempt in range(MAX_LOGIN_RETRIES + 1):
         if attempt > 0:
@@ -180,7 +180,7 @@ async def query(
                 response.raise_for_status()
                 problemset_text = await response.text()
         except aiohttp.ClientError as e:
-            raise RuntimeError(f"Request failed: {str(e)}")
+            raise RuntimeError(f"Request failed: {e!s}")
 
         session_expired = LexborHTMLParser(problemset_text).css_first(
             '.content:lexbor-contains("Please login")'
