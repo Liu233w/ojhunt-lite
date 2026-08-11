@@ -59,7 +59,11 @@ def _doc(obj: Any) -> str:
 
 def _readable(annotation: str) -> str:
     """Drop the module prefixes that only add noise."""
-    return annotation.replace("typing.", "").replace("ojhunt.core.models.", "")
+    return (
+        annotation.replace("typing.", "")
+        .replace("collections.abc.", "")
+        .replace("ojhunt.core.models.", "")
+    )
 
 
 def _signature(fn: Callable[..., Any]) -> inspect.Signature:

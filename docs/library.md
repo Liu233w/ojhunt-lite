@@ -149,7 +149,7 @@ should.
 ### `query_sync()`
 
 ```text
-query_sync(crawler: CrawlerInfo | collections.abc.Callable[..., collections.abc.Awaitable[Any]], username: str, **kwargs: Any) -> CrawlerResult
+query_sync(crawler: CrawlerInfo | Callable[..., Awaitable[Any]], username: str, **kwargs: Any) -> CrawlerResult
 
 Query a crawler synchronously, opening and closing a session for you.
 
@@ -226,7 +226,7 @@ Attributes:
 Fields
     name: str
     meta: CrawlerMeta
-    query: collections.abc.Callable[..., collections.abc.Awaitable[CrawlerResult]]
+    query: Callable[..., Awaitable[CrawlerResult]]
 ```
 
 ### `CrawlerInfo.query_sync()`
