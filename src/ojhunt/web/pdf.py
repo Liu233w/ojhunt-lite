@@ -223,7 +223,9 @@ def _section(pdf: _Report, title: str) -> None:
 
 def _render_chart_png(history: list[HistoryEntry]) -> bytes:
     """Render a solved-over-time line chart for all history entries, return PNG bytes."""
-    dates = [datetime.strptime(e.key, "%Y-%m-%d") for e in history]
+    # Naive on purpose: the keys are already local-day strings from compute_day_key(),
+    # and the axis needs their order, not an instant.
+    dates = [datetime.strptime(e.key, "%Y-%m-%d") for e in history]  # noqa: DTZ007
     solved = [e.totalSolved for e in history]
 
     fig, ax = plt.subplots(figsize=(7.09, 1.8))  # ~180 mm wide at 96 dpi

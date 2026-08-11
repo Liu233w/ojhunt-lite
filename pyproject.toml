@@ -45,6 +45,16 @@ packages = ["src/ojhunt"]
 [tool.ruff]
 exclude = ["archived_crawlers"]
 
+[tool.ruff.lint]
+# BLE001: every crawler ends in `except Exception` by contract — any parse or
+# transport failure becomes a RuntimeError that the runner reports per crawler,
+# so one crawler's surprise never aborts the run. See ADR 0016.
+ignore = ["BLE001"]
+
+[tool.ruff.lint.flake8-bugbear]
+# B008: `File(...)` in a parameter default is how FastAPI declares an upload.
+extend-immutable-calls = ["fastapi.File"]
+
 [tool.pytest.ini_options]
 python_files = ["*_test.py", "test_*.py"]
 testpaths = ["tests", "README.md", "docs/"]

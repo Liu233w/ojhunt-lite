@@ -50,7 +50,8 @@ class LLMsDiscoverabilityMiddleware(BaseHTTPMiddleware):
 # Content-Security-Policy. Relaxed: 'unsafe-inline'/'unsafe-eval' are required because
 # index.html uses inline Alpine.js expressions and the standard Alpine build evaluates them
 # via Function(). Google Fonts is the only third-party origin; everything else is same-origin.
-_CSP = "; ".join(
+# Keep the list form: it is what carries the per-directive comments below.
+_CSP = "; ".join(  # noqa: FLY002
     [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
