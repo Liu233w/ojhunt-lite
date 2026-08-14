@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.py"
+  - "pyproject.toml"
+---
+
 # Python conventions
 
 ## Import order
@@ -30,7 +36,7 @@ Do not use `Dict`, `List`, `Optional` or `Union` from `typing` — ruff rewrites
 (`UP006`, `UP007`, `UP035`, `UP045`), and the `format-lint-python.sh` hook applies that
 rewrite on every edit. Take `Callable` and `Awaitable` from `collections.abc`, not `typing`.
 
-See [ADR 0016](../adr/0016-adopt-ruff-default-rule-set.md) for why this reversed.
+See [ADR 0016](../../docs/adr/0016-adopt-ruff-default-rule-set.md) for why this reversed.
 
 ## Prefer asserts and names over comments
 
@@ -46,6 +52,7 @@ argument, a judge's response — needs a real `raise`, because `python -O` strip
 
 In tests, put the explanation in the assert message, not in a comment above it:
 `assert "items" in listed, "dict's own attributes must survive"`.
+`format-lint-python.sh` flags a comment that sits directly above an `assert`.
 
 Where a comment would explain *what* an expression produces, name the value instead:
 `single_line_description = " ".join(text.split())`.
@@ -67,9 +74,9 @@ resolve. This applies to all packages including FastAPI, uvicorn, etc.
 
 ## Ruff removes imports before their usage
 
-Ruff (pre-commit hook) runs between edits and strips imports that appear unused at
-that moment. If you add an import in one `Edit` call and the code that uses it in a
-second call, ruff will delete the import between the two calls.
+Ruff runs between edits and strips imports that appear unused at that moment. If you add an
+import in one `Edit` call and the code that uses it in a second call, ruff will delete the
+import between the two calls.
 
 **Fix:** always add new imports and the code that uses them in the same `Edit` call.
 

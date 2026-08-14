@@ -1,7 +1,14 @@
+---
+paths:
+  - "**/*_test.py"
+  - "tests/**/*.py"
+---
+
 # Pytest conventions
 
-Crawler-specific test conventions live in [`docs/dev/crawlers.md`](crawlers.md) and the
-**ojhunt-crawlers** skill. Playwright e2e tests live in [`docs/dev/e2e.md`](e2e.md).
+Crawler-specific test conventions live in [`docs/dev/crawlers.md`](../../docs/dev/crawlers.md)
+and the **ojhunt-crawlers** skill. Playwright e2e tests have their own rule in
+[`e2e.md`](e2e.md).
 
 ## Running tests
 
@@ -46,6 +53,13 @@ client = TestClient(app, follow_redirects=False)
 # File upload syntax:
 files = {"field": ("name.pdf", bytes_content, "application/pdf")}
 ```
+
+## Prefer discovery over a hardcoded list
+
+A test that enumerates today's routes, crawlers, or files goes stale in silence: the thing it
+was meant to catch is exactly the new entry nobody added to the list. Walk the router or glob
+the directory instead. When a shape genuinely cannot be discovered, assert that no such shape
+exists yet, so the day one appears the suite says so.
 
 ## Markdown doc tests
 
