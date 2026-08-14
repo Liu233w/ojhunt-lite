@@ -306,8 +306,9 @@ def test_api_generate_merges_previous_pdf():
 
     r3 = _extract(pdf2)
     assert r3.status_code == 200
-    # report_date should be the most recent entry (date from r2 since it ran after r1)
-    assert r3.json()["report_date"] is not None
+    assert r3.json()["report_date"] is not None, (
+        "report_date carries the most recent entry, which is r2 — it ran after r1"
+    )
     # Both day keys must appear in embedded history
     extracted = extract_data(pdf2)
     keys = {e.key for e in extracted.history}

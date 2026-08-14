@@ -250,8 +250,9 @@ def test_security_headers_present_on_page():
     assert "default-src 'self'" in csp
     assert "frame-ancestors 'none'" in csp
     assert "upgrade-insecure-requests" in csp
-    # ReDoc spawns a blob: web worker; the worker-src directive must allow it.
-    assert "worker-src 'self' blob:" in csp
+    assert "worker-src 'self' blob:" in csp, (
+        "ReDoc spawns a blob: web worker, so worker-src must allow it"
+    )
 
 
 # ---------------------------------------------------------------------------

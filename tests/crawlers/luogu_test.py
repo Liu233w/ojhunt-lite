@@ -47,8 +47,7 @@ async def test_valid_user(session):
     assert result["submissions"] > 0
     assert result["submissions"] >= result["solved"]
 
-    # This user should have more than 100 solved problems
-    assert result["solved"] > 100
+    assert result["solved"] > 100, "the test user has solved more than 100 problems"
 
 
 @pytest.mark.asyncio
