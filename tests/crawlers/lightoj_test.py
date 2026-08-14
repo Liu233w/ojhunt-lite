@@ -34,5 +34,6 @@ async def test_valid_user(session):
 
     assert result["solved"] > 0
     assert result["submissions"] >= result["solved"]
-    # solved_list is not available without authentication
-    assert result["solved_list"] is None
+    assert result["solved_list"] is None, (
+        "solved_list is unavailable without authentication"
+    )

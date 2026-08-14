@@ -41,5 +41,6 @@ async def test_valid_user(session):
     assert result["solved"] > 0
     assert result["submissions"] >= result["solved"]
 
-    # LeetCode does not expose the full solved list publicly
-    assert result["solved_list"] is None
+    assert result["solved_list"] is None, (
+        "LeetCode does not expose the full solved list publicly"
+    )

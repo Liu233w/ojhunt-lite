@@ -43,8 +43,10 @@ async def test_valid_user(session):
     assert result["submissions"] > 0
     assert result["submissions"] >= result["solved"]
 
-    # Check that solved_list has the correct length
-    assert len(result["solved_list"]) == result["solved"]
+    assert len(result["solved_list"]) == result["solved"], (
+        "solved_list must hold one entry per solved problem"
+    )
 
-    # Check that solved_list contains valid problem labels
-    assert all(isinstance(p, str) for p in result["solved_list"])
+    assert all(isinstance(p, str) for p in result["solved_list"]), (
+        "every solved_list entry must be a problem label string"
+    )

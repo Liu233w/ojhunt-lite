@@ -45,5 +45,6 @@ async def test_valid_user(session):
     assert result["solved"] > 0
     assert result["submissions"] > 0
 
-    # AtCoder only returns AC count, so submissions == solved
-    assert result["submissions"] == result["solved"]
+    assert result["submissions"] == result["solved"], (
+        "AtCoder reports only an AC count, so submissions equals solved"
+    )

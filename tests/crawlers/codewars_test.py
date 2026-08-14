@@ -43,11 +43,14 @@ async def test_valid_user(session):
     assert result["solved"] > 0
     assert result["submissions"] > 0
 
-    # Codewars only returns completed kata count, so submissions == solved
-    assert result["submissions"] == result["solved"]
+    assert result["submissions"] == result["solved"], (
+        "Codewars reports only completed kata, so submissions equals solved"
+    )
 
-    # Check that solved_list has the correct length
-    assert len(result["solved_list"]) == result["solved"]
+    assert len(result["solved_list"]) == result["solved"], (
+        "solved_list must hold one entry per solved problem"
+    )
 
-    # Check for known solved problem
-    assert "equal-sides-of-an-array" in result["solved_list"]
+    assert "equal-sides-of-an-array" in result["solved_list"], (
+        "a known solved problem must appear in solved_list"
+    )

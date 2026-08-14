@@ -37,8 +37,10 @@ async def test_valid_user(session):
     assert result["submissions"] > 0
     assert result["submissions"] >= result["solved"]
 
-    # Check that solved_list has the correct length
-    assert len(result["solved_list"]) == result["solved"]
+    assert len(result["solved_list"]) == result["solved"], (
+        "solved_list must hold one entry per solved problem"
+    )
 
-    # Check for known solved problem
-    assert "103" in result["solved_list"]
+    assert "103" in result["solved_list"], (
+        "a known solved problem must appear in solved_list"
+    )

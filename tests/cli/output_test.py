@@ -464,8 +464,9 @@ class TestPrintReportJson:
         ]
         print_report(results, show_problems=True, total_duration=1.0, json_output=True)
         data = json.loads(capsys.readouterr().out)
-        # solved_list is always in JSON regardless of show_problems
-        assert data["results"][0]["solved_list"] == ["1A", "2A"]
+        assert data["results"][0]["solved_list"] == ["1A", "2A"], (
+            "solved_list is always in JSON, regardless of show_problems"
+        )
 
 
 class TestPrintReportShowProblems:
