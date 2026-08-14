@@ -7,7 +7,8 @@ description: End-to-end feature workflow — plan (in plan mode) → approval �
 
 This skill is the **procedure** for taking a feature from request to committed code.
 It only orchestrates — the *conventions* for each area (Python style, tests, web
-layer, crawlers, …) live in `docs/dev/*.md`, indexed by the routing table in
+layer, crawlers, …) load from `.claude/rules/*.md` on a file match, or sit in `docs/dev/*.md`
+indexed by the routing table in
 `docs/development.md`. Read the matching doc **before** you write code in that area.
 
 ## User request
@@ -22,7 +23,7 @@ make the change reviewable — don't skip ahead.
 1. **Plan first, and get approval.** If you are not already in plan mode, enter it
    (EnterPlanMode) — planning before editing is what lets the user redirect the
    approach cheaply, before any code is written. Explore the relevant code, read the
-   matching `docs/dev/*.md`, then draft a concrete plan and present it for approval
+   matching rule or `docs/dev/*.md`, then draft a concrete plan and present it for approval
    (ExitPlanMode). **Do not implement until the user approves** — the request above
    is a starting point, not a mandate to build immediately.
 

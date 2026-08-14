@@ -1,6 +1,11 @@
+---
+paths:
+  - "tests/e2e/**/*.py"
+---
+
 # E2E tests (Playwright)
 
-See [`docs/dev/testing.md`](testing.md) for shared pytest fixture and assertion conventions.
+See [`tests.md`](tests.md) for shared pytest fixture and assertion conventions.
 
 ## Setup
 

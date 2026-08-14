@@ -9,7 +9,7 @@ This skill is the **procedure**. The reference material it points to —
 `__crawler_meta__` fields, login types, code templates, HTML parsing, SSL, license header,
 archived-crawler rules — lives in **`docs/dev/crawlers.md`**. Read that alongside these steps.
 
-For general pytest conventions see **`docs/dev/testing.md`**. For ADR guidance on significant
+For general pytest conventions see **`.claude/rules/tests.md`**. For ADR guidance on significant
 design decisions, invoke the **ojhunt-commit** skill.
 
 ## Implementing a New Crawler
