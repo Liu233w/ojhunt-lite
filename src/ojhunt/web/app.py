@@ -24,7 +24,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from ojhunt.web.api import router as api_router
 from ojhunt.web.crawler_status import start_checker, stop_checker
 from ojhunt.web.http_client import close_http_client, get_http_client, init_http_client
-from ojhunt.web.pages import jinja_env
+from ojhunt.web.pages import render_page
 from ojhunt.web.pages import router as pages_router
 
 load_dotenv()
@@ -145,9 +145,13 @@ async def http_exception_handler(
 ) -> Response:
     if exc.status_code == 404 and not request.url.path.startswith("/api"):
         image_filename = random.choice(["cat.jpg", "man.jpg", "metro.jpg"])
-        template = jinja_env.get_template("404.html.jinja")
         return HTMLResponse(
-            template.render(image_filename=image_filename),
+            render_page(
+                "404.html.jinja",
+                request,
+                canonical=False,
+                image_filename=image_filename,
+            ),
             status_code=404,
         )
     return await _default_http_exception_handler(request, exc)

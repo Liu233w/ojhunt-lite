@@ -83,8 +83,27 @@ jinja_env = Environment(
 jinja_env.globals["static_version"] = STATIC_VERSION
 
 
+def render_page(
+    template_name: str, request: Request, *, canonical: bool = True, **context: object
+) -> str:
+    """Render a page template with the metadata `base.html.jinja` needs.
+
+    Pass `canonical=False` for a page that must stay out of the search index
+    (404, easter eggs) — a noindex page must not claim a canonical URL.
+
+    The canonical URL comes from the request URL itself, not from `base_url` plus
+    the path: both carry any ASGI `root_path`, so joining them repeats the mount
+    prefix. `site_base` keeps `base_url`, because it is joined with a literal path.
+    """
+    return jinja_env.get_template(template_name).render(
+        site_base=str(request.base_url).rstrip("/"),
+        canonical_url=str(request.url.replace(query="")) if canonical else None,
+        **context,
+    )
+
+
 @router.get("/", response_class=HTMLResponse)
-async def index() -> str:
+async def index(request: Request) -> str:
     crawler_data = {
         name: {
             "title": info.meta.title,
@@ -93,13 +112,11 @@ async def index() -> str:
         }
         for name, info in sorted(crawler_registry.items())
     }
-    template = jinja_env.get_template("index.html.jinja")
-    return template.render(crawlers=crawler_data)
+    return render_page("index.html.jinja", request, crawlers=crawler_data)
 
 
 @router.get("/about", response_class=HTMLResponse)
-async def about() -> str:
-    template = jinja_env.get_template("about.html.jinja")
+async def about(request: Request) -> str:
     build_time_str = None
     if BUILD_TIME:
         try:
@@ -111,7 +128,9 @@ async def about() -> str:
             )
         except ValueError:
             build_time_str = BUILD_TIME
-    return template.render(
+    return render_page(
+        "about.html.jinja",
+        request,
         build_time=build_time_str,
         git_commit_sha=GIT_COMMIT_SHA,
     )
@@ -155,22 +174,24 @@ async def statistics_redirect():
 
 
 @router.get("/pdf/legacy", response_class=HTMLResponse)
-async def pdf_legacy_get() -> str:
-    template = jinja_env.get_template("pdf_legacy.html.jinja")
-    return template.render(
+async def pdf_legacy_get(request: Request) -> str:
+    return render_page(
+        "pdf_legacy.html.jinja",
+        request,
         active_page="legacy",
         legacy_available=Path("legacy.db").exists(),
     )
 
 
 @router.post("/pdf/legacy")
-async def pdf_legacy_post(username: str = Form(...)):
-    template = jinja_env.get_template("pdf_legacy.html.jinja")
+async def pdf_legacy_post(request: Request, username: str = Form(...)):
     try:
         pdf_bytes = export_user_pdf(username.strip())
     except FileNotFoundError:
         return HTMLResponse(
-            template.render(
+            render_page(
+                "pdf_legacy.html.jinja",
+                request,
                 active_page="legacy",
                 legacy_available=False,
                 prefill_username=username,
@@ -178,7 +199,9 @@ async def pdf_legacy_post(username: str = Form(...)):
         )
     except ValueError as e:
         return HTMLResponse(
-            template.render(
+            render_page(
+                "pdf_legacy.html.jinja",
+                request,
                 active_page="legacy",
                 legacy_available=True,
                 error=str(e),
@@ -196,17 +219,16 @@ async def pdf_legacy_post(username: str = Form(...)):
 
 
 @router.get("/pdf/merge", response_class=HTMLResponse)
-async def pdf_merge_get() -> str:
-    template = jinja_env.get_template("pdf_merge.html.jinja")
-    return template.render(active_page="merge")
+async def pdf_merge_get(request: Request) -> str:
+    return render_page("pdf_merge.html.jinja", request, active_page="merge")
 
 
 @router.post("/pdf/merge")
 async def pdf_merge_post(
+    request: Request,
     pdf_a: UploadFile = File(...),
     pdf_b: UploadFile = File(...),
 ):
-    template = jinja_env.get_template("pdf_merge.html.jinja")
     try:
         bytes_a = await pdf_a.read()
         bytes_b = await pdf_b.read()
@@ -223,7 +245,11 @@ async def pdf_merge_post(
         )
         pdf_bytes = generate_pdf(data_a.settings, history, snapshot)
     except ValueError as e:
-        return HTMLResponse(template.render(active_page="merge", error=str(e)))
+        return HTMLResponse(
+            render_page(
+                "pdf_merge.html.jinja", request, active_page="merge", error=str(e)
+            )
+        )
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
@@ -232,7 +258,7 @@ async def pdf_merge_post(
 
 
 @router.get("/crawlers", response_class=HTMLResponse)
-async def crawlers_page(test_availability: str | None = None) -> str:
+async def crawlers_page(request: Request, test_availability: str | None = None) -> str:
     import json
 
     if test_availability is not None:
@@ -260,16 +286,16 @@ async def crawlers_page(test_availability: str | None = None) -> str:
                 ),
             }
         )
-    template = jinja_env.get_template("crawlers.html.jinja")
-    return template.render(crawlers=crawler_list)
+    return render_page("crawlers.html.jinja", request, crawlers=crawler_list)
 
 
 async def _easter_egg_handler(request: Request) -> HTMLResponse:
     easter_egg_path = random.choice(
         ["easter_egg.html.jinja", "easter_egg_rick.html.jinja"]
     )
-    template = jinja_env.get_template(easter_egg_path)
-    return HTMLResponse(template.render(path=request.url.path))
+    return HTMLResponse(
+        render_page(easter_egg_path, request, canonical=False, path=request.url.path)
+    )
 
 
 for _path in _EASTER_EGG_PATHS:

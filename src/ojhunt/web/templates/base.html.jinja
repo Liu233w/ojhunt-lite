@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}OJHunt Lite{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}A lightweight async Python tool for Online Judge (OJ) statistics. Track your accepted problems (AC) and submissions across 29+ competitive programming sites.{% endblock %}">
+    {% block robots %}{% endblock %}
+    {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="OJHunt Lite">
+    <meta property="og:title" content="{{ self.title() }}">
+    <meta property="og:description" content="{{ self.meta_description() }}">
+    {% if canonical_url %}<meta property="og:url" content="{{ canonical_url }}">{% endif %}
+    {% if site_base %}<meta property="og:image" content="{{ site_base }}/assets/logo.png">{% endif %}
+    <meta name="twitter:card" content="summary">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="describedby" href="/llms.txt" type="text/plain">
     <link rel="preconnect" href="https://fonts.googleapis.com">
