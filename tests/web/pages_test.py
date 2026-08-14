@@ -4,9 +4,13 @@ All tests run without legacy.db and without a live server — they use FastAPI's
 TestClient and mock export_user_pdf where needed.
 """
 
+import re
+
+import pytest
 from fastapi.testclient import TestClient
 
 from ojhunt.web.app import app
+from ojhunt.web.pages import router as pages_router
 from ojhunt.web.pdf import (
     HistoryEntry,
     PdfQueryItem,
@@ -277,3 +281,137 @@ def test_docs_vendored_assets_are_served():
         "/assets/redoc.standalone-2.5.3.js",
     ):
         assert client.get(asset).status_code == 200, asset
+
+
+# ---------------------------------------------------------------------------
+# Search-engine metadata (base.html.jinja + render_page)
+# ---------------------------------------------------------------------------
+
+MAX_DESCRIPTION_LENGTH = 160
+
+STATIC_PAGE_PATHS = sorted(
+    route.path
+    for route in pages_router.routes
+    if "GET" in getattr(route, "methods", set()) and "{" not in route.path
+)
+
+INDEXED_PAGES = ["/", "/about", "/crawlers", "/pdf/legacy", "/pdf/merge"]
+
+
+def _meta_content(html: str, attr: str, name: str) -> str | None:
+    match = re.search(
+        rf'<meta {attr}="{re.escape(name)}" content="([^"]*)"',
+        html,
+    )
+    return match.group(1) if match else None
+
+
+def _description(html: str) -> str | None:
+    return _meta_content(html, "name", "description")
+
+
+def _canonical(html: str) -> str | None:
+    match = re.search(r'<link rel="canonical" href="([^"]*)"', html)
+    return match.group(1) if match else None
+
+
+def _html_response(path: str):
+    response = client.get(path)
+    is_html = response.status_code == 200 and "text/html" in response.headers.get(
+        "content-type", ""
+    )
+    return response if is_html else None
+
+
+def test_no_page_route_takes_path_parameters():
+    templated = [route.path for route in pages_router.routes if "{" in route.path]
+    assert not templated, (
+        f"{templated} take path parameters, and the metadata checks below only "
+        "reach static paths — extend them to cover dynamic pages"
+    )
+
+
+def test_discovery_found_the_known_pages():
+    assert set(INDEXED_PAGES) <= set(STATIC_PAGE_PATHS), (
+        "route discovery missed a page listed in sitemap.xml.jinja"
+    )
+
+
+@pytest.mark.parametrize("path", STATIC_PAGE_PATHS)
+def test_page_has_a_description(path):
+    response = _html_response(path)
+    if response is None:
+        pytest.skip(f"{path} does not answer with HTML")
+    description = _description(response.text)
+    assert description, (
+        f"{path} has no meta description, so a search engine writes its own "
+        "snippet out of whatever text comes first on the page"
+    )
+    assert len(description) <= MAX_DESCRIPTION_LENGTH, (
+        f"{path} description is {len(description)} characters — "
+        f"a search engine truncates it at {MAX_DESCRIPTION_LENGTH}"
+    )
+
+
+def test_home_and_about_share_the_project_summary():
+    home = _description(client.get("/").text)
+    about = _description(client.get("/about").text)
+    assert home == about, "both pages describe the project, not one page of it"
+    assert "Online Judge" in home, "the summary must name what the project queries"
+
+
+def test_other_pages_describe_themselves():
+    generic = _description(client.get("/").text)
+    specific = {
+        path: _description(client.get(path).text)
+        for path in ("/crawlers", "/pdf/legacy", "/pdf/merge")
+    }
+    for path, description in specific.items():
+        assert description != generic, f"{path} reuses the generic description"
+    assert len(set(specific.values())) == len(specific), "descriptions are not unique"
+
+
+@pytest.mark.parametrize("path", STATIC_PAGE_PATHS)
+def test_page_either_claims_a_canonical_url_or_says_noindex(path):
+    response = _html_response(path)
+    if response is None:
+        pytest.skip(f"{path} does not answer with HTML")
+    html = response.text
+    if _meta_content(html, "name", "robots") == "noindex":
+        assert _canonical(html) is None, f"{path} is noindex but claims a canonical URL"
+        return
+    assert _canonical(html) == f"http://testserver{path}", (
+        f"{path} is indexable, so it must be canonical to itself"
+    )
+    assert _meta_content(html, "property", "og:url") == _canonical(html), (
+        f"{path} disagrees with itself: og:url differs from the canonical URL"
+    )
+
+
+def test_home_page_has_open_graph_tags():
+    html = client.get("/").text
+    assert _meta_content(html, "property", "og:type") == "website"
+    assert _meta_content(html, "property", "og:site_name") == "OJHunt Lite"
+    assert _meta_content(html, "property", "og:title") == "OJHunt Lite"
+    assert _meta_content(html, "property", "og:description") == _description(html)
+    assert (
+        _meta_content(html, "property", "og:image")
+        == "http://testserver/assets/logo.png"
+    )
+    assert _meta_content(html, "name", "twitter:card") == "summary"
+
+
+def test_crawlers_page_description_counts_the_registry():
+    from ojhunt.crawlers import crawlers as registry
+
+    description = _description(client.get("/crawlers").text)
+    assert f"All {len(registry)} online judges" in description
+
+
+@pytest.mark.parametrize("path", ["/admin", "/.env", "/no-such-page"])
+def test_junk_page_is_excluded_from_the_index(path):
+    html = client.get(path).text
+    assert _meta_content(html, "name", "robots") == "noindex", (
+        f"{path} answers 200, so without noindex a search engine can index it"
+    )
+    assert _canonical(html) is None, f"{path} must not claim a canonical URL"
