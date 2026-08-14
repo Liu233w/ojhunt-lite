@@ -77,4 +77,6 @@ dev = [
     "pytest-timeout>=2.4.0",
     "pytest-markdown-docs",
     "ruff>=0.15.1",
+    "ast-grep-cli>=0.45.1",
+    "ast-grep-py>=0.45.1",
 ]

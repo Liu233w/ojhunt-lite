@@ -51,8 +51,9 @@ Asserts are for what the code guarantees itself. Data arriving from outside — 
 argument, a judge's response — needs a real `raise`, because `python -O` strips asserts.
 
 In tests, put the explanation in the assert message, not in a comment above it:
-`assert "items" in listed, "dict's own attributes must survive"`.
-`format-lint-python.sh` flags a comment that sits directly above an `assert`.
+`assert "items" in listed, "dict's own attributes must survive"`. This is enforced —
+`lint/rules/comment_above_assert.py` flags a comment beside an `assert`, whether it sits
+above the line or trails it.
 
 Where a comment would explain *what* an expression produces, name the value instead:
 `single_line_description = " ".join(text.split())`.

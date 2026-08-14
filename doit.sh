@@ -205,15 +205,45 @@ status() {
 logs() { tail -F "$SERVER_LOG"; }
 
 lint() {
-  run_logged lint _ruff_check_and_format
+  run_logged lint _lint_all
 }
 
-# Both ruff passes always run, so one report lists every problem. Ruff 0.16 also
+# Every pass always runs, so one report lists every problem. Ruff 0.16 also
 # formats python blocks inside markdown, which `ruff check` alone does not see.
-_ruff_check_and_format() {
+# The project's own rules live in lint/rules/ — see .claude/rules/hooks.md.
+_lint_all() {
   local status=0
   uv run ruff check . || status=1
   uv run ruff format --check . || status=1
+  _project_lint_rules || status=1
+  return "$status"
+}
+
+# Python rules take the files to scan; each falls back to its own default scope.
+_project_lint_rules() {  # _project_lint_rules [file...]
+  local status=0 rule
+  for rule in lint/rules/*.py; do
+    [ -e "$rule" ] || continue
+    uv run python "$rule" "$@" || status=1
+  done
+  if compgen -G "lint/rules/*.yml" >/dev/null; then
+    uv run ast-grep scan "$@" || status=1
+  fi
+  return "$status"
+}
+
+# Tests for the rules themselves: pytest for the python ones, `ast-grep test`
+# for the yaml ones. tests/lint/ also fails when a rule has no tests at all.
+lint-rules() {
+  run_logged lint-rules _lint_rules_tests
+}
+
+_lint_rules_tests() {
+  local status=0
+  uv run pytest tests/lint -q || status=1
+  if compgen -G "lint/rules/*.yml" >/dev/null; then
+    uv run ast-grep test || status=1
+  fi
   return "$status"
 }
 
@@ -265,7 +295,7 @@ update-snapshots() {
 }
 
 full-check() {
-  # Full pre-commit gate: lint + every test suite (incl. visual) against a live
+  # Full pre-commit gate: lint + rule tests + every test suite (incl. visual) against a live
   # server. We own the server lifecycle so callers don't have to: start it once,
   # run everything, then stop it — but only if *we* started it, so a dev server
   # you left running with `./doit.sh start` survives.
@@ -278,13 +308,14 @@ full-check() {
   # function returns, where the local no longer exists and `set -u` would abort.
   trap "[[ $started_here == 1 ]] && kill" EXIT
   start
-  # Run all four to completion and collect failures rather than aborting on the
+  # Run every step to completion and collect failures rather than aborting on the
   # first — one run should surface every problem. `set +e` because these commands
   # are expected to fail sometimes and we handle the codes ourselves; each task
   # already tees its full output to .doit/<task>.log via run_logged.
   local -a failed=()
   set +e
   lint        || failed+=("lint")
+  lint-rules  || failed+=("lint-rules")
   test-unit   || failed+=("test-unit")
   test-e2e    || failed+=("test-e2e")
   test-visual || failed+=("test-visual")
@@ -293,7 +324,7 @@ full-check() {
     echo "full-check FAILED: ${failed[*]} — read .doit/<task>.log for details"
     return 1
   fi
-  echo "full-check PASSED (lint, test-unit, test-e2e, test-visual)"
+  echo "full-check PASSED (lint, lint-rules, test-unit, test-e2e, test-visual)"
 }
 
 help() {
@@ -309,13 +340,14 @@ Server:
   reap               kill orphaned servers whose git worktree has been removed
 
 Tests:
-  lint               run ruff linter and formatter check
+  lint               run ruff (linter + formatter check) and the rules in lint/rules/
+  lint-rules         test the lint rules themselves (pytest + ast-grep test)
   test-unit          run unit tests (no network, no playwright) [pytest-args...]
   test-e2e           run e2e tests excluding visual (starts server if needed) [pytest-args...]
   test-visual        run visual regression tests (starts server if needed) [pytest-args...]
   test-crawler NAME  run tests for a specific crawler by name [pytest-args...]
   update-snapshots   update visual regression snapshots (starts server if needed)
-  full-check         run lint + all tests (unit, e2e, visual); starts & stops the server
+  full-check         run lint + rule tests + all tests (unit, e2e, visual); starts & stops the server
 
 Docs:
   gen-docs           regenerate docs/library.md from the library docstrings

@@ -56,6 +56,8 @@ Conventions for editing a kind of file. Each carries `paths:` frontmatter and lo
 - `web.md` — `src/ojhunt/web/**`: PDF internals, minimal-JS, CSS, FastAPI gotchas
 - `docs.md` — `docs/**`, `README.md`, `.claude/**`: what to write and what to leave out
 - `hooks.md` — `.claude/hooks/**`, `.claude/settings.json`: hook wiring and the regex gotcha
+- `lint-rules.md` — `lint/**`, `tests/lint/**`: when a convention earns a lint rule, which
+  form it takes (YAML or Python), and the requirement that every rule ships with tests
 
 A rule is not a place to dump reference material: it costs context every time a matching file
 is opened. Keep each one to conventions somebody could get wrong.
@@ -164,8 +166,9 @@ not here.
 - Development convention, style, schema, or gotcha for a code area → `docs/dev/<area>.md`
   (add a routing-table row in `docs/development.md` if the domain is new)
 - Workflow or process (a procedure run on demand) → `.claude/skills/ojhunt-*/`
-- "Never do X" or "always do Y after Z" → **hook first** (see `.claude/rules/hooks.md`); once
-  hook-enforced, do NOT also add a doc/skill entry — the hook is the enforcement, a note just
+- "Never do X" or "always do Y after Z" → a **lint rule** in `lint/rules/` when a parser can
+  judge it (see `.claude/rules/lint-rules.md`), wired by a hook (`.claude/rules/hooks.md`);
+  once enforced, do NOT also add a doc/skill entry — the rule is the enforcement, a note just
   creates drift
 - Project-level command override → `.claude/commands/`
 - Significant architectural decision (multiple approaches considered, choice non-obvious from code) → `docs/adr/`

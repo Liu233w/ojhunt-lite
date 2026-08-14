@@ -40,7 +40,7 @@ async def test_valid_user(session):
     assert isinstance(result["solved_list"], list)
 
     assert result["solved"] > 0
-    assert result["submissions"] > 10  # Specific assertion from test.js
+    assert result["submissions"] > 10, "carried over from the original test.js"
     assert result["submissions"] >= result["solved"]
 
     assert len(result["solved_list"]) == result["solved"], (
