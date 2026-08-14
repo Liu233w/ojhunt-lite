@@ -6,19 +6,20 @@ paths:
 
 # Project hooks
 
-Hooks enforce constraints mechanically. Check `.claude/settings.json` to see
-what's currently active.
+Hooks decide *when* a check runs. Check `.claude/settings.json` to see what is currently
+active.
 
 ## Location
 
 Scripts live in `.claude/hooks/`, wired in `.claude/settings.json` (checked
 into git — not `settings.local.json`, not `~/.claude/`).
 
-## Write a check only when it is cheap and deterministic
+## Keep the check out of the hook
 
-A hook earns its place when the rule is a one-line pattern with an unambiguous fix. If the
-check needs judgement, a rule under `.claude/rules/` states the convention instead — a noisy
-hook trains everyone to ignore it.
+`format-lint-python.sh` runs ruff and then every rule in `lint/rules/` over the file that
+changed. What each rule checks is defined there, not here, so the hook and `./doit.sh lint`
+can never disagree. Adding a check to the hook alone gives you a rule that CI does not run and
+nobody can test — write it in `lint/rules/` instead (see `.claude/rules/lint-rules.md`).
 
 ## Regex gotcha for command bans
 

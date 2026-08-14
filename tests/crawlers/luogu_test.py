@@ -41,7 +41,7 @@ async def test_valid_user(session):
 
     assert isinstance(result["solved"], int)
     assert isinstance(result["submissions"], int)
-    assert result["solved_list"] is None  # Luogu no longer exposes solved list
+    assert result["solved_list"] is None, "Luogu no longer exposes the solved list"
 
     assert result["solved"] > 0
     assert result["submissions"] > 0
@@ -62,7 +62,7 @@ async def test_user_with_many_submissions(session):
 
     assert isinstance(result["solved"], int)
     assert isinstance(result["submissions"], int)
-    assert result["solved_list"] is None  # Luogu no longer exposes solved list
+    assert result["solved_list"] is None, "Luogu no longer exposes the solved list"
 
     assert result["solved"] > 0
     assert result["submissions"] > 1000

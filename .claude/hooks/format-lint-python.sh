@@ -11,21 +11,32 @@ elif command -v ruff &>/dev/null; then
     ruff check --fix "$FILE" 2>/dev/null || true
 fi
 
-# In tests the explanation belongs in the assert message, not in a comment above it
-# (.claude/rules/python.md). Ruff has no rule for this, and it is a one-line pattern.
-# Only the text this edit introduced is scanned: the suite still carries older comments,
-# and flagging those would fire on every unrelated edit until someone cleaned them up.
-if [[ "$FILE" == *_test.py || "$FILE" == */tests/* ]]; then
-    ADDED=$(echo "$INPUT" | jq -r '.tool_input.new_string // .tool_input.content // ""' 2>/dev/null)
-    HITS=$(printf '%s\n' "$ADDED" | awk '
-        /^[[:space:]]*#/ { comment = 1; text = $0; next }
-        /^[[:space:]]*assert[[:space:](]/ { if (comment) print text }
-        { comment = 0 }
-    ')
-    if [[ -n "$HITS" ]]; then
-        echo "$FILE: this edit puts a comment directly above an assert. Move the explanation into the assert message (see .claude/rules/python.md):" >&2
-        echo "$HITS" >&2
-        exit 2
-    fi
+# The project's own rules (lint/rules/), on the one file that just changed. Same
+# rules ./doit.sh lint runs over everything, so the hook cannot drift from CI.
+# Each rule decides whether the file is in its own scope.
+command -v uv &>/dev/null || exit 0
+
+# An environment that cannot run anything (fresh clone, offline uv cache) would
+# otherwise fail every rule and block every edit on a uv traceback. The exit code
+# cannot tell that apart afterwards: a rule that raises also exits 1. The ruff
+# steps above skip for the same reason.
+uv run python -c "" &>/dev/null || exit 0
+
+FAILURES=""
+collect() {
+    OUTPUT=$("$@" 2>&1) || FAILURES+="$OUTPUT"$'\n'
+    return 0
+}
+
+for RULE in lint/rules/*.py; do
+    [ -e "$RULE" ] || continue
+    collect uv run python "$RULE" "$FILE"
+done
+if compgen -G "lint/rules/*.yml" >/dev/null; then
+    collect uv run ast-grep scan "$FILE"
+fi
+if [[ -n "$FAILURES" ]]; then
+    printf '%s\n' "$FAILURES" >&2
+    exit 2
 fi
 exit 0

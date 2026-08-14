@@ -38,9 +38,9 @@ async def test_valid_user(session):
 
     assert isinstance(result["solved"], int)
     assert isinstance(result["submissions"], int)
-    assert (
-        result["solved_list"] is None
-    )  # kenkoooo API only provides AC count, not problem list
+    assert result["solved_list"] is None, (
+        "the kenkoooo API provides only an AC count, not a problem list"
+    )
 
     assert result["solved"] > 0
     assert result["submissions"] > 0

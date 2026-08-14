@@ -4,15 +4,15 @@
 
 Run `./doit.sh help` for the full list. Key tasks:
 
-- `./doit.sh lint` — ruff linter
+- `./doit.sh lint` — ruff plus the project's own rules in `lint/rules/`
 - `./doit.sh test-unit` — unit tests (fast, no network, no browser)
 - `./doit.sh test-e2e` — browser e2e tests, excluding visual (starts dev server if needed)
 - `./doit.sh test-crawler <name>` — network tests for one crawler (e.g. `codeforces`)
 - `./doit.sh test-visual` / `update-snapshots` — visual regression tests
-- `./doit.sh full-check` — lint + all tests (unit, e2e, visual); starts & stops the server
+- `./doit.sh full-check` — lint + rule tests + all tests (unit, e2e, visual); starts & stops the server
 - `./doit.sh start` / `kill` / `status` / `logs` — dev server lifecycle
 
-When a `lint`/`test-*`/`full-check` task fails, its full output is already saved to `.doit/<task>.log` — **read that log** (e.g. `grep -nE 'FAILED|error' .doit/test-unit.log`) instead of re-running the task with `| tail`/`| grep`. `full-check` runs each step as its own task, so read the specific step's log (`.doit/test-e2e.log`, `.doit/test-visual.log`, …); its own stdout is only a short `full-check PASSED/FAILED` summary, so don't pipe it through `| tail` either.
+When a `lint*`/`test-*`/`full-check` task fails, its full output is already saved to `.doit/<task>.log` — **read that log** (e.g. `grep -nE 'FAILED|error' .doit/test-unit.log`) instead of re-running the task with `| tail`/`| grep`. `full-check` runs each step as its own task, so read the specific step's log (`.doit/test-e2e.log`, `.doit/test-visual.log`, …); its own stdout is only a short `full-check PASSED/FAILED` summary, so don't pipe it through `| tail` either.
 
 ## Where to find documentation
 
