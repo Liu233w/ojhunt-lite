@@ -55,6 +55,17 @@ The home for development conventions, schemas, templates, and gotchas — the kn
 new, so the agent can find it. **Only document what's non-obvious** — if Claude can derive it by
 reading the files, or it's enforced elsewhere (hook, test, linter), don't write it.
 
+**Docs capture intent, not facts that can be reasoned.** Two questions kill most draft lines:
+
+- Can an agent derive this by opening one file? Delete the line.
+- Does a test, hook, or linter already assert it? Delete the line.
+
+**Before writing a rule, try to make a test assert it instead.** A test fails when somebody
+breaks the rule; a doc line does not. Prefer a test that *discovers* what it checks (walk the
+router, glob the crawler files) over one that hardcodes today's list — a hardcoded list goes
+stale silently, which is the gap the rule was meant to close. Document only what the test
+cannot express: why the rule exists.
+
 **When a well-written doc already covers a topic, reference it — don't replicate.** A skill or
 another doc should point to the authoritative file plus any gotchas it doesn't capture.
 
