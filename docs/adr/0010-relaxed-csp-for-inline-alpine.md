@@ -47,7 +47,7 @@ justified for the current threat model.
 
 Ship a CSP that constrains every other directive tightly (`default-src 'self'`,
 `object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`, `form-action 'self'`,
-`upgrade-insecure-requests`, Google Fonts the only third-party origin) while allowing inline
+`upgrade-insecure-requests`, no third-party origin in any directive) while allowing inline
 and eval in `script-src` only.
 
 ## Decision
@@ -78,6 +78,14 @@ lockdown (`Permissions-Policy`), HSTS, and mixed-content upgrade.
   branding URL (blocked by `img-src 'self' data:`); it is patched to the vendored
   `/assets/redoc-logo-mini.svg`. **When re-vendoring ReDoc, re-apply that single string
   replacement** — the e2e test fails on the CSP violation if it is missed.
+
+- **Fonts are self-hosted, so no directive names a third party.** The CSP first allowed
+  `https://fonts.googleapis.com` in `style-src` and `https://fonts.gstatic.com` in `font-src`,
+  which made Google Fonts the only third-party origin. IBM Plex now ships under
+  `static/assets/fonts/`, so both directives are back to `'self'`. Keep them that way: a
+  webfont added from a CDN reintroduces the origin *and* sends every visitor's IP to it. The
+  privacy point is the reason the fonts moved — see the Google Fonts ruling of the
+  Landgericht München I (20 Jan 2022, Az. 3 O 17493/20).
 
 ### Infrastructure follow-ups (out of repo — Cloudflare/DNS)
 
