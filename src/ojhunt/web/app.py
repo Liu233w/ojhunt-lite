@@ -49,14 +49,15 @@ class LLMsDiscoverabilityMiddleware(BaseHTTPMiddleware):
 
 # Content-Security-Policy. Relaxed: 'unsafe-inline'/'unsafe-eval' are required because
 # index.html uses inline Alpine.js expressions and the standard Alpine build evaluates them
-# via Function(). Google Fonts is the only third-party origin; everything else is same-origin.
+# via Function(). Every origin is now same-origin: the fonts are served from /assets/fonts,
+# so no directive names a third party.
 # Keep the list form: it is what carries the per-directive comments below.
 _CSP = "; ".join(  # noqa: FLY002
     [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-        "font-src 'self' https://fonts.gstatic.com",
+        "style-src 'self' 'unsafe-inline'",
+        "font-src 'self'",
         "img-src 'self' data:",
         # ReDoc (/redoc) renders its docs in a web worker spawned from a blob: URL;
         # without this the worker is blocked by the default-src 'self' fallback.
