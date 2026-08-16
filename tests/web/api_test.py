@@ -130,9 +130,10 @@ def test_to_model_unknown_crawler():
     )
     core = dto.to_model()
 
-    # Unknown crawler falls back to NullCrawler; result is still considered
-    # successful so its problems are included in merge (prefixed with crawler name)
-    assert core.success is True
+    assert core.success is True, (
+        "an unknown crawler falls back to NullCrawler but still counts as a success, "
+        "so its problems reach the merge under a crawler-name prefix"
+    )
     assert isinstance(core.crawler, NullCrawler)
     assert core.solved_list == ["1A"]
 
@@ -185,11 +186,11 @@ def test_list_crawlers_defaults_to_waiting():
     data = response.json()["data"]
     assert "codeforces" in data
     cf = data["codeforces"]
-    # Existing metadata fields are preserved alongside the new status fields.
-    assert "title" in cf
+    assert "title" in cf, "existing metadata survives alongside the status fields"
     assert "isAggregator" in cf
-    # Checker hasn't run under TestClient → default status, no error.
-    assert cf["status"] == "waiting"
+    assert cf["status"] == "waiting", (
+        "the checker does not run under TestClient, so status stays at its default"
+    )
     assert cf["statusError"] is None
 
 

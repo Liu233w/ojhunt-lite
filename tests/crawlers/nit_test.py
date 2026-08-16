@@ -68,12 +68,13 @@ async def test_valid_user(session):
     assert result["submissions"] > 0
     assert result["submissions"] >= result["solved"]
 
-    # solved_list contains unique problems solved on NIT
-    # Note: solved count from page may differ from unique problems in solved_list
-    assert len(result["solved_list"]) > 0
+    assert len(result["solved_list"]) > 0, (
+        "solved_list holds the unique problems solved on NIT, and its length can "
+        "differ from the count the profile page reports"
+    )
     assert len(result["solved_list"]) <= result["solved"]
 
-    # Check for known solved problems (NIT includes problems from other OJs)
-    assert "nit-100" in result["solved_list"]
-    # NIT problem ID 2097 maps to HDU-2181
-    assert "hdu-2181" in result["solved_list"]
+    assert "nit-100" in result["solved_list"], (
+        "NIT lists problems from other judges alongside its own"
+    )
+    assert "hdu-2181" in result["solved_list"], "NIT problem 2097 maps to hdu-2181"

@@ -64,6 +64,7 @@ def test_importing_one_crawler_does_not_discover_the_rest():
 def test_accessing_crawlers_discovers_them_all():
     imported = _crawlers_imported_by("from ojhunt.crawlers import crawlers")
 
-    # >=, not ==: _discover() imports every module in the package, and one need
-    # not carry __crawler_meta__ to be imported.
-    assert imported >= len(crawler_registry)
+    assert imported >= len(crawler_registry), (
+        "_discover() imports every module in the package, and a module need not "
+        "carry __crawler_meta__ to be imported — hence >=, not =="
+    )

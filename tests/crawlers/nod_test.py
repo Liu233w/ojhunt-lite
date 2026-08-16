@@ -36,5 +36,6 @@ async def test_valid_user(session):
     assert result["solved"] > 0
     assert result["submissions"] >= result["solved"]
     assert isinstance(result["solved_list"], list)
-    # 51Nod may have 1 problem outside standard ProblemTables collections
-    assert len(result["solved_list"]) >= result["solved"] - 1
+    assert len(result["solved_list"]) >= result["solved"] - 1, (
+        "51Nod can hold one problem outside the standard ProblemTables collections"
+    )

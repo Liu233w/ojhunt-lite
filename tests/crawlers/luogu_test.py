@@ -41,14 +41,13 @@ async def test_valid_user(session):
 
     assert isinstance(result["solved"], int)
     assert isinstance(result["submissions"], int)
-    assert result["solved_list"] is None  # Luogu no longer exposes solved list
+    assert result["solved_list"] is None, "Luogu no longer exposes the solved list"
 
     assert result["solved"] > 0
     assert result["submissions"] > 0
     assert result["submissions"] >= result["solved"]
 
-    # This user should have more than 100 solved problems
-    assert result["solved"] > 100
+    assert result["solved"] > 100, "the test user has solved more than 100 problems"
 
 
 @pytest.mark.asyncio
@@ -63,7 +62,7 @@ async def test_user_with_many_submissions(session):
 
     assert isinstance(result["solved"], int)
     assert isinstance(result["submissions"], int)
-    assert result["solved_list"] is None  # Luogu no longer exposes solved list
+    assert result["solved_list"] is None, "Luogu no longer exposes the solved list"
 
     assert result["solved"] > 0
     assert result["submissions"] > 1000

@@ -376,9 +376,8 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
     assert "2020-01-01" in keys, f"Old history entry missing; got keys: {keys}"
     assert "2020-01-02" in keys
     assert "2020-01-03" in keys
-    # And at least one entry from ~2026 (today) was added
     assert any(k.startswith("202") and k > "2020" for k in keys), (
-        f"No recent entry found; keys: {keys}"
+        f"today's run must add an entry of its own; keys: {keys}"
     )
 
 

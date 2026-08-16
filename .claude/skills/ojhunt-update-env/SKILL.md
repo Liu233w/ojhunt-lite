@@ -9,13 +9,22 @@ description: Single source of truth for where each piece of knowledge belongs (d
 documentation, point to the authoritative source — don't inline definitions that already exist
 elsewhere. Duplication causes drift.
 
-**Workflow vs. convention — pick the right channel.** A **workflow** (a procedure you run on
-demand: commit, implement a crawler, decide where knowledge goes) is a **skill**. A
-**convention or reference fact** (code style, a schema, a gotcha, a test rule) is a **doc under
-`docs/dev/`** — because skills are lazily triggered and unreliably loaded, whereas `docs/dev/`
-is indexed by `docs/development.md`, which is `@`-imported into `CLAUDE.md` and therefore always
-in context. Don't put a convention in a skill hoping it triggers; add it to `docs/dev/` and its
-routing-table row.
+**Route by what triggers the knowledge, not by what it is about.** A **workflow** (a procedure
+you run on demand: commit, implement a crawler, decide where knowledge goes) is a **skill**. A
+**convention tied to editing a kind of file** is a **rule under `.claude/rules/`** with `paths:`
+frontmatter, so it enters context the moment a matching file is opened. Don't put a convention in
+a skill hoping it triggers.
+
+**`paths:` cannot trigger everything.** Keep a fact in `docs/dev/` plus a routing-table row when:
+
+- The file does not exist yet. A rule fires when Claude *reads* a matching file, so writing a
+  brand-new crawler has nothing to trigger on — this is why `docs/dev/crawlers.md` stays a doc.
+- The knowledge precedes any file: whether to write an ADR, which layer a fact belongs to,
+  which branch to commit on. No glob matches a decision.
+- The activity is not file editing at all: starting the dev server, deploying, ops.
+
+One more limit worth knowing: after `/compact`, path-scoped rules are **not** re-injected. They
+reload the next time a matching file is read. Root `CLAUDE.md` is re-injected.
 
 **Command docs span multiple layers — search before changing.** Shell commands (e.g. how to
 run tests, start the server, add a dependency) can be documented in skills, READMEs, `docs/`,
@@ -39,21 +48,40 @@ Documentation for users running or deploying the project:
   detail in `docs/dev/`, not here.
 - `docs/adr/` — Architectural decisions (see below)
 
-## `docs/dev/` (internal conventions & reference)
-The home for development conventions, schemas, templates, and gotchas — the knowledge you need
-*while working* but that isn't a procedure. One file per domain:
+## `.claude/rules/` (conventions that load on a file match)
+Conventions for editing a kind of file. Each carries `paths:` frontmatter and loads by itself:
+- `python.md` — `**/*.py`, `pyproject.toml`: import order, typing, comments, dependencies
+- `tests.md` — `**/*_test.py`, `tests/**`: pytest conventions, CI scope, page-route tests
+- `e2e.md` — `tests/e2e/**`: Playwright / visual regression conventions
+- `web.md` — `src/ojhunt/web/**`: PDF internals, minimal-JS, CSS, FastAPI gotchas
+- `docs.md` — `docs/**`, `README.md`, `.claude/**`: what to write and what to leave out
+- `hooks.md` — `.claude/hooks/**`, `.claude/settings.json`: hook wiring and the regex gotcha
+- `lint-rules.md` — `lint/**`, `tests/lint/**`: when a convention earns a lint rule, which
+  form it takes (YAML or Python), and the requirement that every rule ships with tests
+
+A rule is not a place to dump reference material: it costs context every time a matching file
+is opened. Keep each one to conventions somebody could get wrong.
+
+## `docs/dev/` (reference no file pattern can trigger)
 - `docs/dev/crawlers.md` — crawler metadata schema, login types, return format, templates,
   HTML parsing, SSL, license header, archived-crawler rules
-- `docs/dev/python.md` — import order, typing, error handling, dependencies (`uv add`)
-- `docs/dev/testing.md` — pytest conventions, CI scope, page-route tests, markdown doc tests
-- `docs/dev/e2e.md` — Playwright e2e / visual regression conventions
-- `docs/dev/web.md` — FastAPI app, PDF internals, dev server, env vars, minimal-JS, CSS
-- `docs/dev/hooks.md` — how project hooks work and the command-ban regex gotcha
+- `docs/dev/web.md` — dev server lifecycle, ports in worktrees, environment variables
 - `docs/dev/deployment.md` — system fonts, `legacy.db`, PDF preview script
 
 **When adding a fact here, add a routing-table row to `docs/development.md`** if the domain is
 new, so the agent can find it. **Only document what's non-obvious** — if Claude can derive it by
 reading the files, or it's enforced elsewhere (hook, test, linter), don't write it.
+
+**Docs capture intent, not facts that can be reasoned.** Two questions kill most draft lines:
+
+- Can an agent derive this by opening one file? Delete the line.
+- Does a test, hook, or linter already assert it? Delete the line.
+
+**Before writing a rule, try to make a test assert it instead.** A test fails when somebody
+breaks the rule; a doc line does not. Prefer a test that *discovers* what it checks (walk the
+router, glob the crawler files) over one that hardcodes today's list — a hardcoded list goes
+stale silently, which is the gap the rule was meant to close. Document only what the test
+cannot express: why the rule exists.
 
 **When a well-written doc already covers a topic, reference it — don't replicate.** A skill or
 another doc should point to the authoritative file plus any gotchas it doesn't capture.
@@ -83,7 +111,7 @@ directory. Use the `ojhunt-` prefix to group related project skills.
 
 ## Hooks (`.claude/hooks/` + `.claude/settings.json`)
 Hard enforcement rules — things the agent must never do or must always do automatically.
-Update when you need mechanical enforcement, not just reminders. See `docs/dev/hooks.md`.
+Update when you need mechanical enforcement, not just reminders. See `.claude/rules/hooks.md`.
 
 ## Commands (`.claude/commands/`)
 Project-level slash commands that override global ones.
@@ -138,8 +166,9 @@ not here.
 - Development convention, style, schema, or gotcha for a code area → `docs/dev/<area>.md`
   (add a routing-table row in `docs/development.md` if the domain is new)
 - Workflow or process (a procedure run on demand) → `.claude/skills/ojhunt-*/`
-- "Never do X" or "always do Y after Z" → **hook first** (see `docs/dev/hooks.md`); once
-  hook-enforced, do NOT also add a doc/skill entry — the hook is the enforcement, a note just
+- "Never do X" or "always do Y after Z" → a **lint rule** in `lint/rules/` when a parser can
+  judge it (see `.claude/rules/lint-rules.md`), wired by a hook (`.claude/rules/hooks.md`);
+  once enforced, do NOT also add a doc/skill entry — the rule is the enforcement, a note just
   creates drift
 - Project-level command override → `.claude/commands/`
 - Significant architectural decision (multiple approaches considered, choice non-obvious from code) → `docs/adr/`

@@ -13,7 +13,7 @@ Two of the newly enabled rule groups collide with the codebase on purpose rather
 accident:
 
 - `UP006`, `UP007`, `UP035` and `UP045` — 341 of the 534 findings — demand PEP 585 and PEP 604
-  syntax (`dict[str, X]`, `X | None`). `docs/dev/python.md` said the opposite: "Use `Dict`,
+  syntax (`dict[str, X]`, `X | None`). The Python convention said the opposite: "Use `Dict`,
   `List`, `Union` from the `typing` module." Both rules cannot hold.
 - `BLE001` flags 23 `except Exception` blocks. Every crawler ends in one by design.
 
@@ -52,7 +52,7 @@ recorded in config, and three at the site:
 | `# noqa: UP031` | `crawlers/eolymp.py` | `.format()` needs every brace in the GraphQL body doubled. |
 | `# noqa: DTZ007` | `web/pdf.py` | The chart axis parses day keys that are already local-day strings. It needs their order, not an instant. |
 
-`docs/dev/python.md` now states the PEP 585/604 rule, and the `query()` templates in
+`.claude/rules/python.md` now states the PEP 585/604 rule, and the `query()` templates in
 `docs/dev/crawlers.md` were updated so a new crawler does not reintroduce the old style.
 
 ## Consequences
