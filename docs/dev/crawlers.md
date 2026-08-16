@@ -297,10 +297,11 @@ in transit. Never bypass SSL for authenticated sessions.
 
 ## Outbound request identification
 
-The web app and CLI build their `aiohttp` session via `create_session()` in
+Every OJHunt entry point builds its `aiohttp` session via `create_session()` in
 `src/ojhunt/core/session.py`, which seeds every request with an OJHunt `User-Agent` and an
-always-on `X-OJHunt` header linking to `ojhunt.com` (so queried OJs can identify us and reach
-out). See [ADR 0012](../adr/0012-identify-outbound-requests.md).
+always-on `X-OJHunt` header linking to the repository (so queried OJs can identify us and
+reach out). An operator adds their own deployment URL to both headers with
+`OJHUNT_INSTANCE_URL`. See [ADR 0012](../adr/0012-identify-outbound-requests.md).
 
 Implications for crawler code:
 

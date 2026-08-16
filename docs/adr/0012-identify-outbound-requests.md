@@ -11,7 +11,7 @@ reach the project — to ask questions, request rate limits, or opt out. This su
 fixing the POJ crawler (ADR 0011), where POJ had disabled an endpoint, plausibly in response
 to unattributed scraping.
 
-We want every outbound crawler request to identify OJHunt and link to `ojhunt.com`, subject
+We want every outbound crawler request to identify OJHunt and link to the project, subject
 to constraints:
 
 - **Global, not per-crawler.** The crawlers in `src/ojhunt/crawlers/*.py` are meant to be
@@ -51,17 +51,17 @@ when a crawler overrides `User-Agent`.
 **Option C.** A shared factory `create_session()` in `src/ojhunt/core/session.py` seeds every
 session with:
 
-- `User-Agent: OJHunt/<version> (+https://ojhunt.com)` — the primary, log-visible signal.
-- `X-OJHunt: <message + https://ojhunt.com + support@ojhunt.com>` — always sent (no crawler
+- `User-Agent: OJHunt/<version> (+<repo URL>)` — the primary, log-visible signal.
+- `X-OJHunt: <message + repo URL + support@ojhunt.com>` — always sent (no crawler
   overrides this key), so masquerading crawlers stay identifiable.
 
 Scope and behaviour:
 
-- **Web + CLI only.** The web app (`web/http_client.py`, which also serves the background
-  availability checker) and the CLI batch runner (`__main__.py`) build their session via
-  `create_session()`. The programmatic `query_sync` library wrapper
-  (`crawlers/__init__.py`) is left as a bare session — a library caller embedding OJHunt
-  should not broadcast `ojhunt.com`.
+- **Every entry point.** The web app (`web/http_client.py`, which also serves the background
+  availability checker), the CLI batch runner (`__main__.py`) and the programmatic
+  `query_sync` wrapper (`crawlers/__init__.py`) all build their session via
+  `create_session()`. A judge deserves to know who is calling whichever way OJHunt was
+  invoked.
 - **Always on, hosted and self-hosted alike.** No env-gated "hosted only" flag: a flag baked
   into the container image reaches self-hosters anyway, so gating adds complexity without a
   real separation. Every OJHunt instance identifies itself.
@@ -81,3 +81,32 @@ Scope and behaviour:
   dropping the identity.
 - The version in the UA comes from `importlib.metadata.version("ojhunt")`, falling back to
   `"0"` when the package metadata is unavailable.
+
+## Update — which URL the identity carries
+
+The identity first hardcoded `https://ojhunt.com`. Third-party deployments of OJHunt then
+appeared in search results, and each one told the judges it queried that it was the hosted
+site. A maintainer reading an access log saw the wrong operator.
+
+The identity now names the **repository**, which is true of every instance. An operator adds
+their own deployment on top by setting `OJHUNT_INSTANCE_URL`, which appends to both headers.
+The contact address stays `support@ojhunt.com` in either case.
+
+This does not reopen the "no env-gated flag" clause above. The variable only *adds* the
+operator to the identity. Nothing turns identification off.
+
+### Rejected: derive the URL from the request `Host`
+
+Reading `request.base_url` per web request looks like it removes the configuration, but:
+
+- **The traffic that most needs attribution has no request.** The availability checker
+  (`web/crawler_status.py`) polls every judge from a `lifespan` loop, and the CLI and
+  `query_sync` have no request either. A configured value is needed regardless, so detection
+  cannot replace it.
+- **`Host` is client-controlled.** `ProxyHeadersMiddleware` runs with `trusted_hosts="*"` and
+  there is no `TrustedHostMiddleware`, so a crafted `Host` would land verbatim in a request to
+  a third-party judge. Every instance becomes a relay for planting text in someone else's
+  access log. Closing that needs a hostname allowlist — configuration again.
+- **The session is process-global.** Headers are frozen at construction
+  (`web/http_client.py`), and crawlers call `client.get()` on it directly. A per-request value
+  could only reach them through crawler files, which the decision above forbids.
