@@ -41,6 +41,12 @@ Use `doit.sh` — it starts the server, waits until it's ready, and manages the 
 | `LOGIN_PASSWORD__<CRAWLER>` | For shared-account crawlers | Auth password (uppercase crawler name) |
 | `BUILD_TIME` | No | Build timestamp (Unix epoch or ISO), shown on About page |
 | `GIT_COMMIT_SHA` | No | Git commit hash, used for source code link on About page |
+| `OJHUNT_INSTANCE_URL` | No | Public URL of this deployment, added to the outbound identity headers ([ADR 0012](../adr/0012-identify-outbound-requests.md)) |
 
 Credentials go in `.env` (gitignored) — loaded automatically by `load_dotenv()` in
 `src/ojhunt/web/app.py`. No need to `source .env` manually.
+
+`app.py` imports `core/session.py` **before** it calls `load_dotenv()`, so
+`OJHUNT_INSTANCE_URL` is read per call inside `create_session()`. A module-level
+`os.environ.get` there would silently miss `.env` — the same trap `BUILD_TIME` and
+`GIT_COMMIT_SHA` already fall into.
