@@ -33,8 +33,10 @@
   --fs-s:   13px;
   --fs-xs:  12px;
 
+  /* CJK tail: system fonts only — a CJK webfont costs 8.6 MB and a CSP origin (ADR 0010). */
   --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas,
-          'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', monospace;
+          'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC',
+          'Droid Sans Fallback', monospace;
   --sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
