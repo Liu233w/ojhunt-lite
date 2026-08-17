@@ -60,6 +60,7 @@ CSS files live at `src/ojhunt/web/static/assets/`:
 
 | File | What belongs here |
 |------|-------------------|
+| `fonts.css` | `@font-face` blocks for the self-hosted IBM Plex, generated from the Google Fonts stylesheet. Never add a webfont via a CDN `<link>` — that reintroduces a third-party origin into the CSP and sends visitor IPs to it ([ADR 0010](../../docs/adr/0010-relaxed-csp-for-inline-alpine.md)) |
 | `base.css` | Design-system tokens (`:root`, `[data-accent=...]`), page resets, `.topbar`, `.page`, `.header`, `.footer`, `dialog`/`.dlg-*`, `.card` base layout (including `::before` stripe and `:hover`), `[x-cloak]`, `:focus-visible`, responsive media queries for shared components |
 | `index.css` | Everything used *only* by the home page: `.step`, `.report-slot`, `.grid`, card internals (`.c-hd`, `.c-body-row`, `.c-ft`, `.c-err-msg`, `.solved-link`, `.subs-val`, `.iconbtn`, `.loading-dots`, `.card-empty`), card status variants (`.card.r-ok::before` etc.), `.download-card`/`.summary`/`.dc-*`/`.stat`, `.composer`, `.field`, `.btn` (all variants), `.step-actions` |
 
