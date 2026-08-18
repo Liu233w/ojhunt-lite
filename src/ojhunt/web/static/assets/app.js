@@ -395,6 +395,15 @@ function ojhunt() {
         },
 
         /**
+         * Save the loaded report to the user's device.
+         * @returns {void}
+         */
+        downloadCachedReport() {
+            if (!this.cachedReport) return;
+            triggerPdfDownload(this.cachedReport.b64, this.cachedReport.filename);
+        },
+
+        /**
          * Show dialog for solved problems
          * @param {Query} q
          * @returns {void}
