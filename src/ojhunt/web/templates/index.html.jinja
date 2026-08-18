@@ -33,18 +33,18 @@
     </div>
 
     <!-- Report slot: loaded state -->
-    <div class="report-slot loaded" x-show="cachedPdfDate" x-cloak
+    <div class="report-slot loaded" x-show="cachedReport" x-cloak
          :class="{ 'drag-over': isDragging }"
          @dragover.prevent="isDragging = true"
          @dragleave="isDragging = false"
          @drop.prevent="isDragging = false; $event.dataTransfer.files[0] && uploadReport($event.dataTransfer.files[0])">
         <div class="icon">PDF</div>
         <div class="rs-body">
-            <div class="title" x-text="cachedPdfFilename || 'report.pdf'"></div>
+            <div class="title" x-text="cachedReport?.filename"></div>
             <div class="meta">
                 <span><span class="k" x-text="queries.length"></span> crawlers</span>
                 <span class="sep">·</span>
-                <span>last queried <span class="k date" x-text="cachedPdfDate"></span></span>
+                <span>last queried <span class="k date" x-text="cachedReport?.date"></span></span>
             </div>
         </div>
         <div class="rs-actions">
@@ -54,12 +54,12 @@
                        style="display:none">
                 <button type="button" class="btn sm ghost" @click="$refs.pdfUploadInput.click()">replace</button>
             </label>
-            <button type="button" class="iconbtn danger" title="remove pdf" @click="clearCachedPdf()">×</button>
+            <button type="button" class="iconbtn danger" title="remove pdf" @click="clearCachedReport()">×</button>
         </div>
     </div>
 
     <!-- Report slot: empty state -->
-    <div class="report-slot" x-show="!cachedPdfDate" x-cloak
+    <div class="report-slot" x-show="!cachedReport" x-cloak
          :class="{ 'drag-over': isDragging }"
          @dragover.prevent="isDragging = true"
          @dragleave="isDragging = false"
