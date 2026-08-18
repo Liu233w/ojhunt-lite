@@ -37,6 +37,11 @@
   background: color-mix(in oklab, var(--acc) 5%, var(--bg));
 }
 .report-slot .rs-body .title { font-weight: 600; font-size: var(--fs); color: var(--fg); }
+.report-slot .rs-body a.title {
+  cursor: pointer; text-decoration: none;
+  border-bottom: 1px dashed var(--line-2); padding-bottom: 1px;
+}
+.report-slot .rs-body a.title:hover { color: var(--acc); border-bottom-color: var(--acc); text-decoration: none; }
 .report-slot .rs-body .meta { font-size: var(--fs-s); color: var(--fg-2); margin-top: 0.25rem; }
 .report-slot .rs-body .meta .k { color: var(--fg); font-family: var(--mono); }
 .report-slot .rs-body .meta .sep { color: var(--fg-4); margin: 0 0.4rem; }

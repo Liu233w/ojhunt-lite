@@ -40,7 +40,9 @@
          @drop.prevent="isDragging = false; $event.dataTransfer.files[0] && uploadReport($event.dataTransfer.files[0])">
         <div class="icon">PDF</div>
         <div class="rs-body">
-            <div class="title" x-text="cachedReport?.filename"></div>
+            <a href="#" class="title" title="download this pdf"
+               @click.prevent="downloadCachedReport()"
+               x-text="cachedReport?.filename"></a>
             <div class="meta">
                 <span><span class="k" x-text="queries.length"></span> crawlers</span>
                 <span class="sep">·</span>

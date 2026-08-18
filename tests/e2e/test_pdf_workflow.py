@@ -390,6 +390,35 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
 
 
 @pytest.mark.playwright
+@pytest.mark.parametrize("quota_full", [False, True], ids=["stored", "unstored"])
+def test_click_filename_downloads_the_loaded_report(
+    page: Page, context: BrowserContext, quota_full: bool
+):
+    """The filename saves the loaded report, whether or not storage kept it.
+
+    The record holds its own bytes, so a full quota costs persistence only.
+    """
+    if quota_full:
+        page.add_init_script(_QUOTA_EXCEEDED_SCRIPT)
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "my-report.pdf")
+    expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
+
+    with page.expect_download() as dl_info:
+        page.click(".report-slot.loaded a.title")
+    download = dl_info.value
+
+    assert download.suggested_filename == "my-report.pdf", "keeps the loaded name"
+    with open(download.path(), "rb") as handle:
+        extracted = extract_data(handle.read())
+    assert extracted.settings.username == "tourist", (
+        "the saved file must be the loaded OJHunt PDF"
+    )
+
+
+@pytest.mark.playwright
 def test_unstored_report_lasts_for_the_session_only(
     page: Page, context: BrowserContext
 ):
