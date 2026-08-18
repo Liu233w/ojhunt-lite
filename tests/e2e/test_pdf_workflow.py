@@ -19,6 +19,14 @@ from ojhunt.web.pdf import (
 )
 
 _TMPDIR = os.environ.get("TMPDIR", tempfile.gettempdir())
+
+# A full quota rejects every write, so this rejects every key. Written as an IIFE
+# to run both as an init script and through page.evaluate().
+_QUOTA_EXCEEDED_SCRIPT = """(() => {
+    Storage.prototype.setItem = function () {
+        throw new DOMException('quota', 'QuotaExceededError');
+    };
+})()"""
 _MOCK_CODEFORCES_RESPONSE = json.dumps(
     {
         "crawler": "codeforces",
@@ -379,6 +387,88 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
     assert any(k.startswith("202") and k > "2020" for k in keys), (
         f"today's run must add an entry of its own; keys: {keys}"
     )
+
+
+@pytest.mark.playwright
+def test_unstored_report_lasts_for_the_session_only(
+    page: Page, context: BrowserContext
+):
+    """A full quota costs the record, not the session.
+
+    A real full quota rejects every write, so the upload must still finish and apply
+    the crawler list from the PDF. The reload then starts from an empty slot.
+    """
+    page.add_init_script(_QUOTA_EXCEEDED_SCRIPT)
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "my-report.pdf")
+    expect(page.locator(".report-slot.loaded .title")).to_have_text(
+        "my-report.pdf", timeout=5000
+    )
+    expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
+
+    page.reload()
+    expect(page.locator(".report-slot.loaded")).to_be_hidden(timeout=5000)
+
+
+@pytest.mark.playwright
+def test_failed_replace_drops_the_replaced_record(page: Page, context: BrowserContext):
+    """A rejected write leaves no record, not the record it was replacing.
+
+    A surviving older report would come back after the reload as the latest one.
+    """
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "first.pdf")
+    expect(page.locator(".report-slot.loaded .title")).to_have_text(
+        "first.pdf", timeout=5000
+    )
+
+    page.on("dialog", lambda d: d.dismiss())
+    page.evaluate(_QUOTA_EXCEEDED_SCRIPT)
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "second.pdf")
+    expect(page.locator(".report-slot.loaded .title")).to_have_text(
+        "second.pdf", timeout=5000
+    )
+
+    page.reload()
+    expect(page.locator(".report-slot.loaded")).to_be_hidden(timeout=5000)
+
+
+@pytest.mark.playwright
+@pytest.mark.parametrize(
+    "missing_key",
+    ["ojhunt-report-pdf", "ojhunt-report-date", "ojhunt-report-filename"],
+)
+def test_report_slot_drops_an_incomplete_record(
+    page: Page, context: BrowserContext, missing_key: str
+):
+    """The bytes, the date and the filename are one record — a fragment goes whole.
+
+    Each key alone reads as a report the panel cannot serve: bytes that merge into
+    the next report without ever showing, or a name and a date with no PDF behind them.
+    """
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "my-report.pdf")
+    expect(page.locator(".report-slot.loaded .title")).to_be_visible(timeout=5000)
+
+    page.evaluate("key => localStorage.removeItem(key)", missing_key)
+    page.reload()
+
+    expect(page.locator(".report-slot.loaded")).to_be_hidden(timeout=5000)
+    expect(page.locator(".report-slot:not(.loaded)")).to_be_visible()
+    leftovers = page.evaluate(
+        """() => [
+            localStorage.getItem('ojhunt-report-pdf'),
+            localStorage.getItem('ojhunt-report-date'),
+            localStorage.getItem('ojhunt-report-filename'),
+        ]"""
+    )
+    assert leftovers == [None, None, None], "a fragment must leave nothing behind"
 
 
 @pytest.mark.playwright

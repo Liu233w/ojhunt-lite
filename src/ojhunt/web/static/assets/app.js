@@ -45,6 +45,65 @@ function createQuery(crawler, username, id) {
     };
 }
 
+/**
+ * Remove the stored report — its bytes, date and filename are one record.
+ * @returns {void}
+ */
+function clearStoredReport() {
+    localStorage.removeItem(PDF_CACHE_KEY);
+    localStorage.removeItem(PDF_CACHE_DATE_KEY);
+    localStorage.removeItem(PDF_CACHE_FILENAME_KEY);
+}
+
+/**
+ * Store the cached report.
+ * Drops the stored record before writing the new one. Browser storage may refuse
+ * the write, and a surviving older record would read as the latest report. Losing
+ * the record is acceptable, presenting the wrong one is not — so a rejected write
+ * needs no handling beyond the removal that already happened.
+ * @param {{b64: string, date: string, filename: string}} record
+ * @returns {void}
+ */
+function cacheReport(record) {
+    clearStoredReport();
+    try {
+        localStorage.setItem(PDF_CACHE_KEY, record.b64);
+        localStorage.setItem(PDF_CACHE_DATE_KEY, record.date);
+        localStorage.setItem(PDF_CACHE_FILENAME_KEY, record.filename);
+    } catch (_) {}
+}
+
+/**
+ * Read the stored report. The three keys are written in one pass, so a fragment
+ * means the write was cut short, or another tab or an eviction took a key. Half a
+ * record cannot be trusted to describe one report, so it is dropped.
+ * @returns {{b64: string, date: string, filename: string} | null}
+ */
+function readCachedReport() {
+    const record = {
+        b64: localStorage.getItem(PDF_CACHE_KEY),
+        date: localStorage.getItem(PDF_CACHE_DATE_KEY),
+        filename: localStorage.getItem(PDF_CACHE_FILENAME_KEY),
+    };
+    if (Object.values(record).every(Boolean)) return record;
+
+    clearStoredReport();
+    return null;
+}
+
+/**
+ * Make the browser save a PDF. Uses a data URL — no Blob/createObjectURL needed.
+ * @param {string} b64
+ * @param {string} filename
+ * @returns {void}
+ */
+function triggerPdfDownload(b64, filename) {
+    const a = document.createElement('a');
+    a.href = 'data:application/pdf;base64,' + b64;
+    a.download = filename;
+    a.click();
+}
+
 function ojhunt() {
     return {
         isMac: /Mac|iPhone|iPad|iPod/.test(navigator.platform),
@@ -76,11 +135,12 @@ function ojhunt() {
         /** @type {AbortController | null} In-flight /api/merge request, for cancellation */
         _mergeController: null,
 
-        /** @type {string|null} Date (YYYY-MM-DD) of the cached previous report, or null */
-        cachedPdfDate: null,
-
-        /** @type {string|null} Filename of the uploaded PDF, or null */
-        cachedPdfFilename: null,
+        /**
+         * The loaded report, or null. Holds its own bytes, so the session serves it
+         * from memory and never depends on what browser storage accepted.
+         * @type {{b64: string, date: string, filename: string} | null}
+         */
+        cachedReport: null,
 
         /** @type {boolean} True while the user is dragging a file over the report slot */
         isDragging: false,
@@ -302,42 +362,36 @@ function ojhunt() {
         },
 
         /**
-         * Load saved queries from localStorage
+         * Load saved queries and the cached report from localStorage.
          * @returns {void}
          */
         loadSavedQueries() {
             const saved = localStorage.getItem(STORAGE_KEY);
-            if (!saved) return;
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if (data.username) {
+                        this.username = data.username;
+                    }
+                    if (data.queries && Array.isArray(data.queries)) {
+                        data.queries.forEach(q => {
+                            if (q.crawler && q.username && this.crawlers[q.crawler]) {
+                                this.queries.push(createQuery(q.crawler, q.username, this.queryIdCounter++));
+                            }
+                        });
+                    }
+                } catch (e) {}
+            }
 
-            try {
-                const data = JSON.parse(saved);
-                if (data.username) {
-                    this.username = data.username;
-                }
-                if (data.queries && Array.isArray(data.queries)) {
-                    data.queries.forEach(q => {
-                        if (q.crawler && q.username && this.crawlers[q.crawler]) {
-                            this.queries.push(createQuery(q.crawler, q.username, this.queryIdCounter++));
-                        }
-                    });
-                }
-            } catch (e) {}
-
-            const savedDate = localStorage.getItem(PDF_CACHE_DATE_KEY);
-            if (savedDate) this.cachedPdfDate = savedDate;
-            const savedFilename = localStorage.getItem(PDF_CACHE_FILENAME_KEY);
-            if (savedFilename) this.cachedPdfFilename = savedFilename;
+            this.cachedReport = readCachedReport();
         },
 
         /**
-         * Clear the cached previous PDF report
+         * Forget the loaded report. The $watch clears its keys.
          * @returns {void}
          */
-        clearCachedPdf() {
-            localStorage.removeItem(PDF_CACHE_KEY);
-            localStorage.removeItem(PDF_CACHE_FILENAME_KEY);
-            this.cachedPdfDate = null; // $watch handles PDF_CACHE_DATE_KEY removal
-            this.cachedPdfFilename = null;
+        clearCachedReport() {
+            this.cachedReport = null;
         },
 
         /**
@@ -400,15 +454,11 @@ function ojhunt() {
                 return;
             }
 
-            // Always cache the PDF bytes
-            try {
-                localStorage.setItem(PDF_CACHE_KEY, b64);
-            } catch (_) {}
+            // The record needs a date, which comes from the newest history entry. A PDF
+            // without history carries settings only, and has no history to load.
             if (data.report_date) {
-                this.cachedPdfDate = data.report_date;
+                this.cachedReport = { b64, date: data.report_date, filename: file.name };
             }
-            this.cachedPdfFilename = file.name;
-            localStorage.setItem(PDF_CACHE_FILENAME_KEY, file.name);
 
             // Apply settings to the live UI
             if (this.queries.length === 0) {
@@ -448,7 +498,7 @@ function ojhunt() {
                         username: this.username,
                         queries: this.queries.map(q => ({ crawler: q.crawler, username: q.username })),
                     },
-                    previous_pdf_b64: localStorage.getItem(PDF_CACHE_KEY) || null,
+                    previous_pdf_b64: this.cachedReport?.b64 || null,
                 };
 
                 let data;
@@ -473,18 +523,13 @@ function ojhunt() {
                     return;
                 }
 
-                try {
-                    localStorage.setItem(PDF_CACHE_KEY, data.pdf_b64);
-                } catch (_) {}
-                this.cachedPdfDate = data.date;
-                this.cachedPdfFilename = `ojhunt-report-${data.date}.pdf`;
-                localStorage.setItem(PDF_CACHE_FILENAME_KEY, this.cachedPdfFilename);
+                this.cachedReport = {
+                    b64: data.pdf_b64,
+                    date: data.date,
+                    filename: `ojhunt-report-${data.date}.pdf`,
+                };
 
-                // Download via data URL — no Blob/createObjectURL needed
-                const a = document.createElement('a');
-                a.href = 'data:application/pdf;base64,' + data.pdf_b64;
-                a.download = `ojhunt-report-${data.date}.pdf`;
-                a.click();
+                triggerPdfDownload(this.cachedReport.b64, this.cachedReport.filename);
             } finally {
                 this.isDownloading = false;
             }
@@ -507,10 +552,10 @@ function ojhunt() {
                 this.calculateReport();
             });
 
-            // Sync cachedPdfDate to localStorage
-            this.$watch('cachedPdfDate', val => {
-                if (val) localStorage.setItem(PDF_CACHE_DATE_KEY, val);
-                else localStorage.removeItem(PDF_CACHE_DATE_KEY);
+            // Sync the loaded report to localStorage
+            this.$watch('cachedReport', record => {
+                if (record) cacheReport(record);
+                else clearStoredReport();
             });
 
             this.$nextTick(() => {
