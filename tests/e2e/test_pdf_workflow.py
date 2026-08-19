@@ -8,7 +8,7 @@ import tempfile
 import pytest
 from playwright.sync_api import BrowserContext, Page, Route, expect
 
-from e2e.helpers import BASE_URL, _add_query, _clear_storage, _row
+from e2e.helpers import BASE_URL, _add_query, _clear_storage, _drag_drop_pdf, _row
 from ojhunt.web.pdf import (
     HistoryEntry,
     PdfQueryItem,
@@ -115,26 +115,6 @@ def _write_temp_pdf(pdf_bytes: bytes) -> str:
     with os.fdopen(fd, "wb") as handle:
         handle.write(pdf_bytes)
     return path
-
-
-def _drag_drop_pdf(page: Page, pdf_bytes: bytes, filename: str = "report.pdf") -> None:
-    """Simulate dragging a PDF onto the (visible) report slot via synthetic events."""
-    pdf_b64 = base64.b64encode(pdf_bytes).decode()
-    data_transfer = page.evaluate_handle(
-        """([b64, name]) => {
-            const dt = new DataTransfer();
-            const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-            const file = new File([bytes], name, {type: 'application/pdf'});
-            dt.items.add(file);
-            return dt;
-        }""",
-        [pdf_b64, filename],
-    )
-    # Target the empty slot specifically — both slots are in the DOM (x-show only
-    # toggles display), so the strict-mode locator needs a disambiguating selector.
-    slot = page.locator(".report-slot:not(.loaded)")
-    slot.dispatch_event("dragover", {"dataTransfer": data_transfer})
-    slot.dispatch_event("drop", {"dataTransfer": data_transfer})
 
 
 @pytest.fixture
