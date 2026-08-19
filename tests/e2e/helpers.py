@@ -1,5 +1,6 @@
 """Shared helpers for e2e tests."""
 
+import base64
 import os
 from pathlib import Path
 
@@ -37,6 +38,26 @@ def _row(page: Page, text: str):
 def _clear_storage(page: Page) -> None:
     page.evaluate("localStorage.clear()")
     page.reload()
+
+
+def _drag_drop_pdf(page: Page, pdf_bytes: bytes, filename: str = "report.pdf") -> None:
+    """Simulate dragging a PDF onto the (visible) report slot via synthetic events."""
+    pdf_b64 = base64.b64encode(pdf_bytes).decode()
+    data_transfer = page.evaluate_handle(
+        """([b64, name]) => {
+            const dt = new DataTransfer();
+            const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+            const file = new File([bytes], name, {type: 'application/pdf'});
+            dt.items.add(file);
+            return dt;
+        }""",
+        [pdf_b64, filename],
+    )
+    # Target the empty slot specifically — both slots are in the DOM (x-show only
+    # toggles display), so the strict-mode locator needs a disambiguating selector.
+    slot = page.locator(".report-slot:not(.loaded)")
+    slot.dispatch_event("dragover", {"dataTransfer": data_transfer})
+    slot.dispatch_event("drop", {"dataTransfer": data_transfer})
 
 
 def _dismiss_cookie_banner(page: Page) -> None:

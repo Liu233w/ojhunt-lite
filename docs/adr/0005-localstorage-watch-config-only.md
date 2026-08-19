@@ -39,14 +39,15 @@ is also unserializable.
 ### Option C: `$watch` with config-only persistence (chosen)
 
 Use Alpine's built-in `$watch` to call `saveQueries()` whenever `username` or `queries`
-changes. Add a second watch on `cachedPdfDate` to sync the PDF date. This replaces all
+changes. Add a second watch on `cachedReport` to sync the cached report. This replaces all
 manual `saveQueries()` call sites with two watches in `init()`.
 
 ## Decision
 
 **Option C.** Config-only persistence (`username` + `[{crawler, username}]` +
-`cachedPdfDate`) via `$watch`. Query results are runtime-only and lost on page refresh.
-No extra dependencies; same localStorage keys as before.
+`cachedReport`) via `$watch`. Query results are runtime-only and lost on page refresh.
+No extra dependencies; same localStorage keys as before. How the cached report itself is
+written and read is [ADR 0017](0017-cached-report-is-one-record.md).
 
 ## Consequences
 

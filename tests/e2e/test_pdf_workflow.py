@@ -8,7 +8,7 @@ import tempfile
 import pytest
 from playwright.sync_api import BrowserContext, Page, Route, expect
 
-from e2e.helpers import BASE_URL, _add_query, _clear_storage, _row
+from e2e.helpers import BASE_URL, _add_query, _clear_storage, _drag_drop_pdf, _row
 from ojhunt.web.pdf import (
     HistoryEntry,
     PdfQueryItem,
@@ -19,6 +19,14 @@ from ojhunt.web.pdf import (
 )
 
 _TMPDIR = os.environ.get("TMPDIR", tempfile.gettempdir())
+
+# A full quota rejects every write, so this rejects every key. Written as an IIFE
+# to run both as an init script and through page.evaluate().
+_QUOTA_EXCEEDED_SCRIPT = """(() => {
+    Storage.prototype.setItem = function () {
+        throw new DOMException('quota', 'QuotaExceededError');
+    };
+})()"""
 _MOCK_CODEFORCES_RESPONSE = json.dumps(
     {
         "crawler": "codeforces",
@@ -107,26 +115,6 @@ def _write_temp_pdf(pdf_bytes: bytes) -> str:
     with os.fdopen(fd, "wb") as handle:
         handle.write(pdf_bytes)
     return path
-
-
-def _drag_drop_pdf(page: Page, pdf_bytes: bytes, filename: str = "report.pdf") -> None:
-    """Simulate dragging a PDF onto the (visible) report slot via synthetic events."""
-    pdf_b64 = base64.b64encode(pdf_bytes).decode()
-    data_transfer = page.evaluate_handle(
-        """([b64, name]) => {
-            const dt = new DataTransfer();
-            const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-            const file = new File([bytes], name, {type: 'application/pdf'});
-            dt.items.add(file);
-            return dt;
-        }""",
-        [pdf_b64, filename],
-    )
-    # Target the empty slot specifically — both slots are in the DOM (x-show only
-    # toggles display), so the strict-mode locator needs a disambiguating selector.
-    slot = page.locator(".report-slot:not(.loaded)")
-    slot.dispatch_event("dragover", {"dataTransfer": data_transfer})
-    slot.dispatch_event("drop", {"dataTransfer": data_transfer})
 
 
 @pytest.fixture
@@ -379,6 +367,117 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
     assert any(k.startswith("202") and k > "2020" for k in keys), (
         f"today's run must add an entry of its own; keys: {keys}"
     )
+
+
+@pytest.mark.playwright
+@pytest.mark.parametrize("quota_full", [False, True], ids=["stored", "unstored"])
+def test_click_filename_downloads_the_loaded_report(
+    page: Page, context: BrowserContext, quota_full: bool
+):
+    """The filename saves the loaded report, whether or not storage kept it.
+
+    The record holds its own bytes, so a full quota costs persistence only.
+    """
+    if quota_full:
+        page.add_init_script(_QUOTA_EXCEEDED_SCRIPT)
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "my-report.pdf")
+    expect(page.locator(".report-slot.loaded .date")).to_be_visible(timeout=5000)
+
+    with page.expect_download() as dl_info:
+        page.click(".report-slot.loaded a.title")
+    download = dl_info.value
+
+    assert download.suggested_filename == "my-report.pdf", "keeps the loaded name"
+    with open(download.path(), "rb") as handle:
+        extracted = extract_data(handle.read())
+    assert extracted.settings.username == "tourist", (
+        "the saved file must be the loaded OJHunt PDF"
+    )
+
+
+@pytest.mark.playwright
+def test_unstored_report_lasts_for_the_session_only(
+    page: Page, context: BrowserContext
+):
+    """A full quota costs the record, not the session.
+
+    A real full quota rejects every write, so the upload must still finish and apply
+    the crawler list from the PDF. The reload then starts from an empty slot.
+    """
+    page.add_init_script(_QUOTA_EXCEEDED_SCRIPT)
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "my-report.pdf")
+    expect(page.locator(".report-slot.loaded .title")).to_have_text(
+        "my-report.pdf", timeout=5000
+    )
+    expect(_row(page, "CodeForces")).to_be_visible(timeout=5000)
+
+    page.reload()
+    expect(page.locator(".report-slot.loaded")).to_be_hidden(timeout=5000)
+
+
+@pytest.mark.playwright
+def test_failed_replace_drops_the_replaced_record(page: Page, context: BrowserContext):
+    """A rejected write leaves no record, not the record it was replacing.
+
+    A surviving older report would come back after the reload as the latest one.
+    """
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "first.pdf")
+    expect(page.locator(".report-slot.loaded .title")).to_have_text(
+        "first.pdf", timeout=5000
+    )
+
+    page.on("dialog", lambda d: d.dismiss())
+    page.evaluate(_QUOTA_EXCEEDED_SCRIPT)
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "second.pdf")
+    expect(page.locator(".report-slot.loaded .title")).to_have_text(
+        "second.pdf", timeout=5000
+    )
+
+    page.reload()
+    expect(page.locator(".report-slot.loaded")).to_be_hidden(timeout=5000)
+
+
+@pytest.mark.playwright
+@pytest.mark.parametrize(
+    "missing_key",
+    ["ojhunt-report-pdf", "ojhunt-report-date", "ojhunt-report-filename"],
+)
+def test_report_slot_drops_an_incomplete_record(
+    page: Page, context: BrowserContext, missing_key: str
+):
+    """The bytes, the date and the filename are one record — a fragment goes whole.
+
+    Each key alone reads as a report the panel cannot serve: bytes that merge into
+    the next report without ever showing, or a name and a date with no PDF behind them.
+    """
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _drag_drop_pdf(page, _make_ojhunt_pdf(context, username="tourist"), "my-report.pdf")
+    expect(page.locator(".report-slot.loaded .title")).to_be_visible(timeout=5000)
+
+    page.evaluate("key => localStorage.removeItem(key)", missing_key)
+    page.reload()
+
+    expect(page.locator(".report-slot.loaded")).to_be_hidden(timeout=5000)
+    expect(page.locator(".report-slot:not(.loaded)")).to_be_visible()
+    leftovers = page.evaluate(
+        """() => [
+            localStorage.getItem('ojhunt-report-pdf'),
+            localStorage.getItem('ojhunt-report-date'),
+            localStorage.getItem('ojhunt-report-filename'),
+        ]"""
+    )
+    assert leftovers == [None, None, None], "a fragment must leave nothing behind"
 
 
 @pytest.mark.playwright
