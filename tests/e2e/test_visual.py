@@ -26,7 +26,15 @@ from e2e.helpers import (
     _add_query,
     _clear_storage,
     _dismiss_cookie_banner,
+    _drag_drop_pdf,
     _row,
+)
+from ojhunt.web.pdf import (
+    HistoryEntry,
+    PdfQueryItem,
+    PdfSettings,
+    PdfSnapshot,
+    generate_pdf,
 )
 
 # Deterministic availability fixture: a few crawlers in each state so all
@@ -158,6 +166,53 @@ def test_home_err_card(page: Page, assert_snapshot):
     page.click("button.btn.primary:has-text('query all')")
     expect(_row(page, "CodeForces")).to_have_class("card r-err", timeout=15000)
     _snap(page, assert_snapshot, "home-err-card-desktop.png")
+
+
+# ── Home page — loaded report slot ───────────────────────────────────────────
+
+
+def _fixed_date_pdf() -> bytes:
+    """An OJHunt PDF whose newest history entry carries a fixed date.
+
+    The slot prints that date, so a PDF generated today would age the baseline out
+    overnight.
+    """
+    settings = PdfSettings(
+        username="tourist",
+        queries=[PdfQueryItem(crawler="codeforces", username="tourist")],
+    )
+    history = [
+        HistoryEntry(
+            key="2020-01-01",
+            date="2020-01-01T12:00:00Z",
+            totalSolved=100,
+            totalSubmissions=300,
+            username="tourist",
+        )
+    ]
+    snapshot = PdfSnapshot(
+        totalSolved=100, totalSubmissions=300, username="tourist", timezone="UTC"
+    )
+    return generate_pdf(settings, history, snapshot)
+
+
+def test_home_report_loaded(page: Page, assert_snapshot):
+    """Capture the loaded report slot, the one home-page state the other baselines miss.
+
+    Snapshots the slot alone: it is the only element the filename link styles, and an
+    element shot does not move when the rest of the page does.
+    """
+    page.set_viewport_size({"width": 1280, "height": 900})
+    page.goto(BASE_URL)
+    _clear_storage(page)
+
+    _drag_drop_pdf(page, _fixed_date_pdf(), "report.pdf")
+    slot = page.locator(".report-slot.loaded")
+    expect(slot).to_be_visible(timeout=5000)
+
+    _dismiss_cookie_banner(page)
+    page.wait_for_load_state("networkidle")
+    assert_snapshot(slot.screenshot(), name="home-report-loaded-desktop.png")
 
 
 # ── Other pages ───────────────────────────────────────────────────────────────
