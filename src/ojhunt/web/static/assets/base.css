@@ -49,6 +49,8 @@
 
 * { box-sizing: border-box; }
 html, body { background: var(--bg); color: var(--fg); }
+/* Keeps focused and scrolled-to elements above the cookie banner */
+html { scroll-padding-bottom: var(--cookie-h, 0px); }
 body {
   margin: 0;
   font-family: var(--mono);
@@ -115,7 +117,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* ── PAGE ── */
 .page {
   margin: 0 auto;
-  padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) 4rem;
+  /* --cookie-h is the cookie banner's height while it shows (set in base.html.jinja) */
+  padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) calc(4rem + var(--cookie-h, 0px));
 }
 
 /* ── HEADER ── */
@@ -193,12 +196,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .cookie-ok {
   flex: 0 0 auto;
   height: 32px; padding: 0 1.1rem;
-  background: var(--acc); color: #0a0b0d;
-  border: 1px solid var(--acc); border-radius: 2px;
+  background: var(--bg-2); color: var(--fg);
+  border: 1px solid var(--line-2); border-radius: 2px;
   font-family: var(--sans); font-weight: 600;
   letter-spacing: 0.04em;
 }
-.cookie-ok:hover { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+.cookie-ok:hover { border-color: var(--acc); color: var(--acc); }
 
 /* ── DIALOG ── */
 dialog {
