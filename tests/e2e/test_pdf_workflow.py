@@ -221,7 +221,7 @@ def test_download_report_updates_date_indicator(
 
     # Download report and intercept the download
     with page.expect_download() as dl_info:
-        page.click("button.btn.primary:has-text('download report.pdf')")
+        page.click("button.btn.primary:has-text('download report')")
     download = dl_info.value
     assert download.suggested_filename.startswith("ojhunt-report-")
     assert download.suggested_filename.endswith(".pdf")
@@ -260,7 +260,7 @@ def test_download_report_shows_rate_limit_message_on_429(
     row = _row(page, "CodeForces")
     expect(row).to_have_class("card r-ok", timeout=30000)
 
-    page.click("button.btn.primary:has-text('download report.pdf')")
+    page.click("button.btn.primary:has-text('download report')")
     page.wait_for_timeout(2000)
 
     assert any("Rate limit" in m for m in dialog_messages), dialog_messages
@@ -281,7 +281,7 @@ def test_download_updates_report_slot_filename_and_persists(
     expect(_row(page, "CodeForces")).to_have_class("card r-ok", timeout=30000)
 
     with page.expect_download() as dl_info:
-        page.click("button.btn.primary:has-text('download report.pdf')")
+        page.click("button.btn.primary:has-text('download report')")
     download = dl_info.value
     expected_filename = (
         download.suggested_filename
@@ -320,7 +320,7 @@ def test_download_then_upload_shows_date_and_merges(
 
     # Download report — download.path() is already on disk, use it directly
     with page.expect_download() as dl_info:
-        page.click("button.btn.primary:has-text('download report.pdf')")
+        page.click("button.btn.primary:has-text('download report')")
     download = dl_info.value
     date_text = page.locator(".report-slot.loaded .date").inner_text(timeout=5000)
 
@@ -353,7 +353,7 @@ def test_upload_historical_pdf_entries_preserved_in_new_download(
     page.click("button.btn.primary:has-text('query all')")
     expect(_row(page, "CodeForces")).to_have_class("card r-ok", timeout=30000)
     with page.expect_download() as dl_info:
-        page.click("button.btn.primary:has-text('download report.pdf')")
+        page.click("button.btn.primary:has-text('download report')")
     download = dl_info.value
 
     # Extract history from the new PDF and verify the 2020 entries are still there

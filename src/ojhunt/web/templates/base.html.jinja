@@ -70,9 +70,16 @@
         if (localStorage.getItem(KEY) === '1') return;
     } catch (e) { /* localStorage unavailable — show the notice anyway */ }
     banner.hidden = false;
+    var root = document.documentElement.style;
+    var observer = new ResizeObserver(function () {
+        root.setProperty('--cookie-h', banner.offsetHeight + 'px');
+    });
+    observer.observe(banner);
     document.getElementById('cookie-ok')?.addEventListener('click', function () {
         try { localStorage.setItem(KEY, '1'); } catch (e) { /* ignore */ }
         banner.hidden = true;
+        observer.disconnect();
+        root.removeProperty('--cookie-h');
     });
 })();
 </script>

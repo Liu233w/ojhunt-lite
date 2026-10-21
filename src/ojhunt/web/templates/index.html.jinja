@@ -69,8 +69,8 @@
         <div class="icon">PDF</div>
         <div class="rs-body">
             <div class="title">No report loaded</div>
-            <div class="meta" style="color:var(--fg-4)">
-                Drop a report.pdf here, or start fresh — crawler list will use defaults.
+            <div class="meta" style="color:var(--fg-muted)">
+                Drop your report PDF here, or start fresh — crawler list will use defaults.
             </div>
         </div>
         <div class="rs-actions">
@@ -137,7 +137,7 @@
     <div class="step">
         <span class="n">03</span>
         <h2>Run your queries</h2>
-        <span class="hint">click ▶ on each card or use query all</span>
+        <span class="hint" :class="{ used: queries.some(q => q.status !== 'pending') }">click ▶ on each card or use query all</span>
         <div class="step-actions">
             <button type="button" class="btn primary sm" @click="queryAll()" title="Ctrl/Cmd+Enter">
                 query all <span class="kbd" x-text="isMac ? '⌘↵' : '^↵'"></span>
@@ -174,11 +174,13 @@
                 <div class="c-body-row" x-show="q.status !== 'error'">
                     <div class="solved-wrap">
                         <span class="lbl">Solved</span>
-                        <a href="#" class="solved-link"
-                           x-show="q.status === 'success'"
-                           @click.prevent="showDialog(q)"
-                           x-text="q.solved?.toLocaleString('en-US')"></a>
-                        <span class="dash" x-show="q.status !== 'success'">—</span>
+                        <span class="solved-val">
+                            <a href="#" class="solved-link"
+                               x-show="q.status === 'success'"
+                               @click.prevent="showDialog(q)"
+                               x-text="q.solved?.toLocaleString('en-US')"></a>
+                            <span class="dash" x-show="q.status !== 'success'">—</span>
+                        </span>
                     </div>
                     <div class="subs-wrap" x-show="q.status === 'success'">
                         <span class="lbl">Submissions</span>
@@ -230,16 +232,16 @@
             </div>
             <div class="stat">
                 <span class="n">
-                    <span x-text="queries.filter(q => q.status === 'success').length"></span><span style="color:var(--fg-4);font-size:1.1rem;font-weight:400" x-text="'/' + queries.length"></span>
+                    <span x-text="queries.filter(q => q.status === 'success').length"></span><span style="color:var(--fg-subtle);font-size:1.1rem;font-weight:400" x-text="'/' + queries.length"></span>
                 </span>
                 <span class="l">crawlers ok</span>
             </div>
         </div>
         <div class="dc-right summary-right">
             <button type="button" class="btn primary" :disabled="isDownloading" @click="downloadReport()">
-                download report.pdf<span class="loading-dots" x-show="isDownloading" x-cloak></span>
+                <span class="btn-label">download report<span class="loading-dots" x-show="isDownloading" x-cloak></span></span>
             </button>
-            <span class="note">Store the PDF on your device — browser storage may be cleared at any time.</span>
+            <span class="note">⚠︎ Store the PDF on your device — browser storage may be cleared at any time.</span>
         </div>
     </div>
 
