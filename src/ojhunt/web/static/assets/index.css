@@ -45,7 +45,7 @@
 .report-slot .rs-body .meta { font-size: var(--fs-s); color: var(--fg-2); margin-top: 0.25rem; }
 .report-slot .rs-body .meta .k { color: var(--fg); font-family: var(--mono); }
 .report-slot .rs-body .meta .sep { color: var(--fg-4); margin: 0 0.4rem; }
-.report-slot .rs-actions { display: flex; gap: 0.4rem; align-items: center; }
+.report-slot .rs-actions { display: flex; gap: 11px; align-items: center; }
 .slot-aux {
   display: flex; justify-content: space-between; align-items: center;
   padding: 0.35rem 0.25rem 0; font-size: var(--fs-xs); color: var(--fg-4);
@@ -73,29 +73,42 @@
 .c-hd .ident .at { color: var(--fg-4); }
 .c-hd .ident .crawler { color: var(--fg-4); }
 
+/* Labels share row 1 and values share row 2 across both stats; subgrid keeps
+   each label grouped with its value in the DOM. */
 .c-body-row {
-  display: flex; align-items: flex-end; justify-content: space-between; gap: 0.85rem;
-  padding-top: 0.35rem; border-top: 1px dashed var(--line); margin-top: auto;
+  display: grid; grid-template-columns: auto auto; justify-content: space-between;
+  gap: 0.05rem 0.85rem;
+  padding-top: 0.35rem; border-top: 1px dashed var(--line);
 }
-.solved-wrap { display: flex; flex-direction: column; gap: 0.05rem; }
-.subs-wrap   { display: flex; flex-direction: column; gap: 0.05rem; align-items: flex-end; }
+/* Stats or error plus footer sit at the card bottom, so both line up across a grid row */
+.c-body-row, .c-err-msg { margin-top: auto; }
+.solved-wrap, .subs-wrap {
+  display: grid; grid-row: span 2; grid-template-rows: subgrid; align-items: baseline;
+}
+.subs-wrap { grid-column: 2; justify-items: end; }
 .c-body-row .lbl {
   font-size: 10px; color: var(--fg-4);
   text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
 }
+.solved-val { line-height: 1.1; }
 .solved-link {
   font-family: var(--mono); font-size: 1.6rem; font-weight: 600; line-height: 1.1;
   color: var(--acc); font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
   cursor: pointer;
+  display: inline-block;
   border-bottom: 1px dashed color-mix(in oklab, var(--acc) 50%, transparent);
   text-decoration: none; padding-bottom: 1px;
 }
 .solved-link:hover { color: var(--fg); border-bottom-color: var(--fg); text-decoration: none; }
 .subs-val {
   font-family: var(--mono); font-size: var(--fs-s); color: var(--fg-3);
-  font-variant-numeric: tabular-nums; line-height: 1; padding-bottom: 4px;
+  font-variant-numeric: tabular-nums; line-height: 1;
 }
-.dash { font-family: var(--mono); color: var(--fg-4); font-size: 1.6rem; font-weight: 600; line-height: 1.1; }
+.dash {
+  font-family: var(--mono); color: var(--fg-4); font-size: 1.6rem; font-weight: 600; line-height: 1.1;
+  /* Same box as .solved-link, so the stats row keeps its height when a card succeeds */
+  display: inline-block; padding-bottom: 1px; border-bottom: 1px solid transparent;
+}
 
 .c-err-msg {
   font-family: var(--mono); font-size: var(--fs-xs); color: var(--err);
@@ -120,7 +133,8 @@
 .c-ft .status.s-load { color: var(--load); }
 .c-ft .status.s-pend { color: var(--fg-4); }
 .c-ft .status .t { color: var(--fg-4); font-size: 11px; margin-left: 0.2rem; }
-.c-ft .actions { display: flex; gap: 0.3rem; }
+/* px, not rem: the gap must stay wider than the two 5px hit-area insets */
+.c-ft .actions { display: flex; gap: 11px; }
 
 /* ── ICON BUTTON ── */
 .iconbtn {
@@ -128,8 +142,10 @@
   color: var(--fg-3); width: 26px; height: 26px;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: var(--fs-xs); font-family: var(--mono);
-  cursor: pointer; border-radius: 2px;
+  cursor: pointer; border-radius: 2px; position: relative;
 }
+/* 34px hit area around the 26px box (inset counts from inside the 1px border) */
+.iconbtn::after { content: ""; position: absolute; inset: -5px; }
 .iconbtn:hover { color: var(--acc); border-color: var(--acc); }
 .iconbtn.danger:hover { color: var(--err); border-color: var(--err); }
 
@@ -138,7 +154,7 @@
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  word-break: break-all;
+  overflow-wrap: anywhere;
   color: var(--fg-3); font-size: var(--fs-xs); text-decoration: none;
 }
 .err-link:hover { color: var(--err); text-decoration: none; }
