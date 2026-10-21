@@ -11,7 +11,8 @@
   margin: 0; font-size: 14px; font-weight: 600;
   color: var(--fg); letter-spacing: -0.005em;
 }
-.step .hint { color: var(--fg-4); font-size: var(--fs-xs); flex: 1; }
+.step .hint { color: var(--fg-muted); font-size: var(--fs-xs); letter-spacing: 0.01em; flex: 1; }
+.step .hint.used { color: var(--fg-subtle); }
 
 /* ── REPORT SLOT ── */
 .report-slot {
@@ -28,7 +29,7 @@
   width: 42px; height: 42px;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--mono); font-size: 11px; font-weight: 700;
-  color: var(--fg-4); border: 1px solid var(--line);
+  color: var(--fg-muted); border: 1px solid var(--line);
   border-radius: 3px; background: var(--bg); letter-spacing: 0.05em;
 }
 .report-slot.loaded .icon {
@@ -44,14 +45,14 @@
 .report-slot .rs-body a.title:hover { color: var(--acc); border-bottom-color: var(--acc); text-decoration: none; }
 .report-slot .rs-body .meta { font-size: var(--fs-s); color: var(--fg-2); margin-top: 0.25rem; }
 .report-slot .rs-body .meta .k { color: var(--fg); font-family: var(--mono); }
-.report-slot .rs-body .meta .sep { color: var(--fg-4); margin: 0 0.4rem; }
+.report-slot .rs-body .meta .sep { color: var(--fg-subtle); margin: 0 0.4rem; }
 .report-slot .rs-actions { display: flex; gap: 11px; align-items: center; }
 .slot-aux {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 0.35rem 0.25rem 0; font-size: var(--fs-xs); color: var(--fg-4);
-  gap: 1rem; flex-wrap: wrap;
+  padding: 0.35rem 0.25rem 0; font-size: var(--fs-xs); color: var(--fg-muted);
+  gap: 1rem; flex-wrap: wrap; letter-spacing: 0.01em;
 }
-.slot-aux a { color: var(--fg-3); border-bottom: 1px dotted var(--fg-4); }
+.slot-aux a { color: var(--fg-2); border-bottom: 1px dotted var(--fg-subtle); }
 .slot-aux a:hover { color: var(--acc); border-bottom-color: var(--acc); text-decoration: none; }
 
 /* ── CARD GRID ── */
@@ -69,9 +70,9 @@
 
 .c-hd { display: flex; flex-direction: column; gap: 0.2rem; }
 .c-hd .title { font-weight: 600; font-size: var(--fs); color: var(--fg); line-height: 1.2; }
-.c-hd .ident { font-family: var(--mono); font-size: var(--fs-xs); color: var(--fg-3); line-height: 1.2; word-break: break-all; }
-.c-hd .ident .at { color: var(--fg-4); }
-.c-hd .ident .crawler { color: var(--fg-4); }
+.c-hd .ident { font-family: var(--mono); font-size: var(--fs-xs); color: var(--fg-2); line-height: 1.2; word-break: break-all; }
+.c-hd .ident .at { color: var(--fg-subtle); }
+.c-hd .ident .crawler { color: var(--fg-muted); }
 
 /* Labels share row 1 and values share row 2 across both stats; subgrid keeps
    each label grouped with its value in the DOM. */
@@ -87,7 +88,7 @@
 }
 .subs-wrap { grid-column: 2; justify-items: end; }
 .c-body-row .lbl {
-  font-size: 10px; color: var(--fg-4);
+  font-size: 10px; color: var(--fg-muted);
   text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
 }
 .solved-val { line-height: 1.1; }
@@ -101,11 +102,11 @@
 }
 .solved-link:hover { color: var(--fg); border-bottom-color: var(--fg); text-decoration: none; }
 .subs-val {
-  font-family: var(--mono); font-size: var(--fs-s); color: var(--fg-3);
+  font-family: var(--mono); font-size: var(--fs-s); color: var(--fg-2);
   font-variant-numeric: tabular-nums; line-height: 1;
 }
 .dash {
-  font-family: var(--mono); color: var(--fg-4); font-size: 1.6rem; font-weight: 600; line-height: 1.1;
+  font-family: var(--mono); color: var(--fg-subtle); font-size: 1.6rem; font-weight: 600; line-height: 1.1;
   /* Same box as .solved-link, so the stats row keeps its height when a card succeeds */
   display: inline-block; padding-bottom: 1px; border-bottom: 1px solid transparent;
 }
@@ -131,8 +132,8 @@
 .c-ft .status.s-ok   { color: var(--ok); }
 .c-ft .status.s-err  { color: var(--err); }
 .c-ft .status.s-load { color: var(--load); }
-.c-ft .status.s-pend { color: var(--fg-4); }
-.c-ft .status .t { color: var(--fg-4); font-size: 11px; margin-left: 0.2rem; }
+.c-ft .status.s-pend { color: var(--pend); }
+.c-ft .status .t { color: var(--fg-subtle); font-size: 11px; margin-left: 0.2rem; }
 /* px, not rem: the gap must stay wider than the two 5px hit-area insets */
 .c-ft .actions { display: flex; gap: 11px; }
 
@@ -155,7 +156,7 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow-wrap: anywhere;
-  color: var(--fg-3); font-size: var(--fs-xs); text-decoration: none;
+  color: var(--fg-muted); font-size: var(--fs-xs); text-decoration: none;
 }
 .err-link:hover { color: var(--err); text-decoration: none; }
 
@@ -170,9 +171,9 @@
 /* empty card grid state */
 .card-empty {
   grid-column: 1 / -1; padding: 2.5rem 1rem; text-align: center;
-  color: var(--fg-4); font-size: var(--fs-s);
+  color: var(--fg-muted); font-size: var(--fs-s);
 }
-.card-empty pre { margin: 0 0 0.75rem; color: var(--fg-3); font-size: var(--fs-xs); line-height: 1.4; }
+.card-empty pre { margin: 0 0 0.75rem; color: var(--fg-2); font-size: var(--fs-xs); line-height: 1.4; }
 
 /* ── DOWNLOAD CARD / SUMMARY ── */
 .download-card, .summary {
@@ -190,7 +191,7 @@
 }
 .stat.accent .n { color: var(--acc); }
 .stat .l {
-  font-size: 10px; color: var(--fg-4);
+  font-size: 10px; color: var(--fg-muted);
   text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
 }
 .dc-right, .summary-right {
@@ -199,7 +200,7 @@
   align-items: stretch; justify-content: center; min-width: 240px;
 }
 .dc-right .note, .summary-right .note {
-  font-size: var(--fs-xs); color: var(--fg-4); line-height: 1.5;
+  font-size: var(--fs-xs); color: var(--attention); line-height: 1.5;
 }
 
 /* ── COMPOSER (home-page only) ── */
@@ -214,9 +215,9 @@
 }
 .composer .crawler-hint {
   grid-column: 1 / -1;
-  font-size: var(--fs-xs); color: var(--fg-4); padding: 0 0.1rem;
+  font-size: var(--fs-xs); color: var(--fg-muted); padding: 0 0.1rem;
 }
-.composer .crawler-hint::before { content: "ℹ "; color: var(--fg-4); }
+.composer .crawler-hint::before { content: "ℹ "; }
 
 .field {
   display: flex; align-items: center;
@@ -224,10 +225,10 @@
   background: var(--bg); padding: 0 0.75rem; height: 38px; border-radius: 3px;
 }
 .field:focus-within { border-color: var(--acc); box-shadow: 0 0 0 2px color-mix(in oklab, var(--acc) 10%, var(--bg)); }
-.field .prefix { color: var(--fg-4); user-select: none; margin-right: 0.45rem; font-size: var(--fs-xs); }
+.field .prefix { color: var(--fg-muted); user-select: none; margin-right: 0.45rem; font-size: var(--fs-xs); }
 .field select, .field input { background: transparent; border: 0; outline: none; color: var(--fg); font: inherit; width: 100%; padding: 0; }
 .field select option { background: var(--bg-1); color: var(--fg); }
-.field input::placeholder { color: var(--fg-4); }
+.field input::placeholder { color: var(--fg-muted); }
 .field .at { color: var(--acc); margin: 0 0.3rem; }
 
 .btn {
@@ -243,7 +244,7 @@
 .btn.ghost { background: transparent; }
 .btn.danger:not(:disabled):hover { border-color: var(--err); color: var(--err); }
 .btn:disabled { cursor: not-allowed; opacity: 0.6; }
-.btn .kbd { margin-left: 0.3rem; color: var(--fg-4); font-size: 10px; border: 1px solid var(--line); padding: 1px 4px; border-radius: 2px; }
+.btn .kbd { margin-left: 0.3rem; color: var(--fg-muted); font-size: 10px; border: 1px solid var(--line); padding: 1px 4px; border-radius: 2px; }
 .btn.primary .kbd { color: rgba(10,11,13,0.7); border-color: rgba(10,11,13,0.3); }
 .btn.sm { height: 32px; padding: 0 0.75rem; font-size: var(--fs-s); }
 .btn.xs { height: 26px; padding: 0 0.55rem; font-size: var(--fs-xs); }
