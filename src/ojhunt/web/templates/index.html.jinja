@@ -174,11 +174,13 @@
                 <div class="c-body-row" x-show="q.status !== 'error'">
                     <div class="solved-wrap">
                         <span class="lbl">Solved</span>
-                        <a href="#" class="solved-link"
-                           x-show="q.status === 'success'"
-                           @click.prevent="showDialog(q)"
-                           x-text="q.solved?.toLocaleString('en-US')"></a>
-                        <span class="dash" x-show="q.status !== 'success'">—</span>
+                        <span class="solved-val">
+                            <a href="#" class="solved-link"
+                               x-show="q.status === 'success'"
+                               @click.prevent="showDialog(q)"
+                               x-text="q.solved?.toLocaleString('en-US')"></a>
+                            <span class="dash" x-show="q.status !== 'success'">—</span>
+                        </span>
                     </div>
                     <div class="subs-wrap" x-show="q.status === 'success'">
                         <span class="lbl">Submissions</span>
