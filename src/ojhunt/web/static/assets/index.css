@@ -160,6 +160,9 @@
 }
 .err-link:hover { color: var(--err); text-decoration: none; }
 
+/* Dots hang off the label, so a centred label stays put while they show */
+.btn-label { position: relative; }
+.btn-label .loading-dots { position: absolute; left: 100%; }
 .loading-dots::after {
   content: ""; animation: dots 1.4s steps(4,end) infinite;
 }
@@ -232,7 +235,7 @@
 .field .at { color: var(--acc); margin: 0 0.3rem; }
 
 .btn {
-  display: inline-flex; align-items: center; gap: 0.4rem;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
   background: var(--bg-2); color: var(--fg);
   border: 1px solid var(--line-2);
   padding: 0 0.9rem; height: 38px;
