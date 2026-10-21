@@ -182,7 +182,7 @@
 }
 .dc-left, .summary-left {
   padding: 1.2rem 1.4rem;
-  display: flex; align-items: baseline; flex-wrap: wrap; gap: 2rem 2.5rem;
+  display: flex; align-items: baseline; align-content: center; flex-wrap: wrap; gap: 2rem 2.5rem;
 }
 .stat { display: flex; flex-direction: column; gap: 0.15rem; }
 .stat .n {
@@ -266,4 +266,5 @@
   .step { flex-wrap: wrap; }
   .step .hint { order: 10; flex: 0 0 100%; margin-top: 0.1rem; }
   .step-actions { flex: 0 0 100%; }
+  .dc-left, .summary-left { gap: 1rem 1.25rem; }
 }
