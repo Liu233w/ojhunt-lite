@@ -313,11 +313,12 @@ Members
 
 ## Supported crawlers
 
-35 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+36 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
 | `acmp` | [ACMP.ru](https://acmp.ru/) | – | Please use your numeric user ID (the id= value in your profile URL, ?main=user&id=...) | – |
+| `acmu` | [ACMU.ru](https://acmu.ru/) | – | Please use your numeric user ID (the id= value in your profile URL, ?main=user&id=...) | – |
 | `aizu` | [AIZU](http://judge.u-aizu.ac.jp/onlinejudge/index.jsp) | – | – | – |
 | `atcoder` | [AtCoder](https://atcoder.jp) | – | API provided by kenkoooo (https://github.com/kenkoooo/AtCoderProblems). Only AC number is supported | – |
 | `code360` | [Code360](https://www.naukri.com/code360/) | – | Enter your Code360 profile name (the last part of naukri.com/code360/profile/<name>). Counts DSA problems only. | – |
