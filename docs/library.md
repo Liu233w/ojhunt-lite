@@ -319,7 +319,7 @@ Members
 | --- | --- | --- | --- | --- |
 | `aizu` | [AIZU](http://judge.u-aizu.ac.jp/onlinejudge/index.jsp) | – | – | – |
 | `atcoder` | [AtCoder](https://atcoder.jp) | – | API provided by kenkoooo (https://github.com/kenkoooo/AtCoderProblems). Only AC number is supported | – |
-| `codechef` | [CodeChef](https://www.codechef.com/) | – | – | – |
+| `codechef` | [CodeChef](https://www.codechef.com/) | – | Only the solved count is available. Submissions report the solved count. | – |
 | `codeforces` | [CodeForces](http://codeforces.com/) | – | Including CodeForces::Gym | – |
 | `codewars` | [Codewars](https://www.codewars.com) | – | Currently it does not have submission number. Username is case sensitive. | – |
 | `cses` | [CSES](https://cses.fi/) | Shared Account | Enter your numeric user ID. | `password`, `login_user`, `login_password` |
