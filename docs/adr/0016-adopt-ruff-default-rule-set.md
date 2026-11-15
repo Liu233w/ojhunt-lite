@@ -41,8 +41,8 @@ in this repo needs the `typing` spelling for compatibility.
 
 ## Decision
 
-**Option C.** The default rule set stands as ruff ships it. Three narrow exceptions are
-recorded in config, and three at the site:
+**Option C.** The default rule set stands as ruff ships it. Two narrow exceptions are
+recorded in config, and two at the site:
 
 | Exception | Where | Why |
 |-----------|-------|-----|
@@ -50,7 +50,6 @@ recorded in config, and three at the site:
 | `extend-immutable-calls = ["fastapi.File"]` | `pyproject.toml` | `File(...)` in a parameter default is how FastAPI declares an upload. |
 | `# noqa: FLY002` | `web/app.py` | The fix collapses the CSP into one 300-character line and deletes the comments inside it. That block is load-bearing — see [ADR 0010](0010-relaxed-csp-for-inline-alpine.md). |
 | `# noqa: UP031` | `crawlers/eolymp.py` | `.format()` needs every brace in the GraphQL body doubled. |
-| `# noqa: DTZ007` | `web/pdf.py` | The chart axis parses day keys that are already local-day strings. It needs their order, not an instant. |
 
 `.claude/rules/python.md` now states the PEP 585/604 rule, and the `query()` templates in
 `docs/dev/crawlers.md` were updated so a new crawler does not reintroduce the old style.
@@ -62,7 +61,7 @@ recorded in config, and three at the site:
   rather than landing silently.
 - `Dict`, `List`, `Optional` and `Union` no longer appear in annotations. A patch that adds one
   back gets rewritten by the `format-lint-python.sh` hook on the next edit.
-- The 413-rule set covers `SIM`, `C4`, `B`, `DTZ`, `RUF`, `PL` and more, so new code meets
+- The default set covers `SIM`, `C4`, `B`, `DTZ`, `RUF`, `PL` and more, so new code meets
   checks that were never applied to the code already in the tree.
 - `./doit.sh lint` runs `ruff format --check` beside `ruff check`, because ruff 0.16 also
   formats Python blocks inside Markdown and that drift was invisible to a check-only gate.
