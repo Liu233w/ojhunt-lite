@@ -313,12 +313,13 @@ Members
 
 ## Supported crawlers
 
-32 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+33 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
 | `aizu` | [AIZU](http://judge.u-aizu.ac.jp/onlinejudge/index.jsp) | – | – | – |
 | `atcoder` | [AtCoder](https://atcoder.jp) | – | API provided by kenkoooo (https://github.com/kenkoooo/AtCoderProblems). Only AC number is supported | – |
+| `code360` | [Code360](https://www.naukri.com/code360/) | – | Enter your Code360 profile name (the last part of naukri.com/code360/profile/<name>). Counts DSA problems only. | – |
 | `codechef` | [CodeChef](https://www.codechef.com/) | – | Only the solved count is available. Submissions report the solved count. | – |
 | `codeforces` | [CodeForces](http://codeforces.com/) | – | Including CodeForces::Gym | – |
 | `codewars` | [Codewars](https://www.codewars.com) | – | Currently it does not have submission number. Username is case sensitive. | – |
