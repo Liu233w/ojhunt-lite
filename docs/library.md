@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-37 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+38 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -328,6 +328,7 @@ Members
 | `cses` | [CSES](https://cses.fi/) | Shared Account | Enter your numeric user ID. | `password`, `login_user`, `login_password` |
 | `csg` | [CSG](https://cpc.csgrandeur.cn/) | – | CSGrandeur Online Judge | – |
 | `darkbzoj` | [DarkBZOJ](https://darkbzoj.cc/) | – | – | – |
+| `doj` | [DOJ](https://doj.kr/) | – | Please use your DOJ handle (the name in your profile URL, doj.kr/ko/user/...) | – |
 | `eolymp` | [EOlymp](https://www.eolymp.com/) | – | Submission count reflects accepted submissions only. | – |
 | `geeksforgeeks` | [GeeksforGeeks](https://www.geeksforgeeks.org/) | – | Your GeeksforGeeks handle (from the profile URL) | – |
 | `hdu` | [HDU](http://acm.hdu.edu.cn/) | – | – | – |
