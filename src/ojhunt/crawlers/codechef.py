@@ -26,24 +26,30 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+import re
+
 import aiohttp
 from selectolax.lexbor import LexborHTMLParser
 
 __crawler_meta__ = {
     "title": "CodeChef",
-    "description": "",
+    "description": "Only the solved count is available. Submissions report the solved count.",
     "url": "https://www.codechef.com/",
     "test_username": "vjudge",
 }
 
+_SOLVED_PATTERN = re.compile(r"Total Problems Solved:\s*(\d+)")
+
 
 async def query(
     session: aiohttp.ClientSession, username: str
-) -> dict[str, int | list[str]]:
+) -> dict[str, int | list[str] | None]:
     """
     Query CodeChef for user statistics.
 
-    Walks the user's public submission pages and counts distinct accepted problems.
+    Reads "Total Problems Solved" from the user's public profile page. The page names no
+    problem codes and no submission total, so solved_list is None and submissions is the
+    solved count.
 
     Args:
         session: aiohttp ClientSession
@@ -53,57 +59,40 @@ async def query(
         Dictionary with keys: solved, submissions, solved_list
 
     Raises:
-        ValueError: If username is empty, or the user does not exist / has no submissions
-        RuntimeError: If a submission page cannot be fetched or parsed
+        ValueError: If username is empty or the user does not exist
+        RuntimeError: If CodeChef blocks the request, or the page cannot be fetched or parsed
     """
     if not username or not username.strip():
         raise ValueError("Please enter username")
 
     username = username.strip()
-    submissions = 0
-    solved_set = set()
-    page = 1
-    max_page = 1
 
     try:
-        while page <= max_page:
-            async with session.get(
-                f"https://www.codechef.com/recent/user?page={page}&user_handle={username}",
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as response:
-                if response.status != 200:
-                    raise RuntimeError(f"Server Response Error: {response.status}")
-                data = await response.json(content_type=None)
-
-            html = data.get("content", "")
-            max_page = data.get("max_page", 1) if page == 1 else max_page
-
-            doc = LexborHTMLParser(html)
-            for tr in doc.css("table.dataTable tbody tr"):
-                problem_link = tr.css_first("td:nth-child(2) a")
-                result_span = tr.css_first("td:nth-child(3) span")
-
-                if not problem_link:
-                    continue
-
-                submissions += 1
-                if result_span and result_span.attributes.get("title") == "accepted":
-                    solved_set.add(problem_link.text(strip=True))
-
-            page += 1
-
-        if submissions == 0:
-            raise ValueError("User not exist or has no submission")
-
-        return {
-            "solved": len(solved_set),
-            "submissions": submissions,
-            "solved_list": sorted(solved_set),
-        }
-
-    except ValueError:
-        raise
+        async with session.get(
+            f"https://www.codechef.com/users/{username}",
+            allow_redirects=False,
+            timeout=aiohttp.ClientTimeout(total=30),
+        ) as response:
+            if 300 <= response.status < 400:
+                raise ValueError("The user does not exist")
+            if (
+                response.status == 429
+                and response.headers.get("cf-mitigated") == "challenge"
+            ):
+                raise RuntimeError(
+                    "CodeChef is challenging automated requests (Cloudflare); retry later"
+                )
+            if response.status != 200:
+                raise RuntimeError(f"Server Response Error: {response.status}")
+            html = await response.text()
     except aiohttp.ClientError as e:
         raise RuntimeError(f"Request failed: {e!s}")
-    except Exception:
-        raise RuntimeError("Error while parsing")
+
+    doc = LexborHTMLParser(html)
+    for heading in doc.css("section.problems-solved h3"):
+        match = _SOLVED_PATTERN.search(heading.text())
+        if match:
+            solved = int(match.group(1))
+            return {"solved": solved, "submissions": solved, "solved_list": None}
+
+    raise RuntimeError("Error while parsing")
