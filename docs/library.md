@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-33 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+32 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -324,7 +324,6 @@ Members
 | `codewars` | [Codewars](https://www.codewars.com) | – | Currently it does not have submission number. Username is case sensitive. | – |
 | `cses` | [CSES](https://cses.fi/) | Shared Account | Enter your numeric user ID. | `password`, `login_user`, `login_password` |
 | `csg` | [CSG](https://cpc.csgrandeur.cn/) | – | CSGrandeur Online Judge | – |
-| `csu` | [CSU](https://vlab.csu.edu.cn/oj) | – | – | – |
 | `darkbzoj` | [DarkBZOJ](https://darkbzoj.cc/) | – | – | – |
 | `eolymp` | [EOlymp](https://www.eolymp.com/) | – | Submission count reflects accepted submissions only. | – |
 | `hdu` | [HDU](http://acm.hdu.edu.cn/) | – | – | – |

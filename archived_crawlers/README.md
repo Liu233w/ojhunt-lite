@@ -14,6 +14,7 @@ These crawlers have been archived due to:
 | acdream | Domain dead (DNS does not resolve) |
 | bzoj | Cerberus JS PoW challenge (bot protection); use darkbzoj crawler instead |
 | csacademy | SPA uses WebSocket for data, not scrapable via HTTP |
+| csu | OJ backend gone: every `vlab.csu.edu.cn/oj/` page returns nginx 502 Bad Gateway since the portal was rebuilt (Nov 2026); no new OJ location found |
 | dashiye (HYSBZ) | Site dead (2010-2020) |
 | eljudge (EIJudge) | Domain repurposed (acm.mipt.ru is now MIPT CS department homepage, OJ no longer exists) |
 | fzu | Site dead (2012-2021) |
