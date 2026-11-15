@@ -5,27 +5,27 @@ what is wrong, why it was left, and where to start. Delete an entry when it ship
 
 ## Crawlers swallow their own error messages
 
-20 of the 33 crawlers end `query` with `except Exception: raise RuntimeError("Error while
+19 of the 32 crawlers end `query` with `except Exception: raise RuntimeError("Error while
 parsing")`, which catches the more specific `RuntimeError(f"Server Response Error: {status}")`
 raised inside the same `try`. An upstream outage is therefore reported as a parse failure and the
 status code is lost from the CLI, the web app and the `/crawlers` availability check.
 
 `except ValueError: raise` is already there; the fix is `except RuntimeError: raise` beside it.
 
-Affected: `aizu`, `codechef`, `codewars`, `csu`, `darkbzoj`, `hdu`, `hust`, `loj`, `luogu`,
-`nbut`, `nit`, `nowcoder`, `ojuz`, `poj`, `sdutoj`, `timus`, `toph`, `uoj`, `uva`, `vjudge`.
+Affected: `aizu`, `codechef`, `codewars`, `darkbzoj`, `hdu`, `hust`, `loj`, `luogu`, `nbut`,
+`nit`, `nowcoder`, `ojuz`, `poj`, `sdutoj`, `timus`, `toph`, `uoj`, `uva`, `vjudge`.
 
 Left alone so far because it changes error behaviour across a third of the crawlers, which
 deserves its own change rather than a drive-by in a documentation branch.
 
-## 14 crawlers have no `description`
+## 13 crawlers have no `description`
 
 `help(crawlers["<name>"])` and the `docs/library.md` table therefore give no hint about what to
 type as a username — which matters more now that the generated help derives everything from
 metadata ([ADR 0014](adr/0014-generated-crawler-help.md)).
 
-Missing: `aizu`, `codechef`, `csu`, `darkbzoj`, `hdu`, `lightoj`, `loj`, `nbut`, `nit`, `poj`,
-`sdutoj`, `timus`, `uoj`, `uva`.
+Missing: `aizu`, `codechef`, `darkbzoj`, `hdu`, `lightoj`, `loj`, `nbut`, `nit`, `poj`, `sdutoj`,
+`timus`, `uoj`, `uva`.
 
 Each one needs a look at the judge to say whether it wants a handle, a numeric id, or is
 case-sensitive, so this is per-judge research rather than a mechanical pass.
