@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-40 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+41 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -325,6 +325,7 @@ Members
 | `codechef` | [CodeChef](https://www.codechef.com/) | – | Only the solved count is available. Submissions report the solved count. | – |
 | `codeforces` | [CodeForces](http://codeforces.com/) | – | Including CodeForces::Gym | – |
 | `codewars` | [Codewars](https://www.codewars.com) | – | Currently it does not have submission number. Username is case sensitive. | – |
+| `codingame` | [CodinGame](https://www.codingame.com/) | – | Your CodinGame public handle: the long hexadecimal string at the end of your profile URL (codingame.com/profile/...). Nicknames cannot be looked up. Solved counts the puzzles solved in the language where you solved the most, so it is a lower bound. | – |
 | `cses` | [CSES](https://cses.fi/) | Shared Account | Enter your numeric user ID. | `password`, `login_user`, `login_password` |
 | `csg` | [CSG](https://cpc.csgrandeur.cn/) | – | CSGrandeur Online Judge | – |
 | `darkbzoj` | [DarkBZOJ](https://darkbzoj.cc/) | – | – | – |
