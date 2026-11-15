@@ -18,12 +18,6 @@ Affected: `aizu`, `codechef`, `codewars`, `csu`, `darkbzoj`, `hdu`, `hust`, `loj
 Left alone so far because it changes error behaviour across a third of the crawlers, which
 deserves its own change rather than a drive-by in a documentation branch.
 
-## EOlymp's `test_username` no longer resolves
-
-`"vjudge5"` returns no members from the GraphQL API, so `./doit.sh test-crawler eolymp` fails 2 of
-4 tests (on `main` too — it is not a regression) and the `/crawlers` page reports EOlymp offline.
-Pick a live user and update `__crawler_meta__["test_username"]` in `src/ojhunt/crawlers/eolymp.py`.
-
 ## 14 crawlers have no `description`
 
 `help(crawlers["<name>"])` and the `docs/library.md` table therefore give no hint about what to
