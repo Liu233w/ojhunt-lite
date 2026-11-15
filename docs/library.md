@@ -313,21 +313,28 @@ Members
 
 ## Supported crawlers
 
-31 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+41 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
+| `acmp` | [ACMP.ru](https://acmp.ru/) | – | Please use your numeric user ID (the id= value in your profile URL, ?main=user&id=...) | – |
+| `acmu` | [ACMU.ru](https://acmu.ru/) | – | Please use your numeric user ID (the id= value in your profile URL, ?main=user&id=...) | – |
 | `aizu` | [AIZU](http://judge.u-aizu.ac.jp/onlinejudge/index.jsp) | – | – | – |
 | `atcoder` | [AtCoder](https://atcoder.jp) | – | API provided by kenkoooo (https://github.com/kenkoooo/AtCoderProblems). Only AC number is supported | – |
+| `code360` | [Code360](https://www.naukri.com/code360/) | – | Enter your Code360 profile name (the last part of naukri.com/code360/profile/<name>). Counts DSA problems only. | – |
 | `codechef` | [CodeChef](https://www.codechef.com/) | – | Only the solved count is available. Submissions report the solved count. | – |
 | `codeforces` | [CodeForces](http://codeforces.com/) | – | Including CodeForces::Gym | – |
 | `codewars` | [Codewars](https://www.codewars.com) | – | Currently it does not have submission number. Username is case sensitive. | – |
+| `codingame` | [CodinGame](https://www.codingame.com/) | – | Your CodinGame public handle: the long hexadecimal string at the end of your profile URL (codingame.com/profile/...). Nicknames cannot be looked up. Solved counts the puzzles solved in the language where you solved the most, so it is a lower bound. | – |
 | `cses` | [CSES](https://cses.fi/) | Shared Account | Enter your numeric user ID. | `password`, `login_user`, `login_password` |
 | `csg` | [CSG](https://cpc.csgrandeur.cn/) | – | CSGrandeur Online Judge | – |
 | `darkbzoj` | [DarkBZOJ](https://darkbzoj.cc/) | – | – | – |
+| `doj` | [DOJ](https://doj.kr/) | – | Please use your DOJ handle (the name in your profile URL, doj.kr/ko/user/...) | – |
 | `eolymp` | [EOlymp](https://www.eolymp.com/) | – | Submission count reflects accepted submissions only. | – |
+| `geeksforgeeks` | [GeeksforGeeks](https://www.geeksforgeeks.org/) | – | Your GeeksforGeeks handle (from the profile URL) | – |
 | `hdu` | [HDU](http://acm.hdu.edu.cn/) | – | – | – |
 | `hust` | [HUST](https://hustoj.org/) | – | HUST Online Judge | – |
+| `kep` | [KEP.uz](https://kep.uz/) | – | Your KEP.uz username (from the profile URL) | – |
 | `kilonova` | [Kilonova](https://kilonova.ro/) | – | Romanian competitive programming platform | – |
 | `leetcode` | [LeetCode.com](https://leetcode.com/) | – | LeetCode (international) | – |
 | `lightoj` | [LightOJ](https://lightoj.com/) | – | – | – |
@@ -339,7 +346,10 @@ Members
 | `nowcoder` | [牛客OJ](https://ac.nowcoder.com/acm/home) | – | 目前只支持输入用户ID（在你的AC列表的URL中） | – |
 | `ojuz` | [oj.uz](https://oj.uz/) | – | Online Judge hosting IOI/BOI/JOI/APIO problems. Submissions shows the number of attempted problems, a lower bound on the real total. | – |
 | `poj` | [POJ](http://poj.org/) | – | – | – |
+| `robocontest` | [RoboContest](https://robocontest.uz/) | – | Please use your RoboContest username (the name in your profile URL, robocontest.uz/profile/...) | – |
+| `samcoding` | [SamCoding](https://samcoding.uz/) | – | Please enter your SamCoding username (the name in your profile URL) | – |
 | `sdutoj` | [SDUT OJ](https://oj.sdutacm.cn/) | – | – | – |
+| `sortme` | [Sort-Me](https://sort-me.org/) | – | Please use your numeric user ID (visible in your profile URL, sort-me.org/profile/<id>) | – |
 | `timus` | [Timus (URAL)](http://acm.timus.ru/) | – | – | – |
 | `tlx` | [TLX (TOKI Learning Exchange)](https://tlx.toki.id/) | – | Indonesia's largest competitive programming training website | – |
 | `toph` | [Toph](https://toph.co/) | – | Bangladesh competitive programming platform | – |
