@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-38 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+39 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -347,6 +347,7 @@ Members
 | `poj` | [POJ](http://poj.org/) | – | – | – |
 | `robocontest` | [RoboContest](https://robocontest.uz/) | – | Please use your RoboContest username (the name in your profile URL, robocontest.uz/profile/...) | – |
 | `sdutoj` | [SDUT OJ](https://oj.sdutacm.cn/) | – | – | – |
+| `sortme` | [Sort-Me](https://sort-me.org/) | – | Please use your numeric user ID (visible in your profile URL, sort-me.org/profile/<id>) | – |
 | `timus` | [Timus (URAL)](http://acm.timus.ru/) | – | – | – |
 | `tlx` | [TLX (TOKI Learning Exchange)](https://tlx.toki.id/) | – | Indonesia's largest competitive programming training website | – |
 | `toph` | [Toph](https://toph.co/) | – | Bangladesh competitive programming platform | – |
