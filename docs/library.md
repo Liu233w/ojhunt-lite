@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-31 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+32 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -326,6 +326,7 @@ Members
 | `csg` | [CSG](https://cpc.csgrandeur.cn/) | – | CSGrandeur Online Judge | – |
 | `darkbzoj` | [DarkBZOJ](https://darkbzoj.cc/) | – | – | – |
 | `eolymp` | [EOlymp](https://www.eolymp.com/) | – | Submission count reflects accepted submissions only. | – |
+| `geeksforgeeks` | [GeeksforGeeks](https://www.geeksforgeeks.org/) | – | Your GeeksforGeeks handle (from the profile URL) | – |
 | `hdu` | [HDU](http://acm.hdu.edu.cn/) | – | – | – |
 | `hust` | [HUST](https://hustoj.org/) | – | HUST Online Judge | – |
 | `kilonova` | [Kilonova](https://kilonova.ro/) | – | Romanian competitive programming platform | – |
