@@ -337,7 +337,7 @@ Members
 | `nit` | [OurOJ (NIT)](https://www.nitacm.com/) | – | Aggregator | – |
 | `nod` | [51Nod](https://www.51nod.com) | – | Please use your numeric user ID (visible in your profile URL) | – |
 | `nowcoder` | [牛客OJ](https://ac.nowcoder.com/acm/home) | – | 目前只支持输入用户ID（在你的AC列表的URL中） | – |
-| `ojuz` | [oj.uz](https://oj.uz/) | – | Online Judge hosting IOI/BOI/JOI/APIO problems | – |
+| `ojuz` | [oj.uz](https://oj.uz/) | – | Online Judge hosting IOI/BOI/JOI/APIO problems. Submissions shows the number of attempted problems, a lower bound on the real total. | – |
 | `poj` | [POJ](http://poj.org/) | – | – | – |
 | `sdutoj` | [SDUT OJ](https://oj.sdutacm.cn/) | – | – | – |
 | `timus` | [Timus (URAL)](http://acm.timus.ru/) | – | – | – |

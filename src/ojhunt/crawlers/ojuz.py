@@ -31,7 +31,7 @@ from selectolax.lexbor import LexborHTMLParser
 
 __crawler_meta__ = {
     "title": "oj.uz",
-    "description": "Online Judge hosting IOI/BOI/JOI/APIO problems",
+    "description": "Online Judge hosting IOI/BOI/JOI/APIO problems. Submissions shows the number of attempted problems, a lower bound on the real total.",
     "url": "https://oj.uz/",
     "test_username": "iamsazidh",
 }
@@ -78,27 +78,27 @@ async def query(
     try:
         doc = LexborHTMLParser(html)
 
-        solved = _extract_solved_count(doc)
+        solved = _extract_stat(doc, "solved problems")
+        attempted = _extract_stat(doc, "attempted problems")
         solved_list = _extract_solved_list(doc)
-        submissions = await _count_submissions(session, username)
-
-        return {
-            "solved": solved,
-            "submissions": submissions,
-            "solved_list": solved_list,
-        }
-    except ValueError:
-        raise
     except Exception:
         raise RuntimeError("Error while parsing")
 
+    # The submissions page sits behind a Cloudflare challenge, so the profile's
+    # attempted-problem count stands in as a lower bound (ADR 0015).
+    return {
+        "solved": solved,
+        "submissions": max(attempted, solved),
+        "solved_list": solved_list,
+    }
 
-def _extract_solved_count(doc: LexborHTMLParser) -> int:
-    """Extract solved count from profile page."""
+
+def _extract_stat(doc: LexborHTMLParser, label: str) -> int:
+    """Extract a numeric row such as "# solved problems" from the profile stats table."""
     for tr in doc.css("tr"):
         th = tr.css_first("th")
         td = tr.css_first("td")
-        if th and td and "solved problems" in th.text():
+        if th and td and label in th.text():
             return int(td.text(strip=True))
     return 0
 
@@ -116,57 +116,3 @@ def _extract_solved_list(doc: LexborHTMLParser) -> list[str]:
                     solved_list.append(problem_id)
             break
     return solved_list
-
-
-async def _count_submissions(session: aiohttp.ClientSession, username: str) -> int:
-    """Count total submissions by paginating through submissions page."""
-    total = 0
-    next_id = None
-
-    while True:
-        params = {"handle": username}
-        if next_id:
-            params["direction"] = "down"
-            params["id"] = next_id
-
-        try:
-            async with session.get(
-                f"{BASE_URL}/submissions",
-                params=params,
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as response:
-                response.raise_for_status()
-                html = await response.text()
-        except aiohttp.ClientError as e:
-            raise RuntimeError(f"Request failed: {e!s}")
-
-        doc = LexborHTMLParser(html)
-
-        rows = doc.css("table.table-striped tbody tr")
-        if not rows:
-            break
-
-        total += len(rows)
-
-        next_link = None
-        for a in doc.css("a"):
-            text = a.text(strip=True)
-            if text == "Next page":
-                next_link = a.attributes.get("href", "")
-                break
-
-        if not next_link:
-            break
-
-        if "id=" in next_link:
-            import re
-
-            match = re.search(r"id=(\d+)", next_link)
-            if match:
-                next_id = match.group(1)
-            else:
-                break
-        else:
-            break
-
-    return total
