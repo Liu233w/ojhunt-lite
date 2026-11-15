@@ -40,6 +40,27 @@ These crawlers have been archived due to:
 | dmoj | Anti-bot protection — API and submissions page both return HTTP 403 (same pattern as hackerrank) |
 | kattis | Not solved/submission based — uses a difficulty-score system instead of problem count |
 | vnoj | Cloudflare bot protection (managed challenge, `cf-mitigated: challenge`) on every path, including the profile page and `/api/v2` |
+| beecrowd | Cloudflare bot protection (managed challenge, `cf-mitigated: challenge`) on judge.beecrowd.com |
+| binarysearch | Domain dead (binarysearch.com does not resolve) |
+| codecracker | Site gone: codecracker.arhn.in serves a 404 page on every path, including `/` |
+| codedrills | Domain dead (codedrills.io has no A record, `www` does not resolve) |
+| coj | Domain dead (coj.uci.cu does not resolve) |
+| contest.bsuir.by | OJ backend gone: 502 Bad Gateway on http and https |
+| eluminatis | Origin down: judge.eluminatis-of-lu.com returns Cloudflare 521 |
+| it-edu.mipt.ru | Site gone: `/` and `/api/` return 404 "File not found." |
+| prepbytes | Domain dead (mycode.prepbytes.com does not resolve) |
+| acm.bsu.by | Requires authentication: problem and profile pages redirect to `/login/`; only contest standings are public |
+| adventofcode | No public profiles; private leaderboards need a session cookie, and progress is counted in stars, not problems |
+| algotester | Requires authentication: `/en/Account/Display/<id>` redirects to the login page |
+| codeany | No public user pages found; profiles appear to require login |
+| codearena.uz | Requires authentication: every path redirects to `/accounts/login/` |
+| coderun (Yandex) | Requires authentication: `/profile` redirects to Yandex Passport; no public profile or API |
+| informatics.mccme.ru | Moodle public profile shows only country, city and school; submissions and solved problems need login |
+| projecteuler | Profiles require login; the public `/profile/<user>.txt` and `.png` carry no solved count as text |
+| pythoncode.club | Only `/login` exists; no public user pages found |
+| supecoder | Google login only; no public user pages or API found |
+| techgig | No public profile page; `/myprofile` is the only profile route |
+| usaco.guide | Progress is stored per logged-in user; no public profile |
 
 These crawlers are kept for reference and may be restored if the issues are resolved.
 
