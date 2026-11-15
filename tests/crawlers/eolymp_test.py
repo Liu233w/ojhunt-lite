@@ -46,8 +46,18 @@ async def test_valid_user(session):
 @pytest.mark.asyncio
 async def test_case_insensitive_search(session):
     """Test that search is case-insensitive"""
-    result_lower = await query(session, "vjudge5")
-    result_upper = await query(session, "VJUDGE5")
+    result_lower = await query(session, TEST_USERNAME.lower())
+    result_upper = await query(session, TEST_USERNAME.upper())
 
     assert result_lower["solved"] == result_upper["solved"]
     assert result_lower["submissions"] == result_upper["submissions"]
+
+
+@pytest.mark.asyncio
+async def test_exact_match_ranked_below_partial_matches(session):
+    """A user is found even when the site's search ranks other names first"""
+    result = await query(session, "john")
+
+    assert isinstance(result["solved"], int), (
+        "search 'john' lists 'user263503' first; the exact account 'John' must still resolve"
+    )

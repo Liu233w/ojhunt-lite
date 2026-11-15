@@ -34,7 +34,7 @@ __crawler_meta__ = {
     "title": "EOlymp",
     "description": "Submission count reflects accepted submissions only.",
     "url": "https://www.eolymp.com/",
-    "test_username": "vjudge5",
+    "test_username": "ReSuLfur",
 }
 
 GRAPHQL_URL = (
@@ -65,9 +65,11 @@ async def query(
 
     # %-formatting stays: .format() and f-strings would need every brace in the
     # GraphQL body below doubled, which hides the query's real shape.
+    # `search` matches parts of names ("Sulfur" also finds "ReSuLfur") in no
+    # guaranteed order; the `name` filter is exact and ignores case.
     query_str = """
     {
-        members(first: 1, search: "%s") {
+        members(first: 1, filters: {name: {eq: "%s"}}) {
             nodes {
                 id
                 displayName

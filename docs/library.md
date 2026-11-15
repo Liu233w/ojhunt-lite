@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-33 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+31 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -324,7 +324,6 @@ Members
 | `codewars` | [Codewars](https://www.codewars.com) | – | Currently it does not have submission number. Username is case sensitive. | – |
 | `cses` | [CSES](https://cses.fi/) | Shared Account | Enter your numeric user ID. | `password`, `login_user`, `login_password` |
 | `csg` | [CSG](https://cpc.csgrandeur.cn/) | – | CSGrandeur Online Judge | – |
-| `csu` | [CSU](https://vlab.csu.edu.cn/oj) | – | – | – |
 | `darkbzoj` | [DarkBZOJ](https://darkbzoj.cc/) | – | – | – |
 | `eolymp` | [EOlymp](https://www.eolymp.com/) | – | Submission count reflects accepted submissions only. | – |
 | `hdu` | [HDU](http://acm.hdu.edu.cn/) | – | – | – |
@@ -338,7 +337,7 @@ Members
 | `nit` | [OurOJ (NIT)](https://www.nitacm.com/) | – | Aggregator | – |
 | `nod` | [51Nod](https://www.51nod.com) | – | Please use your numeric user ID (visible in your profile URL) | – |
 | `nowcoder` | [牛客OJ](https://ac.nowcoder.com/acm/home) | – | 目前只支持输入用户ID（在你的AC列表的URL中） | – |
-| `ojuz` | [oj.uz](https://oj.uz/) | – | Online Judge hosting IOI/BOI/JOI/APIO problems | – |
+| `ojuz` | [oj.uz](https://oj.uz/) | – | Online Judge hosting IOI/BOI/JOI/APIO problems. Submissions shows the number of attempted problems, a lower bound on the real total. | – |
 | `poj` | [POJ](http://poj.org/) | – | – | – |
 | `sdutoj` | [SDUT OJ](https://oj.sdutacm.cn/) | – | – | – |
 | `timus` | [Timus (URAL)](http://acm.timus.ru/) | – | – | – |
@@ -347,7 +346,6 @@ Members
 | `uoj` | [UOJ](http://uoj.ac/) | – | – | – |
 | `uva` | [UVA](https://uva.onlinejudge.org/) | – | – | – |
 | `vjudge` | [VJudge](https://vjudge.net/) | Shared Account | virtual judge，这个OJ的题量是单独计算的 (aggregator) | `password`, `login_user`, `login_password` |
-| `vnoj` | [VNOJ](https://oj.vnoi.info/) | – | VNOI Online Judge | – |
 | `yosupo` | [Yosupo Judge](https://judge.yosupo.jp/) | – | Library Checker (judge.yosupo.jp) | – |
 | `yukicoder` | [yukicoder](https://yukicoder.me/) | – | Japanese competitive programming platform | – |
 

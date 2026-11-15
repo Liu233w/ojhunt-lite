@@ -14,6 +14,7 @@ These crawlers have been archived due to:
 | acdream | Domain dead (DNS does not resolve) |
 | bzoj | Cerberus JS PoW challenge (bot protection); use darkbzoj crawler instead |
 | csacademy | SPA uses WebSocket for data, not scrapable via HTTP |
+| csu | OJ backend gone: every `vlab.csu.edu.cn/oj/` page returns nginx 502 Bad Gateway since the portal was rebuilt (Nov 2026); no new OJ location found |
 | dashiye (HYSBZ) | Site dead (2010-2020) |
 | eljudge (EIJudge) | Domain repurposed (acm.mipt.ru is now MIPT CS department homepage, OJ no longer exists) |
 | fzu | Site dead (2012-2021) |
@@ -38,5 +39,16 @@ These crawlers have been archived due to:
 | uestc (CDOJ) | Migrated from Lutece to Hydro at cdoj.site; old oj.uestc.edu.cn is dead; Cerberus JS PoW challenge likely protects API endpoints |
 | dmoj | Anti-bot protection — API and submissions page both return HTTP 403 (same pattern as hackerrank) |
 | kattis | Not solved/submission based — uses a difficulty-score system instead of problem count |
+| vnoj | Cloudflare bot protection (managed challenge, `cf-mitigated: challenge`) on every path, including the profile page and `/api/v2` |
 
 These crawlers are kept for reference and may be restored if the issues are resolved.
+
+## Offline but kept
+
+These crawlers show offline on https://ojhunt.com/crawlers, but they are not archived because
+they can still work from other networks (for example the CLI on a user's machine). Don't try to
+fix them.
+
+| Crawler | Reason |
+|---------|--------|
+| poj | POJ blocks requests from the ojhunt.com server. The crawler can still work from the CLI ([ADR 0011](../docs/adr/0011-poj-status-log-fallback.md)) |

@@ -287,3 +287,4 @@ legacy.db
 
 # Visual regression / Playwright generated artifacts
 /test-results/
+.claude/worktrees/
