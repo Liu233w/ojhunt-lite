@@ -183,6 +183,16 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "chinesedfan",
+      "name": "Xianming Zhong",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1736154?v=4",
+      "profile": "https://github.com/chinesedfan",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 6,
