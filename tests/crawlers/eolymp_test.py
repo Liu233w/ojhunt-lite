@@ -46,8 +46,8 @@ async def test_valid_user(session):
 @pytest.mark.asyncio
 async def test_case_insensitive_search(session):
     """Test that search is case-insensitive"""
-    result_lower = await query(session, "vjudge5")
-    result_upper = await query(session, "VJUDGE5")
+    result_lower = await query(session, TEST_USERNAME.lower())
+    result_upper = await query(session, TEST_USERNAME.upper())
 
     assert result_lower["solved"] == result_upper["solved"]
     assert result_lower["submissions"] == result_upper["submissions"]
