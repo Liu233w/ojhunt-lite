@@ -40,3 +40,13 @@ These crawlers have been archived due to:
 | kattis | Not solved/submission based — uses a difficulty-score system instead of problem count |
 
 These crawlers are kept for reference and may be restored if the issues are resolved.
+
+## Offline but kept
+
+These crawlers show offline on https://ojhunt.com/crawlers, but they are not archived because
+they can still work from other networks (for example the CLI on a user's machine). Don't try to
+fix them.
+
+| Crawler | Reason |
+|---------|--------|
+| poj | POJ blocks requests from the ojhunt.com server. The crawler can still work from the CLI ([ADR 0011](../docs/adr/0011-poj-status-log-fallback.md)) |
