@@ -79,4 +79,5 @@ dev = [
     "ruff>=0.15.1",
     "ast-grep-cli>=0.45.1",
     "ast-grep-py>=0.45.1",
+    "playwright>=1.65.2",
 ]
