@@ -39,6 +39,7 @@ These crawlers have been archived due to:
 | uestc (CDOJ) | Migrated from Lutece to Hydro at cdoj.site; old oj.uestc.edu.cn is dead; Cerberus JS PoW challenge likely protects API endpoints |
 | dmoj | Anti-bot protection — API and submissions page both return HTTP 403 (same pattern as hackerrank) |
 | kattis | Not solved/submission based — uses a difficulty-score system instead of problem count |
+| vnoj | Cloudflare bot protection (managed challenge, `cf-mitigated: challenge`) on every path, including the profile page and `/api/v2` |
 
 These crawlers are kept for reference and may be restored if the issues are resolved.
 
