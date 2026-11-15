@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-39 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+40 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -346,6 +346,7 @@ Members
 | `ojuz` | [oj.uz](https://oj.uz/) | – | Online Judge hosting IOI/BOI/JOI/APIO problems. Submissions shows the number of attempted problems, a lower bound on the real total. | – |
 | `poj` | [POJ](http://poj.org/) | – | – | – |
 | `robocontest` | [RoboContest](https://robocontest.uz/) | – | Please use your RoboContest username (the name in your profile URL, robocontest.uz/profile/...) | – |
+| `samcoding` | [SamCoding](https://samcoding.uz/) | – | Please enter your SamCoding username (the name in your profile URL) | – |
 | `sdutoj` | [SDUT OJ](https://oj.sdutacm.cn/) | – | – | – |
 | `sortme` | [Sort-Me](https://sort-me.org/) | – | Please use your numeric user ID (visible in your profile URL, sort-me.org/profile/<id>) | – |
 | `timus` | [Timus (URAL)](http://acm.timus.ru/) | – | – | – |
