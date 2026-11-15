@@ -37,8 +37,10 @@ async def test_valid_user(session):
 
     assert isinstance(result["solved"], int)
     assert isinstance(result["submissions"], int)
-    assert result["solved_list"] is None
+    assert isinstance(result["solved_list"], list)
 
     assert result["solved"] > 0
     assert result["submissions"] > 0
     assert result["submissions"] >= result["solved"]
+    assert len(result["solved_list"]) == result["solved"]
+    assert all(p.isdigit() for p in result["solved_list"])

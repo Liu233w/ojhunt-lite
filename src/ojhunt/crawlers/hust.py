@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import aiohttp
-from selectolax.lexbor import LexborHTMLParser
+from selectolax.lexbor import LexborHTMLParser, LexborNode
 
 __crawler_meta__ = {
     "title": "HUST",
@@ -35,6 +35,18 @@ __crawler_meta__ = {
     "url": "https://hustoj.org/",
     "test_username": "freefcw",
 }
+
+
+def _segment_after(doc: LexborHTMLParser, heading: str) -> LexborNode | None:
+    """Return the segment ``<div>`` that follows the ``<h4>`` titled ``heading``."""
+    for h4 in doc.css("h4"):
+        if h4.text(strip=True) != heading:
+            continue
+        node = h4.next
+        while node is not None and node.tag != "div":
+            node = node.next
+        return node
+    return None
 
 
 async def query(
@@ -60,7 +72,8 @@ async def query(
 
     try:
         async with session.get(
-            f"https://hustoj.org/user/{username}",
+            "https://hustoj.org/userinfo.php",
+            params={"user": username},
             timeout=aiohttp.ClientTimeout(total=30),
         ) as response:
             response.raise_for_status()
@@ -68,35 +81,42 @@ async def query(
     except aiohttp.ClientError as e:
         raise RuntimeError(f"Request failed: {e!s}")
 
+    if "No such User!" in html:
+        raise ValueError("The user does not exist")
+
     try:
         doc = LexborHTMLParser(html)
 
-        title = doc.css_first("title")
-        if title is None or "Profile ::" not in title.text():
-            raise ValueError("The user does not exist")
-
-        solved_text = None
-        submissions_text = None
-
-        for li in doc.css("li"):
-            text = li.text(strip=True)
-            if text.startswith("Submit:"):
-                submissions_text = text.replace("Submit:", "").strip()
-            elif text.startswith("Solved:"):
-                solved_text = text.replace("Solved:", "").strip()
-
-        if solved_text is None or submissions_text is None:
+        solved = None
+        for tr in doc.css("#user_card tr"):
+            th = tr.css_first("th")
+            if th is not None and th.text(strip=True) == "通过":
+                solved = int(tr.css_first("td").text(strip=True))
+                break
+        if solved is None:
             raise RuntimeError("Error while parsing")
 
-        solved = int(solved_text)
-        submissions = int(submissions_text)
+        solved_segment = _segment_after(doc, "通过的题目")
+        if solved_segment is None:
+            raise RuntimeError("Error while parsing")
+        solved_list = [
+            a.text(strip=True) for a in solved_segment.css('a[href^="problem.php?id="]')
+        ]
+
+        # The result-distribution table has one row per verdict that occurred;
+        # their counts add up to the total number of submissions.
+        submissions = 0
+        verdict_segment = _segment_after(doc, "结果分布")
+        if verdict_segment is not None:
+            for tr in verdict_segment.css("tr"):
+                cells = tr.css("td")
+                if len(cells) == 2 and cells[1].text(strip=True).isdigit():
+                    submissions += int(cells[1].text(strip=True))
 
         return {
             "solved": solved,
-            "submissions": submissions,
-            "solved_list": None,
+            "submissions": max(submissions, solved),
+            "solved_list": solved_list,
         }
-    except ValueError:
-        raise
     except Exception:
         raise RuntimeError("Error while parsing")
