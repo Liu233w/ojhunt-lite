@@ -1,6 +1,6 @@
 ---
 name: ojhunt-crawlers
-description: Workflow for implementing or debugging an OJ crawler — accessibility check, data-source discovery, decision tree, and verification checklist. Load whenever the task is to add a new crawler or fix a broken one. For the crawler reference (metadata schema, login types, templates, HTML parsing, SSL, archived rules) read docs/dev/crawlers.md.
+description: Workflow for implementing or debugging an OJ crawler — accessibility check, data-source discovery, decision tree, and verification checklist. Load whenever the task is to add a new crawler, fix a broken one, or fix every crawler that ojhunt.com reports offline. For the crawler reference (metadata schema, login types, templates, HTML parsing, SSL, archived rules) read docs/dev/crawlers.md.
 ---
 
 # Implementing a crawler
@@ -157,6 +157,12 @@ async def session():
 
 Match it with `@pytest.mark.asyncio(loop_scope="module")` on every test in the file. See
 `tests/crawlers/vjudge_test.py` for the canonical example.
+
+## Fixing All Offline Crawlers
+
+When the task is to fix every crawler that https://ojhunt.com/api/crawlers reports offline,
+read **`references/fix-offline-crawlers.md`** and follow it. You act as the coordinator and run
+one fixer agent per crawler, at most 3 at a time.
 
 ## Decision Tree
 
