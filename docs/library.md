@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-36 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+37 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -332,6 +332,7 @@ Members
 | `geeksforgeeks` | [GeeksforGeeks](https://www.geeksforgeeks.org/) | – | Your GeeksforGeeks handle (from the profile URL) | – |
 | `hdu` | [HDU](http://acm.hdu.edu.cn/) | – | – | – |
 | `hust` | [HUST](https://hustoj.org/) | – | HUST Online Judge | – |
+| `kep` | [KEP.uz](https://kep.uz/) | – | Your KEP.uz username (from the profile URL) | – |
 | `kilonova` | [Kilonova](https://kilonova.ro/) | – | Romanian competitive programming platform | – |
 | `leetcode` | [LeetCode.com](https://leetcode.com/) | – | LeetCode (international) | – |
 | `lightoj` | [LightOJ](https://lightoj.com/) | – | – | – |
