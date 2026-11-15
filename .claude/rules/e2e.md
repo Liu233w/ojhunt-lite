@@ -18,6 +18,11 @@ See [`tests.md`](tests.md) for shared pytest fixture and assertion conventions.
 - **Visual diff on failure:** `conftest.py` writes `actual.png`, `expected.png`, `diff.png`
   to `test-results/visual/<name>/` when a snapshot mismatch occurs.
   Or have the user run directly: `! uv run pytest -m playwright tests/e2e/`
+- **The `bot` account owns the visual baselines.** When a change legitimately moves a
+  snapshot, run `./doit.sh update-snapshots` yourself. Don't ask the user to run it. A
+  baseline made under another account renders CJK glyphs differently: if `diff.png` lights
+  up only the CJK glyphs while Latin text matches, that is font rendering, not a regression.
+  Regenerate that baseline as `bot` instead of debugging it.
 - Install browsers first: `uv run playwright install --with-deps chromium`
 - Always run e2e tests after writing or modifying them — don't mark done until they pass
 
