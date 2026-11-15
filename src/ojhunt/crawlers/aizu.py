@@ -28,6 +28,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import aiohttp
 
+API_BASE = "https://onlinejudge.u-aizu.ac.jp/api"
+PAGE_SIZE = 10000
+
 __crawler_meta__ = {
     "title": "AIZU",
     "description": "",
@@ -61,7 +64,7 @@ async def query(
         # Get user status
         try:
             async with session.get(
-                f"https://judgeapi.u-aizu.ac.jp/users/{username}",
+                f"{API_BASE}/users/{username}",
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as response:
                 if response.status == 404:
@@ -75,22 +78,26 @@ async def query(
                 raise ValueError("The user does not exist")
             raise
 
-        # Get solved list - the list seems big enough, we don't need pages
-        async with session.get(
-            f"https://judgeapi.u-aizu.ac.jp/solutions/users/{username}",
-            params={"page": "0", "size": "10000"},
-            timeout=aiohttp.ClientTimeout(total=30),
-        ) as response:
-            list_data = await response.json()
+        # The list holds every accepted submission, so one problem can repeat
+        solved_set = set()
+        page = 0
+        while True:
+            async with session.get(
+                f"{API_BASE}/solutions/users/{username}",
+                params={"page": str(page), "size": str(PAGE_SIZE)},
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as response:
+                list_data = await response.json()
+            solved_set.update(item.get("problemId") for item in list_data)
+            if len(list_data) < PAGE_SIZE:
+                break
+            page += 1
 
-            # Extract unique problem IDs
-            solved_set = {item.get("problemId") for item in list_data}
-
-            return {
-                "solved": status_data.get("status", {}).get("solved", 0),
-                "submissions": status_data.get("status", {}).get("submissions", 0),
-                "solved_list": list(solved_set),
-            }
+        return {
+            "solved": status_data.get("status", {}).get("solved", 0),
+            "submissions": status_data.get("status", {}).get("submissions", 0),
+            "solved_list": list(solved_set),
+        }
 
     except aiohttp.ClientError as e:
         if "404" in str(e):
