@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-34 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+35 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -342,6 +342,7 @@ Members
 | `nowcoder` | [牛客OJ](https://ac.nowcoder.com/acm/home) | – | 目前只支持输入用户ID（在你的AC列表的URL中） | – |
 | `ojuz` | [oj.uz](https://oj.uz/) | – | Online Judge hosting IOI/BOI/JOI/APIO problems. Submissions shows the number of attempted problems, a lower bound on the real total. | – |
 | `poj` | [POJ](http://poj.org/) | – | – | – |
+| `robocontest` | [RoboContest](https://robocontest.uz/) | – | Please use your RoboContest username (the name in your profile URL, robocontest.uz/profile/...) | – |
 | `sdutoj` | [SDUT OJ](https://oj.sdutacm.cn/) | – | – | – |
 | `timus` | [Timus (URAL)](http://acm.timus.ru/) | – | – | – |
 | `tlx` | [TLX (TOKI Learning Exchange)](https://tlx.toki.id/) | – | Indonesia's largest competitive programming training website | – |
