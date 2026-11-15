@@ -5,7 +5,7 @@ what is wrong, why it was left, and where to start. Delete an entry when it ship
 
 ## Crawlers swallow their own error messages
 
-19 of the 32 crawlers end `query` with `except Exception: raise RuntimeError("Error while
+19 of the 31 crawlers end `query` with `except Exception: raise RuntimeError("Error while
 parsing")`, which catches the more specific `RuntimeError(f"Server Response Error: {status}")`
 raised inside the same `try`. An upstream outage is therefore reported as a parse failure and the
 status code is lost from the CLI, the web app and the `/crawlers` availability check.

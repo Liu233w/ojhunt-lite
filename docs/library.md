@@ -313,7 +313,7 @@ Members
 
 ## Supported crawlers
 
-32 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
+31 crawlers. Every one takes `(session, username)`; the arguments below are additional. Run `help(crawlers["<name>"])` for one crawler's full entry.
 
 | Crawler | Platform | Login | Username / notes | Extra arguments |
 | --- | --- | --- | --- | --- |
@@ -346,7 +346,6 @@ Members
 | `uoj` | [UOJ](http://uoj.ac/) | – | – | – |
 | `uva` | [UVA](https://uva.onlinejudge.org/) | – | – | – |
 | `vjudge` | [VJudge](https://vjudge.net/) | Shared Account | virtual judge，这个OJ的题量是单独计算的 (aggregator) | `password`, `login_user`, `login_password` |
-| `vnoj` | [VNOJ](https://oj.vnoi.info/) | – | VNOI Online Judge | – |
 | `yosupo` | [Yosupo Judge](https://judge.yosupo.jp/) | – | Library Checker (judge.yosupo.jp) | – |
 | `yukicoder` | [yukicoder](https://yukicoder.me/) | – | Japanese competitive programming platform | – |
 
